@@ -2,10 +2,11 @@ import numpy as np
 import EvolvingMatrix as EM
 
 n_dim = 100
+m_dim = 70
+s_dim = 30
 k_dim = 50
-s_dim = 50
 
-B = np.random.normal(size=(k_dim, n_dim))
+B = np.random.normal(size=(m_dim, n_dim))
 E = np.random.normal(size=(s_dim, n_dim))
 
 A = B.copy()
@@ -20,9 +21,8 @@ for ii in range(s_dim):
 
   U, S, VH = np.linalg.svd(A)
 
-  #print(Sigmak)
-  #print(S)
-  print(Sigmak-S)
-  #exit()
+  print("Error:")
+  print(Sigmak-S[:k_dim])
+  print()
 
 
