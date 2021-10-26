@@ -21,9 +21,12 @@ class EvolvingMatrix(object):
       self.k_dim = self.m_dim
     else:
       self.k_dim = k_dim
-    self.Uk_matrix = self.U_matrix[:self.k_dim,:]
-    self.Sigmak_array = self.Sigma_array[:self.k_dim]
-    self.VHk_matrix = self.VH_matrix[:self.k_dim,:]
+    self.Uk_matrix = self.U_matrix.copy()
+    self.Sigmak_array = self.Sigma_array.copy()
+    self.VHk_matrix = self.VH_matrix.copy()
+    print("Initial Uk  matrix of evolving matrix set to shape of (", np.shape(self.Uk_matrix), ") .")
+    print("Initial Sigmak matrix of evolving matrix set to shape of (", np.shape(self.Sigmak_array), ") .")
+    print("Initial VHk matrix of evolving matrix set to shape of (", np.shape(self.VHk_matrix), ") .")
     print("Truncated matrix of evolving matrix set to shape of (", self.k_dim, ",", self.k_dim,") .")
 
     # initializing appendix matrix
@@ -32,6 +35,8 @@ class EvolvingMatrix(object):
 
     self.s_dim = 0
     self.n_rows_appended = 0
+
+    print()
 
 
   '''
@@ -43,36 +48,42 @@ class EvolvingMatrix(object):
     assert n_dim == self.n_dim
     print("Appendix matrix set to shape of (", self.s_dim, ",", self.n_dim, ") .")
 
+    print()
+
 
   '''
   First method of constructing Z = [[Uk 0] [0 Is]].
   '''
-  def evolve_matrix(self, step_dim=0):
-    Z = np.block(
-      [[ self.Uk_matrix , np.zeros((self.k_dim, self.step_dim)) ]
-       [ self.np.zeros((self.step_dim, self.n_dim)) , self.eye(self.step_dim) ]]
-    )
-
+  def evolve_matrix(self, step_dim=None):
     # default number of appended rows
-    if step_dim == 0:
+    if step_dim is None:
       step_dim = self.step_dim
     
+    Z = np.block(
+      [[ self.Uk_matrix , np.zeros((self.k_dim+self.n_rows_appended, step_dim)) ],
+       [ np.zeros((step_dim, self.k_dim+self.n_rows_appended)) , np.eye(step_dim) ]]
+    )
+
     # checks if number of appended rows exceeds number of remaining rows in appendix matrix
     if step_dim > (self.s_dim - self.n_rows_appended):
       step_dim = self.s_dim - self.n_rows_appended
 
     print("Appending ", step_dim, " rows from appendix matrix and evolving truncated matrix.")
 
-    self.A_matrix = np.append(self.A_matrix, self.appendix_matrix[self.n_rows_appended:self.n_rows_appended+step_dim,:])
+    self.A_matrix = np.append(self.A_matrix, self.appendix_matrix[self.n_rows_appended:self.n_rows_appended+step_dim,:], axis=0)
 
     (F_matrix, Theta_array, G_matrix) = np.linalg.svd(np.block(
-      [[ np.diag(self.Sigmak_array) ]
+      [[ np.dot(np.dot(np.diag(self.Sigmak_array), np.eye(self.k_dim+self.n_rows_appended, self.n_dim)) , self.VHk_matrix) ],
        [ self.appendix_matrix[self.n_rows_appended:self.n_rows_appended+step_dim,:] ]]
     ))
     
-    self.Uk_matrix = np.dot(Z, F_matrix[:self.k_dim,:])
-    self.Sigmak_array = Theta_array[:k]
-    self.Vk_matrix = np.dot(np.dot(self.A_matrix, self.Uk_matrix), np.diag(1/self.Sigmak_array))
+    self.n_rows_appended += step_dim
+
+    self.Uk_matrix = np.dot(Z, F_matrix)
+    self.Sigmak_array = Theta_array
+    self.VHk_matrix = np.dot(np.dot(self.A_matrix.T, self.Uk_matrix), np.dot(np.diag(1/self.Sigmak_array), np.eye(self.k_dim+self.n_rows_appended, self.n_dim))).T
+
+    return self.Uk_matrix, self.Sigmak_array, self.VHk_matrix
 
 
 
