@@ -14,20 +14,16 @@ class EvolvingMatrix(object):
     self.U_matrix = np.array([])
     self.Sigma_array = np.array([])
     self.V_matrix = np.array([])
-    (self.U_matrix, self.Sigma_array, self.VH_matrix) = np.linalg.svd(self.initial_matrix)
+    (self.Uk_matrix, self.Sigmak_array, self.VHk_matrix) = np.linalg.svd(self.initial_matrix)
 
     # setting truncation data
     if k_dim == 0:
       self.k_dim = self.m_dim
     else:
       self.k_dim = k_dim
-    self.Uk_matrix = self.U_matrix.copy()
-    self.Sigmak_array = self.Sigma_array.copy()
-    self.VHk_matrix = self.VH_matrix.copy()
     print("Initial Uk  matrix of evolving matrix set to shape of (", np.shape(self.Uk_matrix), ") .")
     print("Initial Sigmak matrix of evolving matrix set to shape of (", np.shape(self.Sigmak_array), ") .")
     print("Initial VHk matrix of evolving matrix set to shape of (", np.shape(self.VHk_matrix), ") .")
-    print("Truncated matrix of evolving matrix set to shape of (", self.k_dim, ",", self.k_dim,") .")
 
     # initializing appendix matrix
     self.appendix_matrix = np.array([])
@@ -79,9 +75,13 @@ class EvolvingMatrix(object):
     
     self.n_rows_appended += step_dim
 
+    print("Appended ", self.n_rows_appended, " of ", self.s_dim, " rows from appendix matrix so far.")
+
     self.Uk_matrix = np.dot(Z, F_matrix)
     self.Sigmak_array = Theta_array
     self.VHk_matrix = np.dot(np.dot(self.A_matrix.T, self.Uk_matrix), np.dot(np.diag(1/self.Sigmak_array), np.eye(self.k_dim+self.n_rows_appended, self.n_dim))).T
+
+    print()
 
     return self.Uk_matrix, self.Sigmak_array, self.VHk_matrix
 
