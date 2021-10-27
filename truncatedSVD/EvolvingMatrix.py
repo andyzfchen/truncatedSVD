@@ -11,9 +11,12 @@ class EvolvingMatrix(object):
     (self.m_dim, self.n_dim) = np.shape(self.initial_matrix)
     print("Initial matrix of evolving matrix set to shape of (", self.m_dim, ",", self.n_dim, ") .")
 
+    self.U_true = np.array([])
+    self.Sigma_true = np.array([])
+    self.VH_true = np.array([])
     self.U_matrix = np.array([])
     self.Sigma_array = np.array([])
-    self.V_matrix = np.array([])
+    self.VH_matrix = np.array([])
     (self.U_matrix, self.Sigma_array, self.VH_matrix) = np.linalg.svd(self.initial_matrix)
 
     # setting truncation data
@@ -46,6 +49,8 @@ class EvolvingMatrix(object):
     (self.s_dim, n_dim) = np.shape(self.appendix_matrix)
     assert n_dim == self.n_dim
     print("Appendix matrix set to shape of (", self.s_dim, ",", self.n_dim, ") .")
+
+    self.U_true, self.Sigma_true, self.VH_true = np.linalg.svd(np.append(self.initial_matrix, self.appendix_matrix, axis=0))
 
     print()
 
@@ -91,5 +96,23 @@ class EvolvingMatrix(object):
     return self.Uk_matrix, self.Sigmak_array, self.VHk_matrix
 
 
+  '''
+  Return the relative error of the nth (sv_idx) singular value.
+  '''
+  def get_relative_error(self, sv_idx=None):
+    if sv_idx is None:
+      sv_idx = self.k_dim-1
+
+    return np.abs(self.Sigmak_array[sv_idx] - self.Sigma_true[sv_idx]) / self.Sigma_true[sv_idx]
+
+
+  '''
+  Return the residual norm of the nth (sv_idx) singular vector.
+  '''
+  def get_residual_norm(self, sv_idx=None):
+    if sv_idx is None:
+      sv_idx = self.k_dim-1
+
+    return np.linalg.norm(self.VHk_matrix[sv_idx,:] - self.VH_true[sv_idx,:])
 
 
