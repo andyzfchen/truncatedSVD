@@ -1,5 +1,6 @@
 import numpy as np
 import EvolvingMatrix as EM
+from plotting_helper import plot_relative_errs, plot_residual_norms
 
 datasets = [ "CISI", "CRAN", "MED" ]
 #phis = [ -1, 1, 12 ]
@@ -35,8 +36,12 @@ for phi in phis:
     print("Last singular value Relative Error:")
     print(relative_errors)
     np.save("../cache/relative_errors_"+dataset+"_phi_"+str(phi)+".npy", relative_errors)
+    plot_relative_errs(relative_errors, "relative_errors_"+dataset+"_phi_"+str(phi), "Relative Errors for "+dataset+", \phi = "+phi)
+
+
     print("Last singular vector Residual Norm:")
     print(residual_norms)
     np.save("../cache/residual_norms_"+dataset+"_phi_"+str(phi)+".npy", residual_norms)
+    plot_residual_norms(residual_norms, "residual_norms_"+dataset+"_phi_"+str(phi), "Residual Norms for "+dataset+", \phi = "+phi)
 
     print()
