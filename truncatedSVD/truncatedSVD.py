@@ -2,11 +2,12 @@ import numpy as np
 import EvolvingMatrix as EM
 
 datasets = [ "CISI", "CRAN", "MED" ]
-phis = [ -1, 1, 12 ]
+#phis = [ -1, 1, 12 ]
+phis = [ -1 ]
 
 for phi in phis:
   for dataset in datasets:
-    print("Performing truncated SVD on dataset "+dataset+" using phi = "+phi+".")
+    print("Performing truncated SVD on dataset "+dataset+" using phi = "+str(phi)+".")
     A_full = np.load("../datasets/"+dataset+"/"+dataset+".npy")
     m_percent = 0.50
 
@@ -22,7 +23,8 @@ for phi in phis:
     model.set_appendix_matrix(E)
 
     if phi == -1:
-      Uk, Sigmak, VHk = model.evolve_matrix(step_dim=1)
+      for ii in range(s_dim):
+        Uk, Sigmak, VHk = model.evolve_matrix(step_dim=1)
     else:
       for ii in range(phi):
         Uk, Sigmak, VHk = model.evolve_matrix(step_dim=int(np.ceil(s_dim/phi)))
@@ -32,9 +34,9 @@ for phi in phis:
 
     print("Last singular value Relative Error:")
     print(relative_errors)
-    np.save("../cache/phi_"+phi+"/relative_errors.npy", relative_errors)
+    np.save("../cache/relative_errors_"+dataset+"_phi_"+str(phi)+".npy", relative_errors)
     print("Last singular vector Residual Norm:")
     print(residual_norms)
-    np.save("../cache/phi_"+phi+"/residual_norms.npy", residual_norms)
+    np.save("../cache/residual_norms_"+dataset+"_phi_"+str(phi)+".npy", residual_norms)
 
     print()

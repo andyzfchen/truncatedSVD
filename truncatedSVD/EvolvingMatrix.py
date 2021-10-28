@@ -63,14 +63,14 @@ class EvolvingMatrix(object):
     if step_dim is None:
       step_dim = self.step_dim
 
+    # checks if number of appended rows exceeds number of remaining rows in appendix matrix
+    if step_dim > (self.s_dim - self.n_rows_appended):
+      step_dim = self.s_dim - self.n_rows_appended
+
     Z = np.block(
       [[ self.Uk_matrix , np.zeros((self.m_dim+self.n_rows_appended, step_dim)) ],
        [ np.zeros((step_dim, self.k_dim)) , np.eye(step_dim) ]]
     )
-
-    # checks if number of appended rows exceeds number of remaining rows in appendix matrix
-    if step_dim > (self.s_dim - self.n_rows_appended):
-      step_dim = self.s_dim - self.n_rows_appended
 
     print("Appending ", step_dim, " rows from appendix matrix and evolving truncated matrix.")
 
