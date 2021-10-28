@@ -2,30 +2,39 @@ import numpy as np
 import EvolvingMatrix as EM
 
 datasets = [ "CISI", "CRAN", "MED" ]
+phis = [ -1, 1, 12 ]
 
-for dataset in datasets:
-  print("Performing truncated SVD on dataset "+dataset+".")
-  A_full = np.load("../datasets/"+dataset+"/"+dataset+".npy")
-  m_percent = 0.50
+for phi in phis:
+  for dataset in datasets:
+    print("Performing truncated SVD on dataset "+dataset+" using phi = "+phi+".")
+    A_full = np.load("../datasets/"+dataset+"/"+dataset+".npy")
+    m_percent = 0.50
 
-  (m_dim_full, n_dim) = np.shape(A_full)
-  m_dim = int(np.ceil(m_dim_full*m_percent))
-  s_dim = int(np.floor(m_dim_full*(1-m_percent)))
-  k_dim = 50
+    (m_dim_full, n_dim) = np.shape(A_full)
+    m_dim = int(np.ceil(m_dim_full*m_percent))
+    s_dim = int(np.floor(m_dim_full*(1-m_percent)))
+    k_dim = 50
 
-  B = A_full[:m_dim,:]
-  E = A_full[m_dim:,:]
+    B = A_full[:m_dim,:]
+    E = A_full[m_dim:,:]
 
-  model = EM.EvolvingMatrix(B, k_dim=k_dim)
-  model.set_appendix_matrix(E)
+    model = EM.EvolvingMatrix(B, k_dim=k_dim)
+    model.set_appendix_matrix(E)
 
-  Uk, Sigmak, VHk = model.evolve_matrix(step_dim=s_dim)
+    if phi == -1:
+      Uk, Sigmak, VHk = model.evolve_matrix(step_dim=1)
+    else:
+      for ii in range(phi):
+        Uk, Sigmak, VHk = model.evolve_matrix(step_dim=int(np.ceil(s_dim/phi)))
 
-  print("Last singular vector Residual Norm:")
-  print(model.get_residual_norm())
-  print(np.shape(model.get_residual_norm()))
-  print("Last singular value Relative Error:")
-  print(model.get_relative_error())
-  print(np.shape(model.get_relative_error()))
+    relative_errors = model.get_relative_error()
+    residual_norms = model.get_residual_norm()
 
-  print()
+    print("Last singular value Relative Error:")
+    print(relative_errors)
+    np.save("../cache/phi_"+phi+"/relative_errors.npy", relative_errors)
+    print("Last singular vector Residual Norm:")
+    print(residual_norms)
+    np.save("../cache/phi_"+phi+"/residual_norms.npy", residual_norms)
+
+    print()
