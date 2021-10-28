@@ -23,7 +23,9 @@ for dataset in datasets:
 
   print("Last singular vector Residual Norm:")
   print(model.get_residual_norm())
+  print(np.shape(model.get_residual_norm()))
   print("Last singular value Relative Error:")
   print(model.get_relative_error())
+  print(np.shape(model.get_relative_error()))
 
   print()

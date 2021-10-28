@@ -101,7 +101,7 @@ class EvolvingMatrix(object):
   '''
   def get_relative_error(self, sv_idx=None):
     if sv_idx is None:
-      sv_idx = self.k_dim-1
+      sv_idx = np.arange(self.k_dim)
 
     return np.abs(self.Sigmak_array[sv_idx] - self.Sigma_true[sv_idx]) / self.Sigma_true[sv_idx]
 
@@ -111,8 +111,8 @@ class EvolvingMatrix(object):
   '''
   def get_residual_norm(self, sv_idx=None):
     if sv_idx is None:
-      sv_idx = self.k_dim-1
+      sv_idx = np.arange(self.k_dim)
 
-    return np.linalg.norm(self.VHk_matrix[sv_idx,:] - self.VH_true[sv_idx,:])
+    return np.linalg.norm(np.dot(self.A_matrix, self.VHk_matrix[sv_idx,:].T) - self.Uk_matrix[:,sv_idx]*self.Sigmak_array[sv_idx],axis=0)
 
 
