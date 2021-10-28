@@ -113,6 +113,6 @@ class EvolvingMatrix(object):
     if sv_idx is None:
       sv_idx = np.arange(self.k_dim)
 
-    return np.linalg.norm(np.dot(self.A_matrix, self.VHk_matrix[sv_idx,:].T) - self.Uk_matrix[:,sv_idx]*self.Sigmak_array[sv_idx],axis=0)
+    return np.linalg.norm(np.dot(self.A_matrix, self.VHk_matrix[sv_idx,:].T) - self.Uk_matrix[:,sv_idx]*self.Sigmak_array[sv_idx],axis=0)*self.Sigmak_array[sv_idx]
 
 
