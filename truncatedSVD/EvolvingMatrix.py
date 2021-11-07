@@ -14,6 +14,9 @@ class EvolvingMatrix(object):
     self.U_true = np.array([])
     self.Sigma_true = np.array([])
     self.VH_true = np.array([])
+    self.U_new = np.array([])
+    self.Sigma_new = np.array([])
+    self.VH_new = np.array([])
     self.U_matrix = np.array([])
     self.Sigma_array = np.array([])
     self.VH_matrix = np.array([])
@@ -56,9 +59,9 @@ class EvolvingMatrix(object):
 
 
   '''
-  First method of constructing Z = [[Uk 0] [0 Is]].
+  First method of constructing Z = [[U_k 0] [0 I_s]].
   '''
-  def evolve_matrix(self, step_dim=None):
+  def evolve_matrix_zha_simon(self, step_dim=None):
     # default number of appended rows
     if step_dim is None:
       step_dim = self.step_dim
@@ -79,7 +82,7 @@ class EvolvingMatrix(object):
     (F_matrix, Theta_array, G_matrix) = np.linalg.svd(np.block(
       [[ np.dot(np.diag(self.Sigmak_array), self.VHk_matrix) ],
        [ self.appendix_matrix[self.n_rows_appended:self.n_rows_appended+step_dim,:] ]]
-    ))
+    ), full_matrices=False)
     
     self.n_rows_appended += step_dim
 
@@ -97,13 +100,29 @@ class EvolvingMatrix(object):
 
 
   '''
+  Second method of constructing Z = [[U_k, X_lambda,r 0] [0 I_s]].
+  '''
+  def evolve_matrix_deflated_bcg(self, step_dim=None):
+    return
+
+
+  '''
+  Calculate the SVD components of the A matrix so far.
+  '''
+  def calculate_new_svd(self):
+    print("Calculating current A matrix of size ", np.shape(self.A_matrix))
+    self.U_new, self.Sigma_new, self.VH_new = np.linalg.svd(self.A_matrix)
+    return
+
+
+  '''
   Return the relative error of the nth (sv_idx) singular value.
   '''
   def get_relative_error(self, sv_idx=None):
     if sv_idx is None:
       sv_idx = np.arange(self.k_dim)
-
-    return np.abs(self.Sigmak_array[sv_idx] - self.Sigma_true[sv_idx]) / self.Sigma_true[sv_idx]
+  
+    return np.abs(self.Sigmak_array[sv_idx] - self.Sigma_new[sv_idx]) / self.Sigma_new[sv_idx]
 
 
   '''
