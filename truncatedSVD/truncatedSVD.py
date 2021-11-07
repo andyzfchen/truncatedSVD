@@ -1,13 +1,13 @@
 import numpy as np
 import EvolvingMatrix as EM
-#from plotting_helper import plot_relative_errs, plot_residual_norms, plot_stacked_relative_errs, plot_stacked_residual_norms
 import os
 
-#datasets = [ "CISI", "CRAN", "MED" ]
-datasets = [ "MED" ]
+datasets = [ "CISI", "CRAN", "MED" ]
 batch_splits = [ 1, 10, 12 ]
 phis = [ [ 1 ], [ 1, 5, 10 ], [ 1, 6, 12 ] ]
 
+if not os.path.exists("../cache"):
+  os.mkdir("../cache")
 
 for dataset in datasets:
   relative_errors_list = []
@@ -47,9 +47,6 @@ for dataset in datasets:
         np.save("../cache/"+dataset+"_batch_split_"+str(batch_split)+"/residual_norms_phi_"+str(ii+1)+".npy", residual_norms)
 
         print()
-
-  #plot_stacked_relative_errs(relative_errors_list[0], relative_errors_list[1], relative_errors_list[2], "relative_errors_"+dataset, "Relative Errors for "+dataset)
-  #plot_stacked_residual_norms(residual_norms_list[0], residual_norms_list[1], residual_norms_list[2], "residual_norms_"+dataset, "Residual Norms for "+dataset)
 
 
 

@@ -33,15 +33,14 @@ def plot_relative_errs(errs, filename, title="Relative Error for Singular Vector
     plt.savefig("../figures/"+filename+".pdf", bbox_inches="tight", pad_inches=0.2)
 
 
-def plot_stacked_residual_norms(errs1, errs2, errs3, filename, title="Residual Norms for Singular Vectors"):
-    position = np.arange(errs1.shape[0])
+def plot_stacked_residual_norms(errs_list, phi_list, filename, title="Residual Norms for Singular Vectors"):
+    position = np.arange(errs_list[0].shape[0])
 
     fig, ax = plt.subplots(figsize=(4, 3))
     ax.grid(True, linewidth=1, linestyle="--", color='k', alpha=0.1)
     ax.tick_params(which="both", direction='in', bottom=True, top=True, left=True, right=True)
-    ax.plot(position,errs1,label="$\phi=1$")
-    ax.plot(position,errs2,label="$\phi=6$")
-    ax.plot(position,errs3,label="$\phi=12$")
+    for errs, phi in zip(errs_list, phi_list):
+      ax.plot(position,errs,label="Update(%i)" % phi)
     ax.set_title(title)
     ax.set_xlabel("Index")
     ax.set_xlim(position[0], position[-1])
@@ -52,15 +51,14 @@ def plot_stacked_residual_norms(errs1, errs2, errs3, filename, title="Residual N
     plt.savefig("../figures/"+filename+".pdf", bbox_inches="tight", pad_inches=0.2)
 
 
-def plot_stacked_relative_errs(errs1, errs2, errs3, filename, title="Relative Error for Singular Vectors"):
-    position = np.arange(errs1.shape[0])
+def plot_stacked_relative_errs(errs_list, phi_list, filename, title="Relative Error for Singular Vectors"):
+    position = np.arange(errs_list[0].shape[0])
 
     fig, ax = plt.subplots(figsize=(4, 3))
     ax.grid(True, linewidth=1, linestyle="--", color='k', alpha=0.1)
     ax.tick_params(which="both", direction='in', bottom=True, top=True, left=True, right=True)
-    ax.plot(position,errs1,label="$\phi=1$")
-    ax.plot(position,errs2,label="$\phi=6$")
-    ax.plot(position,errs3,label="$\phi=12$")
+    for errs, phi in zip(errs_list, phi_list):
+      ax.plot(position,errs,label="Update(%i)" % phi)
     ax.set_title(title)
     ax.set_xlabel("Index")
     ax.set_xlim(position[0], position[-1])
