@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.sparse.linalg
 
 class EvolvingMatrix(object):
   def __init__(self, initial_matrix, step_dim=1, k_dim=0):
@@ -107,12 +108,16 @@ class EvolvingMatrix(object):
   '''
   Second method of constructing Z = [[U_k, X_lambda,r 0] [0 I_s]].
   '''
-  def evolve_matrix_deflated_bcg(self, step_dim=None, r_dim=None):    # TODO: r_dim is varied through [10, 20, 30, 40, 50]
+  def evolve_matrix_deflated_bcg(self, step_dim=None, r_dim=None):
     print("Using deflated BCG method to evolve matrix.")
 
     # default number of appended rows
     if step_dim is None:
       step_dim = self.step_dim
+
+    # default r dimension
+    if r_dim is None:
+      r_dim = 10
 
     # checks if number of appended rows exceeds number of remaining rows in appendix matrix
     if step_dim > (self.s_dim - self.n_rows_appended):
@@ -125,9 +130,9 @@ class EvolvingMatrix(object):
     LHS_matrix = -( np.dot(self.A_matrix, self.A_matrix.T) - lambda_value*np.eye(self.m_dim) )
     RHS_matrix = np.dot( ( np.eye(self.m_dim) - np.dot(self.Uk_matrix, self.Uk_matrix.T) ), np.dot(self.A_matrix, E_matrix.T) )
 
-    X_matrix = np.zeros((self.m_dim, self.step_dim))      # TODO: currently using CG column by column; need to implement block CG instead
+    X_matrix = np.zeros((self.m_dim, step_dim))      # TODO: currently using CG column by column; need to implement block CG instead
     for ii in range(step_dim):
-      X_matrix[:,ii] = scipy.sparse.linalg.cg(LHS_matrix, RHS_matrix)
+      X_matrix[:,ii] = scipy.sparse.linalg.cg(LHS_matrix, RHS_matrix[:,ii])[0]
 
     # rSVD of X
     print("Performing rSVD on X for X_lambda,r matrix.")
@@ -143,7 +148,7 @@ class EvolvingMatrix(object):
     print("Performing kSVD on ZH*A.")
     (F_matrix, Theta_array, G_matrix) = np.linalg.svd(np.block(
       [[ np.dot(np.diag(self.Sigmak_array), self.VHk_matrix) ],
-       [ Xlambdar_matrix.T, self.A_matrix ],
+       [ np.dot(Xlambdar_matrix[:,:r_dim].T, self.A_matrix) ],
        [ self.appendix_matrix[self.n_rows_appended:self.n_rows_appended+step_dim,:] ]]
     ), full_matrices=False)
     

@@ -5,6 +5,13 @@ import os
 datasets = [ "CISI", "CRAN", "MED" ]
 batch_splits = [ 1, 10, 12 ]
 phis = [ [ 1 ], [ 1, 5, 10 ], [ 1, 6, 12 ] ]
+evolution_methods = [ "zha-simon", "bcg" ]
+
+# debug mode
+#datasets = [ "CISI" ]
+#batch_splits = [ 1 ]
+#phis = [ [ 1 ] ]
+#evolution_methods = [ "bcg" ]
 
 if not os.path.exists("../cache"):
   os.mkdir("../cache")
@@ -12,41 +19,51 @@ if not os.path.exists("../cache"):
 for dataset in datasets:
   relative_errors_list = []
   residual_norms_list = []
-  for batch_split, phi in zip(batch_splits, phis):
-    print("Performing truncated SVD on dataset "+dataset+" using batch_split = "+str(batch_split)+".")
-    if not os.path.exists("../cache/"+dataset+"_batch_split_"+str(batch_split)):
-      os.mkdir("../cache/"+dataset+"_batch_split_"+str(batch_split))
+  for evolution_method in evolution_methods:
+    print("Using the "+evolution_method+" evolution method.")
+    if not os.path.exists("../cache/"+evolution_method):
+      os.mkdir("../cache/"+evolution_method)
 
-    A_full = np.load("../datasets/"+dataset+"/"+dataset+".npy")
-    m_percent = 0.50
+    for batch_split, phi in zip(batch_splits, phis):
+      print("Performing truncated SVD on dataset "+dataset+" using batch_split = "+str(batch_split)+".")
+      if not os.path.exists("../cache/"+evolution_method+"/"+dataset+"_batch_split_"+str(batch_split)):
+        os.mkdir("../cache/"+evolution_method+"/"+dataset+"_batch_split_"+str(batch_split))
 
-    (m_dim_full, n_dim) = np.shape(A_full)
-    m_dim = int(np.ceil(m_dim_full*m_percent))
-    s_dim = int(np.floor(m_dim_full*(1-m_percent)))
-    k_dim = 50
+      A_full = np.load("../datasets/"+dataset+"/"+dataset+".npy")
+      m_percent = 0.50
 
-    B = A_full[:m_dim,:]
-    E = A_full[m_dim:,:]
+      (m_dim_full, n_dim) = np.shape(A_full)
+      m_dim = int(np.ceil(m_dim_full*m_percent))
+      s_dim = int(np.floor(m_dim_full*(1-m_percent)))
+      k_dim = 50
 
-    model = EM.EvolvingMatrix(B, k_dim=k_dim)
-    model.set_appendix_matrix(E)
+      B = A_full[:m_dim,:]
+      E = A_full[m_dim:,:]
 
-    for ii in range(batch_split):
-      Uk, Sigmak, VHk = model.evolve_matrix_zha_simon(step_dim=int(np.ceil(s_dim/batch_split)))
-      if ii+1 in phi:
-        model.calculate_new_svd()
-        relative_errors = model.get_relative_error()
-        residual_norms = model.get_residual_norm()
+      model = EM.EvolvingMatrix(B, k_dim=k_dim)
+      model.set_appendix_matrix(E)
 
-        print("Singular value Relative Error at phi = "+str(ii+1)+":")
-        print(relative_errors)
-        np.save("../cache/"+dataset+"_batch_split_"+str(batch_split)+"/relative_errors_phi_"+str(ii+1)+".npy", relative_errors)
+      for ii in range(batch_split):
+        if evolution_method == "zha-simon":
+          Uk, Sigmak, VHk = model.evolve_matrix_zha_simon(step_dim=int(np.ceil(s_dim/batch_split)))
+        elif evolution_method == "bcg":
+          # TODO: r_dim is varied through [10, 20, 30, 40, 50]
+          Uk, Sigmak, VHk = model.evolve_matrix_deflated_bcg(step_dim=int(np.ceil(s_dim/batch_split)), r_dim=10)
 
-        print("Last singular vector Residual Norm at phi = "+str(ii+1)+":")
-        print(residual_norms)
-        np.save("../cache/"+dataset+"_batch_split_"+str(batch_split)+"/residual_norms_phi_"+str(ii+1)+".npy", residual_norms)
+        if ii+1 in phi:
+          model.calculate_new_svd()
+          relative_errors = model.get_relative_error()
+          residual_norms = model.get_residual_norm()
 
-        print()
+          print("Singular value Relative Error at phi = "+str(ii+1)+":")
+          print(relative_errors)
+          np.save("../cache/"+evolution_method+"/"+dataset+"_batch_split_"+str(batch_split)+"/relative_errors_phi_"+str(ii+1)+".npy", relative_errors)
+
+          print("Last singular vector Residual Norm at phi = "+str(ii+1)+":")
+          print(residual_norms)
+          np.save("../cache/"+evolution_method+"/"+dataset+"_batch_split_"+str(batch_split)+"/residual_norms_phi_"+str(ii+1)+".npy", residual_norms)
+
+          print()
 
 
 
