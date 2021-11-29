@@ -123,16 +123,28 @@ class EvolvingMatrix(object):
     if step_dim > (self.s_dim - self.n_rows_appended):
       step_dim = self.s_dim - self.n_rows_appended
 
+    # checks if Xlambdar has full r rank for Z matrix construction
+    if r_dim > step_dim:
+      r_dim = step_dim
+
     # Xlambdar
     print("Calculating X matrix.")
     E_matrix = self.appendix_matrix[self.n_rows_appended:self.n_rows_appended+step_dim,:]
     lambda_value = self.Sigmak_array[0]   # lambda_value should be >= first singular value
-    LHS_matrix = -( np.dot(self.A_matrix, self.A_matrix.T) - lambda_value*np.eye(self.m_dim) )
-    RHS_matrix = np.dot( ( np.eye(self.m_dim) - np.dot(self.Uk_matrix, self.Uk_matrix.T) ), np.dot(self.A_matrix, E_matrix.T) )
+    LHS_matrix = -( np.dot(self.A_matrix, self.A_matrix.T) - lambda_value*np.eye(self.m_dim+self.n_rows_appended) )
+    RHS_matrix = np.dot( ( np.eye(self.m_dim+self.n_rows_appended) - np.dot(self.Uk_matrix, self.Uk_matrix.T) ), np.dot(self.A_matrix, E_matrix.T) )
 
-    X_matrix = np.zeros((self.m_dim, step_dim))      # TODO: currently using CG column by column; need to implement block CG instead
+    X_matrix = np.zeros((self.m_dim+self.n_rows_appended, step_dim))
+    '''
+    # TODO: currently using CG column by column; need to implement block CG instead
     for ii in range(step_dim):
+      print("Step "+str(ii+1)+" of "+str(step_dim)+".")
       X_matrix[:,ii] = scipy.sparse.linalg.cg(LHS_matrix, RHS_matrix[:,ii])[0]
+    '''
+    print("Inverting matrix for X matrix.")
+    X_matrix = np.dot(np.linalg.inv(LHS_matrix), RHS_matrix)
+
+
 
     # rSVD of X
     print("Performing rSVD on X for X_lambda,r matrix.")
