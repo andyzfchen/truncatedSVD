@@ -19,9 +19,8 @@ if not os.path.exists("../cache"):
   os.mkdir("../cache")
 
 for dataset in datasets:
-  relative_errors_list = []
-  residual_norms_list = []
-  
+  print("Using "+dataset+" dataset.")
+
   for r_value in r_values:
     print("Using r value of "+str(r_value)+".")
 
