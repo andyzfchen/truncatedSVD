@@ -5,11 +5,14 @@ import os
 datasets = [ "CISI", "CRAN", "MED", "ML1M" ]
 batch_splits = [ 1, 10, 12 ]
 phis = [ [ 1 ], [ 1, 5, 10 ], [ 1, 6, 12 ] ]
+r_value = 50
 
+'''
 # debug mode
-#datasets = [ "CISI" ]
-#batch_splits = [ 1 ]
-#phis = [ [ 1 ] ]
+datasets = [ "CISI" ]
+batch_splits = [ 1 ]
+phis = [ [ 1 ] ]
+'''
 
 evolution_methods = [ "zha-simon", "bcg" ]
 
@@ -26,8 +29,13 @@ for dataset in datasets:
       residual_norms_list = []
 
       for method in evolution_methods:
-        relative_errors = np.load("../cache/"+method+"/"+dataset+"_batch_split_"+str(batch_split)+"/relative_errors_phi_"+str(phi)+".npy")
-        residual_norms = np.load("../cache/"+method+"/"+dataset+"_batch_split_"+str(batch_split)+"/residual_norms_phi_"+str(phi)+".npy")
+        if method == "zha-simon":
+          r_str = ""
+        elif method == "bcg":
+          r_str = "_rval_"+str(r_value)
+
+        relative_errors = np.load("../cache/"+method+"/"+dataset+"_batch_split_"+str(batch_split)+"/relative_errors_phi_"+str(phi)+r_str+".npy")
+        residual_norms = np.load("../cache/"+method+"/"+dataset+"_batch_split_"+str(batch_split)+"/residual_norms_phi_"+str(phi)+r_str+".npy")
 
         relative_errors_list.append(relative_errors)
         residual_norms_list.append(residual_norms)
@@ -40,9 +48,15 @@ for dataset in datasets:
       for method in evolution_methods:
         relative_errors_list = []
         residual_norms_list = []
+
+        if method == "zha-simon":
+          r_str = ""
+        elif method == "bcg":
+          r_str = "_rval_"+str(r_value)
+
         for phi in phi_list:
-          relative_errors = np.load("../cache/"+method+"/"+dataset+"_batch_split_"+str(batch_split)+"/relative_errors_phi_"+str(phi)+".npy")
-          residual_norms = np.load("../cache/"+method+"/"+dataset+"_batch_split_"+str(batch_split)+"/residual_norms_phi_"+str(phi)+".npy")
+          relative_errors = np.load("../cache/"+method+"/"+dataset+"_batch_split_"+str(batch_split)+"/relative_errors_phi_"+str(phi)+r_str+".npy")
+          residual_norms = np.load("../cache/"+method+"/"+dataset+"_batch_split_"+str(batch_split)+"/residual_norms_phi_"+str(phi)+r_str+".npy")
            
           relative_errors_list.append(relative_errors)
           residual_norms_list.append(residual_norms)

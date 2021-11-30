@@ -6,14 +6,17 @@ datasets = [ "CISI", "CRAN", "MED", "ML1M" ]
 batch_splits = [ 1, 10, 12 ]
 phis = [ [ 1 ], [ 1, 5, 10 ], [ 1, 6, 12 ] ]
 evolution_methods = [ "zha-simon", "bcg" ]
-
-# debug mode
-#datasets = [ "CISI" ]
-#batch_splits = [ 1 ]
-#phis = [ [ 1 ] ]
-#evolution_methods = [ "bcg" ]
-
 r_values = [ 10, 20, 30, 40, 50 ]
+
+'''
+# debug mode
+datasets = [ "CISI" ]
+batch_splits = [ 10 ]
+phis = [ [ 1, 5, 10 ] ]
+evolution_methods = [ "bcg" ]
+r_values = [ 50 ]
+'''
+
 
 if not os.path.exists("../cache"):
   os.mkdir("../cache")
@@ -53,25 +56,29 @@ for dataset in datasets:
         model = EM.EvolvingMatrix(B, k_dim=k_dim)
         model.set_appendix_matrix(E)
 
+        r_str = ""
+
         for ii in range(batch_split):
           print("Batch "+str(ii+1)+" of "+str(batch_split)+".")
           if evolution_method == "zha-simon":
             Uk, Sigmak, VHk = model.evolve_matrix_zha_simon(step_dim=int(np.ceil(s_dim/batch_split)))
+            r_str = ""
           elif evolution_method == "bcg":
             Uk, Sigmak, VHk = model.evolve_matrix_deflated_bcg(step_dim=int(np.ceil(s_dim/batch_split)), r_dim=r_value)
+            r_str = "_rval_"+str(r_value)
 
           if ii+1 in phi:
-            model.calculate_new_svd()
+            model.calculate_new_svd(dataset, batch_split, ii)
             relative_errors = model.get_relative_error()
             residual_norms = model.get_residual_norm()
 
             print("Singular value Relative Error at phi = "+str(ii+1)+":")
             print(relative_errors)
-            np.save("../cache/"+evolution_method+"/"+dataset+"_batch_split_"+str(batch_split)+"/relative_errors_phi_"+str(ii+1)+".npy", relative_errors)
+            np.save("../cache/"+evolution_method+"/"+dataset+"_batch_split_"+str(batch_split)+"/relative_errors_phi_"+str(ii+1)+r_str+".npy", relative_errors)
 
             print("Last singular vector Residual Norm at phi = "+str(ii+1)+":")
             print(residual_norms)
-            np.save("../cache/"+evolution_method+"/"+dataset+"_batch_split_"+str(batch_split)+"/residual_norms_phi_"+str(ii+1)+".npy", residual_norms)
+            np.save("../cache/"+evolution_method+"/"+dataset+"_batch_split_"+str(batch_split)+"/residual_norms_phi_"+str(ii+1)+r_str+".npy", residual_norms)
 
             print()
 

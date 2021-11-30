@@ -1,5 +1,6 @@
 import numpy as np
 import scipy.sparse.linalg
+import os
 
 class EvolvingMatrix(object):
   def __init__(self, initial_matrix, step_dim=1, k_dim=0):
@@ -130,7 +131,7 @@ class EvolvingMatrix(object):
     # Xlambdar
     print("Calculating X matrix.")
     E_matrix = self.appendix_matrix[self.n_rows_appended:self.n_rows_appended+step_dim,:]
-    lambda_value = self.Sigmak_array[0]   # lambda_value should be >= first singular value
+    lambda_value = 1.01 * self.Sigmak_array[0]**2   # lambda_value should be >= first singular value
     LHS_matrix = -( np.dot(self.A_matrix, self.A_matrix.T) - lambda_value*np.eye(self.m_dim+self.n_rows_appended) )
     RHS_matrix = np.dot( ( np.eye(self.m_dim+self.n_rows_appended) - np.dot(self.Uk_matrix, self.Uk_matrix.T) ), np.dot(self.A_matrix, E_matrix.T) )
 
@@ -186,9 +187,19 @@ class EvolvingMatrix(object):
   '''
   Calculate the SVD components of the A matrix so far.
   '''
-  def calculate_new_svd(self):
+  def calculate_new_svd(self, dataset, batch_split, phi):
     print("Calculating current A matrix of size ", np.shape(self.A_matrix))
-    self.U_new, self.Sigma_new, self.VH_new = np.linalg.svd(self.A_matrix)
+
+    if os.path.exists("../cache/"+dataset+"/"+dataset+"_batch_split_"+str(batch_split)+"_phi_"+str(phi+1)+"_Sigma_array.npy"):
+      self.U_new = np.load("../cache/"+dataset+"/"+dataset+"_batch_split_"+str(batch_split)+"_phi_"+str(phi+1)+"_U_matrix.npy")
+      self.Sigma_new = np.load("../cache/"+dataset+"/"+dataset+"_batch_split_"+str(batch_split)+"_phi_"+str(phi+1)+"_Sigma_array.npy")
+      self.VH_new = np.load("../cache/"+dataset+"/"+dataset+"_batch_split_"+str(batch_split)+"_phi_"+str(phi+1)+"_VH_matrix.npy")
+    else:
+      self.U_new, self.Sigma_new, self.VH_new = np.linalg.svd(self.A_matrix)
+
+      np.save("../cache/"+dataset+"/"+dataset+"_batch_split_"+str(batch_split)+"_phi_"+str(phi+1)+"_U_matrix.npy", self.U_new)
+      np.save("../cache/"+dataset+"/"+dataset+"_batch_split_"+str(batch_split)+"_phi_"+str(phi+1)+"_Sigma_array.npy", self.Sigma_new)
+      np.save("../cache/"+dataset+"/"+dataset+"_batch_split_"+str(batch_split)+"_phi_"+str(phi+1)+"_VH_matrix.npy", self.VH_new)
     return
 
 

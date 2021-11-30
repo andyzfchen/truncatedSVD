@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def plot_residual_norms(errs_list, evolution_methods, filename, title="Residual Norms for Singular Vectors"):
-    position = np.arange(errs_list[0].shape[0])
+    position = np.arange(1,errs_list[0].shape[0]+1)
 
     fig, ax = plt.subplots(figsize=(4, 3))
     ax.grid(True, linewidth=1, linestyle="--", color='k', alpha=0.1)
@@ -21,7 +21,7 @@ def plot_residual_norms(errs_list, evolution_methods, filename, title="Residual 
 
 
 def plot_relative_errs(errs_list, evolution_methods, filename, title="Relative Error for Singular Vectors"):
-    position = np.arange(errs_list[0].shape[0])
+    position = np.arange(1,errs_list[0].shape[0]+1)
 
     fig, ax = plt.subplots(figsize=(4, 3))
     ax.grid(True, linewidth=1, linestyle="--", color='k', alpha=0.1)
@@ -40,7 +40,7 @@ def plot_relative_errs(errs_list, evolution_methods, filename, title="Relative E
 
 
 def plot_stacked_residual_norms(errs_list, phi_list, filename, title="Residual Norms for Singular Vectors"):
-    position = np.arange(errs_list[0].shape[0])
+    position = np.arange(1,errs_list[0].shape[0]+1)
 
     fig, ax = plt.subplots(figsize=(4, 3))
     ax.grid(True, linewidth=1, linestyle="--", color='k', alpha=0.1)
@@ -59,7 +59,7 @@ def plot_stacked_residual_norms(errs_list, phi_list, filename, title="Residual N
 
 
 def plot_stacked_relative_errs(errs_list, phi_list, filename, title="Relative Error for Singular Vectors"):
-    position = np.arange(errs_list[0].shape[0])
+    position = np.arange(1,errs_list[0].shape[0]+1)
 
     fig, ax = plt.subplots(figsize=(4, 3))
     ax.grid(True, linewidth=1, linestyle="--", color='k', alpha=0.1)
