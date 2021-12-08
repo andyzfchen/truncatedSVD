@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 n_value = 100
 r_value = 10
-datasets = [ "CISI", "CRAN", "MED", "ML1M" ]
+datasets = [ "CISI", "CRAN", "MED", "ML1M", "Reuters" ]
 batch_split = 10
 phis =  [ 1, 5, 10 ]
 evolution_methods = [ "zha-simon", "bcg" ]
@@ -28,13 +28,19 @@ for dataset in datasets:
         elif evolution_method == "bcg":
           r_str = "_rval_"+str(r_value)
 
-        errors_list[ii].append(np.load("../cache/"+evolution_method+"/"+dataset+"_batch_split_"+str(batch_split)+"/"+error_type+"_phi_"+str(phi)+r_str+".npy")[1:])
+        try:
+          errors_list[ii].append(np.load("../cache/"+evolution_method+"/"+dataset+"_batch_split_"+str(batch_split)+"/"+error_type+"_phi_"+str(phi)+r_str+".npy")[1:])
+        except:
+          pass
 
 
     for ii, phi in enumerate(phis):
       string = ""
       for jj, evolution_method in enumerate(evolution_methods):
-        string += " & $ %.3f \\pm %.3f $" % (np.mean(np.log10(errors_list[ii][jj]/errors_list[0][jj])), np.std(np.log10(errors_list[ii][jj]/errors_list[0][jj])))
+        try:
+          string += " & $ %.3f \\pm %.3f $" % (np.mean(np.log10(errors_list[ii][jj]/errors_list[0][jj])), np.std(np.log10(errors_list[ii][jj]/errors_list[0][jj])))
+        except:
+          pass
       print(dataset, error_type, "phi=", phi, string, "\\\\")
   
 
