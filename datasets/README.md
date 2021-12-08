@@ -17,3 +17,7 @@ The datasets use for this project can be downloaded from the following links.
 ## ML1M
 
 [Google Drive](https://drive.google.com/drive/folders/1CNaFvoNLJ7kMi54uBpGxzkiT3LJRF7S7?usp=sharing)
+
+## Reuters
+
+[Google Drive](https://drive.google.com/file/d/152841ZsqINwkHgb8lnCNqq4yYvuITrMM/view?usp=sharing)
