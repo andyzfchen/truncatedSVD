@@ -2,19 +2,23 @@ import numpy as np
 import EvolvingMatrix as EM
 import os
 
-datasets = [ "CISI", "CRAN", "MED", "ML1M" ]
-batch_splits = [ 1, 10, 12 ]
-phis = [ [ 1 ], [ 1, 5, 10 ], [ 1, 6, 12 ] ]
+#datasets = [ "CISI", "CRAN", "MED", "ML1M" ]
+datasets = [ "Reuters" ]
+batch_splits = [ 10 ]
+phis = [ [ 1, 5, 10 ] ]
 evolution_methods = [ "zha-simon", "bcg" ]
-r_values = [ 10, 20, 30, 40, 50 ]
+r_values = [ 10 ]
+m_percent = 0.10
 
 '''
 # debug mode
-datasets = [ "CISI" ]
-batch_splits = [ 10 ]
-phis = [ [ 1, 5, 10 ] ]
-evolution_methods = [ "bcg" ]
+#datasets = [ "CISI", "CRAN", "MED", "ML1M" ]
+datasets = [ "Reuters" ]
+batch_splits = [ 1 ]
+phis = [ [ 1 ] ]
+evolution_methods = [ "zha-simon", "bcg" ]
 r_values = [ 50 ]
+m_percent = 0.50
 '''
 
 
@@ -43,7 +47,6 @@ for dataset in datasets:
           os.mkdir("../cache/"+evolution_method+"/"+dataset+"_batch_split_"+str(batch_split))
 
         A_full = np.load("../datasets/"+dataset+"/"+dataset+".npy")
-        m_percent = 0.50
 
         (m_dim_full, n_dim) = np.shape(A_full)
         m_dim = int(np.ceil(m_dim_full*m_percent))

@@ -1,5 +1,6 @@
 import numpy as np
 import scipy.sparse.linalg
+import sklearn.decomposition
 import os
 
 class EvolvingMatrix(object):
@@ -74,6 +75,7 @@ class EvolvingMatrix(object):
     if step_dim > (self.s_dim - self.n_rows_appended):
       step_dim = self.s_dim - self.n_rows_appended
 
+    #print(1.01 * self.Sigmak_array[0]**2)
     # Z matrix
     Z_matrix = np.block(
       [[ self.Uk_matrix , np.zeros((self.m_dim+self.n_rows_appended, step_dim)) ],
@@ -131,24 +133,29 @@ class EvolvingMatrix(object):
     # Xlambdar
     print("Calculating X matrix.")
     E_matrix = self.appendix_matrix[self.n_rows_appended:self.n_rows_appended+step_dim,:]
-    lambda_value = 1.01 * self.Sigmak_array[0]**2   # lambda_value should be >= first singular value
+    svd = sklearn.decomposition.TruncatedSVD(n_components=5, n_iter=20)
+    svd.fit(np.append(self.A_matrix, self.appendix_matrix[self.n_rows_appended:self.n_rows_appended+step_dim,:], axis=0))
+    #lambda_value = 1.01 * self.Sigmak_array[0]**2   # lambda_value should be >= first singular value
+    lambda_value = 1.01 * svd.singular_values_[0]**2   # lambda_value should be >= first singular value
     LHS_matrix = -( np.dot(self.A_matrix, self.A_matrix.T) - lambda_value*np.eye(self.m_dim+self.n_rows_appended) )
     RHS_matrix = np.dot( ( np.eye(self.m_dim+self.n_rows_appended) - np.dot(self.Uk_matrix, self.Uk_matrix.T) ), np.dot(self.A_matrix, E_matrix.T) )
 
-    X_matrix = np.zeros((self.m_dim+self.n_rows_appended, step_dim))
     '''
+    X_matrix = np.zeros((self.m_dim+self.n_rows_appended, step_dim))
     # TODO: currently using CG column by column; need to implement block CG instead
     for ii in range(step_dim):
-      print("Step "+str(ii+1)+" of "+str(step_dim)+".")
+      if (ii+1)%50 == 0:
+        print("Step "+str(ii+1)+" of "+str(step_dim)+".")
       X_matrix[:,ii] = scipy.sparse.linalg.cg(LHS_matrix, RHS_matrix[:,ii])[0]
-    '''
     print("Inverting matrix for X matrix.")
+    '''
     X_matrix = np.dot(np.linalg.inv(LHS_matrix), RHS_matrix)
 
 
 
     # rSVD of X
-    print("Performing rSVD on X for X_lambda,r matrix.")
+    print("Performing randomized rSVD on X for X_lambda,r matrix.")
+    X_matrix = np.dot(X_matrix, np.random.normal(size=(step_dim, 2*r_dim)))
     (Xlambdar_matrix, Slambdar_array, Ylambdar_matrix) = np.linalg.svd(X_matrix, full_matrices=False)
 
     # Z matrix
@@ -159,11 +166,14 @@ class EvolvingMatrix(object):
 
     # kSVD of ZH*A    # TODO: implement unrestarted Lanczos method on ZH*A*AH*Z
     print("Performing kSVD on ZH*A.")
-    (F_matrix, Theta_array, G_matrix) = np.linalg.svd(np.block(
+    ZHA = np.block(
       [[ np.dot(np.diag(self.Sigmak_array), self.VHk_matrix) ],
        [ np.dot(Xlambdar_matrix[:,:r_dim].T, self.A_matrix) ],
-       [ self.appendix_matrix[self.n_rows_appended:self.n_rows_appended+step_dim,:] ]]
-    ), full_matrices=False)
+       [ self.appendix_matrix[self.n_rows_appended:self.n_rows_appended+step_dim,:] ]])
+    '''
+    ZHA = np.block([ np.dot(self.VHk_matrix.T, np.diag(self.Sigmak_array)), np.dot(self.A_matrix.T, Xlambdar_matrix[:,:r_dim]), self.appendix_matrix[self.n_rows_appended:self.n_rows_appended+step_dim,:].T ]).T
+    '''
+    (F_matrix, Theta_array, G_matrix) = np.linalg.svd(ZHA, full_matrices=False)
     
     print("Appending ", step_dim, " rows from appendix matrix and evolving truncated matrix.")
 
