@@ -2,23 +2,23 @@ import numpy as np
 from plotting_helper import plot_relative_errs, plot_residual_norms, plot_stacked_relative_errs, plot_stacked_residual_norms
 import os
 
-'''
-datasets = [ "CISI", "CRAN", "MED", "ML1M" ]
-#datasets = [ "CISI" ]
+datasets = [ "CISI", "CRAN", "MED", "ML1M", "Reuters" ]
 batch_splits = [ 10 ]
 phis = [ [ 1, 5, 10 ] ]
 r_value = 10
+evolution_methods = [ "zha-simon", "bcg" ]
+evolution_names = [ "$Z = [U_k, 0; 0, I_s]$", "$Z = [U_k, X_{\lambda,r}; 0, I_s]$" ]
 
 '''
 # debug mode
-#datasets = [ "CISI", "CRAN", "MED", "ML1M" ]
-datasets = [ "Reuters" ]
+datasets = [ "CISI" ]
 batch_splits = [ 1 ]
 phis = [ [ 1 ] ]
 r_value = 50
+evolution_methods = [ "bcg" ]
+evolution_names = [ "$Z = [U_k, X_{\lambda,r}; 0, I_s]$" ]
+'''
 
-evolution_methods = [ "zha-simon", "bcg" ]
-evolution_names = [ "$Z = [U_k, 0; 0, I_s]$", "$Z = [U_k, X_{\lambda,r}; 0, I_s]$" ]
 
 if not os.path.exists("../figures"):
   os.mkdir("../figures")

@@ -2,8 +2,7 @@ import numpy as np
 import EvolvingMatrix as EM
 import os
 
-#datasets = [ "CISI", "CRAN", "MED", "ML1M" ]
-datasets = [ "Reuters" ]
+datasets = [ "CISI", "CRAN", "MED", "ML1M", "Reuters" ]
 batch_splits = [ 10 ]
 phis = [ [ 1, 5, 10 ] ]
 evolution_methods = [ "zha-simon", "bcg" ]
@@ -12,13 +11,12 @@ m_percent = 0.10
 
 '''
 # debug mode
-#datasets = [ "CISI", "CRAN", "MED", "ML1M" ]
-datasets = [ "Reuters" ]
+datasets = [ "CISI" ]
 batch_splits = [ 1 ]
 phis = [ [ 1 ] ]
 evolution_methods = [ "zha-simon", "bcg" ]
 r_values = [ 50 ]
-m_percent = 0.50
+m_percent = 0.10
 '''
 
 
