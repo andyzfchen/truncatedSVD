@@ -3,7 +3,7 @@ import os
 import matplotlib.pyplot as plt
 
 n_value = 100
-datasets = [ "CISI", "CRAN", "MED", "ML1M" ]
+datasets = [ "CISI", "CRAN", "MED", "ML1M", "Reuters" ]
 
 if not os.path.exists("../cache"):
   os.mkdir("../cache")
@@ -52,8 +52,8 @@ ax.set_xlabel("$i$")
 ax.set_xlim(position[0], position[-1])
 ax.set_ylabel("$\hat{\sigma}_i$")
 ax.set_yscale('log')
-ax.set_ylim(1e1,1e4)
-ax.legend()
+ax.set_ylim(1e0,1e5)
+ax.legend(loc="upper right")
 plt.savefig("../figures/first_100_singular_values.pdf", bbox_inches="tight", pad_inches=0.2)
 plt.close()
 
