@@ -2,6 +2,7 @@ import numpy as np
 import scipy.sparse.linalg
 import sklearn.decomposition
 import os
+from metrics import proj_err, cov_err, rel_err, res_norm
 
 class EvolvingMatrix(object):
   def __init__(self, initial_matrix, step_dim=1, k_dim=0):
@@ -213,23 +214,27 @@ class EvolvingMatrix(object):
     return
 
 
-  '''
-  Return the relative error of the nth (sv_idx) singular value.
-  '''
   def get_relative_error(self, sv_idx=None):
+    """Return relative error of n-th singular value"""
     if sv_idx is None:
       sv_idx = np.arange(self.k_dim)
-  
-    return np.abs(self.Sigmak_array[sv_idx] - self.Sigma_new[sv_idx]) / self.Sigma_new[sv_idx]
+
+    return rel_err(self.Sigma_new[sv_idx], self.Sigmak_array[sv_idx]) 
 
 
-  '''
-  Return the residual norm of the nth (sv_idx) singular vector.
-  '''
   def get_residual_norm(self, sv_idx=None):
+    """Return residual norm of n-th singular vector"""
     if sv_idx is None:
       sv_idx = np.arange(self.k_dim)
 
-    return np.linalg.norm(np.dot(self.A_matrix, self.VHk_matrix[sv_idx,:].T) - self.Uk_matrix[:,sv_idx]*self.Sigmak_array[sv_idx],axis=0) / self.Sigmak_array[sv_idx]
+    return res_norm(self.A_matrix, self.Uk_matrix[:, sv_idx], self.VHk_matrix[sv_idx, :].T, self.Sigmak_array[sv_idx])
 
 
+  def get_covariance_error(self):
+    """Return covariance error"""
+    return cov_err(self.A_matrix, self.U_new.dot(np.diag(self.Sigma_new).dot(self.VH_new)))
+
+
+  def get_projection_error(self):
+    """Return projection error"""
+    # TODO: calculate projection Ahat

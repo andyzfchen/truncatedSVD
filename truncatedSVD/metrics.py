@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def proj_error(A, Ahat, Ak):
+def proj_err(A, Ahat, Ak):
     """Calculate projection error
     
     Calculate projection error as defined by Ghashami et al. (2016).
@@ -26,7 +26,7 @@ def proj_error(A, Ahat, Ak):
     References
     ----------
     M. Ghashami, E. Liberty, J. M. Phillips, and D. P. Woodruff, 
-    “Frequent Directions: Simple and DeterministicMatrix Sketching,
+    “Frequent Directions: Simple and Deterministic Matrix Sketching,
     SIAM Journal on Computing, vol. 45, no. 5, pp. 1762-1792, 1 2016.
     [Online]. Available:http://epubs.siam.org/doi/10.1137/15M1009718
     
@@ -38,7 +38,7 @@ def proj_error(A, Ahat, Ak):
     return (np.linalg.norm(A - Ahat, ord='fro') ** 2) / (np.linalg.norm(A - Ak, ord='fro') ** 2)
 
 
-def cov_error(A, B):
+def cov_err(A, B):
     """Calculate covariance error
     
     Calculate covariance error as defined by Ghashami et al. (2016).
@@ -57,14 +57,14 @@ def cov_error(A, B):
     References
     ----------
     M. Ghashami, E. Liberty, J. M. Phillips, and D. P. Woodruff, 
-    “Frequent Directions: Simple and DeterministicMatrix Sketching,"
+    “Frequent Directions: Simple and Deterministic Matrix Sketching,"
     SIAM Journal on Computing, vol. 45, no. 5, pp. 1762-1792, 1 2016.
     [Online]. Available:http://epubs.siam.org/doi/10.1137/15M1009718 
     """
     return np.linalg.norm(A.T.dot(A) - B.T.dot(B)) / np.linalg.norm(A, ord='fro') ** 2
 
 
-def rel_error(sv, sv_hat):
+def rel_err(sv, sv_hat):
     """
     Calculate relative error of singular values as defined by Kalantzis et al. (2021).
     
@@ -74,7 +74,7 @@ def rel_error(sv, sv_hat):
         True singular values
         
     sv_hat : array, shape (k,)
-        Approximate singular values
+        Approximated singular values
 
     Returns
     -------
@@ -89,7 +89,7 @@ def rel_error(sv, sv_hat):
     M. Meila and T. Zhang, Eds.PMLR, 7 2021, pp. 5236-5246.
     [Online].Available: https://proceedings.mlr.press/v139/kalantzis21a.html
     """
-    return np.abs(sv - sv_hat) / sv
+    return np.abs(sv_hat - sv) / sv
 
 
 def res_norm(A, U, V, s):
@@ -123,4 +123,4 @@ def res_norm(A, U, V, s):
     M. Meila and T. Zhang, Eds.PMLR, 7 2021, pp. 5236-5246.
     [Online].Available: https://proceedings.mlr.press/v139/kalantzis21a.html
     """
-    return np.linalg.norm(A.dot(V) - s * U, axis=0) / s
+    return np.linalg.norm(A.dot(V) - U * s, axis=0) / s
