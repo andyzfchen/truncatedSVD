@@ -65,12 +65,13 @@ for dataset in datasets:
         # Initialize EM object with initial and update matrices
         model = EM.EvolvingMatrix(B, k_dim=k_dim)
         model.set_appendix_matrix(E)
-
+        print()
+        
         r_str = ""
 
         # Update truncated SVD with each batch update
         for ii in range(batch_split):
-          print(f"Batch{str(ii+1)} of {str(batch_split)}.")
+          print(f"Batch {str(ii+1)}/{str(batch_split)}.")
           if evolution_method == "zha-simon":
             Uk, Sigmak, VHk = model.evolve_matrix_zha_simon(step_dim=int(np.ceil(s_dim/batch_split)))
             r_str = ""

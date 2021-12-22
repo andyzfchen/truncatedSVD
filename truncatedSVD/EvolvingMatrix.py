@@ -3,7 +3,7 @@ import scipy.sparse.linalg
 import sklearn.decomposition
 import os
 from metrics import proj_err, cov_err, rel_err, res_norm
-from evolve import zha_simon_update
+from svd_update import zha_simon_update, bcg_update
 
 
 class EvolvingMatrix(object):
@@ -47,8 +47,6 @@ class EvolvingMatrix(object):
     self.s_dim = 0
     self.n_rows_appended = 0
 
-    print()
-
 
   def set_appendix_matrix(self, appendix_matrix):
     """Initialize matrix to append E"""
@@ -58,8 +56,6 @@ class EvolvingMatrix(object):
     print("Appendix matrix set to shape of (", self.s_dim, ",", self.n_dim, ") .")
 
     self.U_true, self.Sigma_true, self.VH_true = np.linalg.svd(np.append(self.initial_matrix, self.appendix_matrix, axis=0))
-
-    print()
 
 
   def evolve_matrix_brute_force(self):
@@ -82,36 +78,27 @@ class EvolvingMatrix(object):
     if step_dim > (self.s_dim - self.n_rows_appended):
       step_dim = self.s_dim - self.n_rows_appended
 
-    #print(1.01 * self.Sigmak_array[0]**2)
-    # Z matrix
-    # Z_matrix = np.block(
-    #   [[ self.Uk_matrix , np.zeros((self.m_dim+self.n_rows_appended, step_dim)) ],
-    #    [ np.zeros((step_dim, self.k_dim)) , np.eye(step_dim) ]]
-    # )
-
     # # kSVD of ZH*A        # TODO: implement unrestarted Lanczos method on ZH*A*AH*Z
     # print("Performing kSVD on ZH*A.")
     # (F_matrix, Theta_array, G_matrix) = np.linalg.svd(np.block(
     #   [[ np.dot(np.diag(self.Sigmak_array), self.VHk_matrix) ],
     #    [ self.appendix_matrix[self.n_rows_appended:self.n_rows_appended+step_dim,:] ]]
     # ), full_matrices=False)
-    
-    # # recalculation of Uk, Sigmak, and VHk
-    # print("Recalculating U_k, Sigma_k, and VH_k.")
-    # self.Uk_matrix = np.dot(Z_matrix, F_matrix[:,:self.k_dim])
-    # self.Sigmak_array = Theta_array[:self.k_dim]
-    # self.VHk_matrix = np.dot(np.dot(self.A_matrix.T, self.Uk_matrix), np.diag(1/self.Sigmak_array)).T
 
     # Append to current data matrix
     print("Appending ", step_dim, " rows from appendix matrix and evolving truncated matrix.")
     self.A_matrix = np.append(self.A_matrix, self.appendix_matrix[self.n_rows_appended:self.n_rows_appended+step_dim,:], axis=0)
-    self.n_rows_appended += step_dim
     print("Appended ", self.n_rows_appended, " of ", self.s_dim, " rows from appendix matrix so far.")
     
-    # Perform update using Zha-Simon projection algorithm
-    self.Uk_matrix, self.Sigmak_array, self.VHk_matrix = zha_simon_update(self.A_matrix)
+    # Perform truncated SVD update using Zha-Simon projection algorithm
+    self.Uk_matrix, self.Sigmak_array, self.VHk_matrix = zha_simon_update(self.A_matrix, 
+                                                                          self.Uk_matrix, 
+                                                                          self.Sigmak_array, 
+                                                                          self.VHk_matrix, 
+                                                                          self.appendix_matrix[self.n_rows_appended:self.n_rows_appended+step_dim, :])
 
-    print()
+    # Update counter for number of rows appended
+    self.n_rows_appended += step_dim
 
     return self.Uk_matrix, self.Sigmak_array, self.VHk_matrix
 
