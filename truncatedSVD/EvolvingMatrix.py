@@ -26,9 +26,11 @@ class EvolvingMatrix(object):
       self.k_dim = self.m_dim
     else:
       self.k_dim = k_dim
+      
     self.Uk_matrix = self.U_matrix[:,:self.k_dim]
     self.Sigmak_array = self.Sigma_array[:self.k_dim]
     self.VHk_matrix = self.VH_matrix[:self.k_dim,:]
+    
     print("Initial Uk  matrix of evolving matrix set to shape of (", np.shape(self.Uk_matrix), ") .")
     print("Initial Sigmak matrix of evolving matrix set to shape of (", np.shape(self.Sigmak_array), ") .")
     print("Initial VHk matrix of evolving matrix set to shape of (", np.shape(self.VHk_matrix), ") .")
@@ -43,10 +45,8 @@ class EvolvingMatrix(object):
     print()
 
 
-  '''
-  Initialize appendix matrix E.
-  '''
   def set_appendix_matrix(self, appendix_matrix):
+    """Initialize matrix to append E"""
     self.appendix_matrix = appendix_matrix
     (self.s_dim, n_dim) = np.shape(self.appendix_matrix)
     assert n_dim == self.n_dim
@@ -62,11 +62,12 @@ class EvolvingMatrix(object):
     return self.Uk_matrix, self.Sigmak_array, self.VHk_matrix
 
 
-  '''
-  First method of constructing Z = [[U_k 0] [0 I_s]].
-  '''
   def evolve_matrix_zha_simon(self, step_dim=None):
-    print("Using Zha Simon method to evolve matrix.")
+    """Construct Z using Zha-Simon algorithm.
+    
+    Z = [[U_k 0] [0 I_s]] 
+    """
+    print("Using Zha-Simon method to evolve matrix.")
 
     # default number of appended rows
     if step_dim is None:
@@ -109,10 +110,11 @@ class EvolvingMatrix(object):
     return self.Uk_matrix, self.Sigmak_array, self.VHk_matrix
 
 
-  '''
-  Second method of constructing Z = [[U_k, X_lambda,r 0] [0 I_s]].
-  '''
   def evolve_matrix_deflated_bcg(self, step_dim=None, r_dim=None):
+    """Construct Z using enhanced projection method.
+    
+    Z = [[U_k, X_lambda,r 0] [0 I_s]] 
+    """
     print("Using deflated BCG method to evolve matrix.")
 
     # default number of appended rows
@@ -195,10 +197,8 @@ class EvolvingMatrix(object):
     return self.Uk_matrix, self.Sigmak_array, self.VHk_matrix
 
 
-  '''
-  Calculate the SVD components of the A matrix so far.
-  '''
   def calculate_new_svd(self, evolution_method, dataset, batch_split, phi):
+    """Calculate SVD components of the updated A matrix."""
     print("Calculating current A matrix of size ", np.shape(self.A_matrix))
 
     # Folder to save U,S,V arrays
@@ -215,7 +215,7 @@ class EvolvingMatrix(object):
       np.save(f"{dirname}/U_matrix_phi_{str(phi+1)}.npy", self.U_new)
       np.save(f"{dirname}/Sigma_array_phi_{str(phi+1)}.npy", self.Sigma_new)
       np.save(f"{dirname}/VH_matrix_phi_{str(phi+1)}.npy", self.VH_new)
-      
+
     return
 
 

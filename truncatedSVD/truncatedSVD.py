@@ -24,27 +24,28 @@ if not os.path.exists("../cache"):
   os.mkdir("../cache")
 
 for dataset in datasets:
-  print("Using "+dataset+" dataset.")
+  print(f"Using {dataset} dataset.")
 
   for r_value in r_values:
-    print("Using r value of "+str(r_value)+".")
+    print(f"Using r value of {str(r_value)}.")
 
     for evolution_method in evolution_methods:
       if evolution_method == "zha-simon" and r_value != r_values[0]:
         continue
 
-      print("Using the "+evolution_method+" evolution method.")
+      print(f"Using the {evolution_method} evolution method.")
 
-      if not os.path.exists("../cache/"+evolution_method):
-        os.mkdir("../cache/"+evolution_method)
+      if not os.path.exists("../cache/" + evolution_method):
+        os.mkdir("../cache/" + evolution_method)
 
       for batch_split, phi in zip(batch_splits, phis):
-        print("Performing truncated SVD on dataset "+dataset+" using batch_split = "+str(batch_split)+".")
+        print(f"Performing truncated SVD on dataset {dataset} using batch_split = {str(batch_split)}.")
 
-        if not os.path.exists("../cache/"+evolution_method+"/"+dataset+"_batch_split_"+str(batch_split)):
-          os.mkdir("../cache/"+evolution_method+"/"+dataset+"_batch_split_"+str(batch_split))
+        temp_dir = f"../cache/{evolution_method}/{dataset}_batch_split_{str(batch_split)}" 
+        if not os.path.exists(temp_dir):
+          os.mkdir(temp_dir)
 
-        A_full = np.load("../datasets/"+dataset+"/"+dataset+".npy")
+        A_full = np.load(f"../datasets/{dataset}/{dataset}.npy")
 
         (m_dim_full, n_dim) = np.shape(A_full)
         m_dim = int(np.ceil(m_dim_full*m_percent))
@@ -75,13 +76,20 @@ for dataset in datasets:
 
             print("Singular value Relative Error at phi = "+str(ii+1)+":")
             print(relative_errors)
-            np.save("../cache/"+evolution_method+"/"+dataset+"_batch_split_"+str(batch_split)+"/relative_errors_phi_"+str(ii+1)+r_str+".npy", relative_errors)
+            np.save(f"{temp_dir}/relative_errors_phi_{str(ii+1)}{r_str}.npy", relative_errors)
 
             print("Last singular vector Residual Norm at phi = "+str(ii+1)+":")
             print(residual_norms)
-            np.save("../cache/"+evolution_method+"/"+dataset+"_batch_split_"+str(batch_split)+"/residual_norms_phi_"+str(ii+1)+r_str+".npy", residual_norms)
+            np.save(f"{temp_dir}/residual_norms_phi_{str(ii+1)}{r_str}.npy", residual_norms)
 
             print()
 
 
+if __name__ == "__main__":
+  import argparse
 
+  parser = argparse.ArgumentParser()
+  parser.add_argument("")
+  
+  args = parser.parse_args()
+  
