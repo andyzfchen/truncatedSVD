@@ -201,16 +201,21 @@ class EvolvingMatrix(object):
   def calculate_new_svd(self, evolution_method, dataset, batch_split, phi):
     print("Calculating current A matrix of size ", np.shape(self.A_matrix))
 
-    if os.path.exists("../cache/"+dataset+"/"+dataset+"_batch_split_"+str(batch_split)+"_phi_"+str(phi+1)+"_Sigma_array.npy"):
-      self.U_new = np.load("../cache/"+dataset+"/"+dataset+"_batch_split_"+str(batch_split)+"_phi_"+str(phi+1)+"_U_matrix.npy")
-      self.Sigma_new = np.load("../cache/"+dataset+"/"+dataset+"_batch_split_"+str(batch_split)+"_phi_"+str(phi+1)+"_Sigma_array.npy")
-      self.VH_new = np.load("../cache/"+dataset+"/"+dataset+"_batch_split_"+str(batch_split)+"_phi_"+str(phi+1)+"_VH_matrix.npy")
+    # Folder to save U,S,V arrays
+    dirname = "../cache/"+evolution_method+"/"+dataset+"_batch_split_"+str(batch_split)
+    
+    if os.path.exists(f"{dirname}/U_matrix_phi_{str(phi+1)}.npy"):
+      print("Loading from cache")
+      self.U_new = np.load(f"{dirname}/U_matrix_phi_{str(phi+1)}.npy")
+      self.Sigma_new = np.load(f"{dirname}/Sigma_array_phi_{str(phi+1)}.npy", self.Sigma_new)
+      self.VH_new = np.load(f"{dirname}/VH_matrix_phi_{str(phi+1)}.npy", self.VH_new)
     else:
       self.U_new, self.Sigma_new, self.VH_new = np.linalg.svd(self.A_matrix)
-
-      np.save("../cache/"+evolution_method+"/"+dataset+"_batch_split_"+str(batch_split)+"_phi_"+str(phi+1)+"_U_matrix.npy", self.U_new)
-      np.save("../cache/"+evolution_method+"/"+dataset+"_batch_split_"+str(batch_split)+"_phi_"+str(phi+1)+"_Sigma_array.npy", self.Sigma_new)
-      np.save("../cache/"+evolution_method+"/"+dataset+"_batch_split_"+str(batch_split)+"_phi_"+str(phi+1)+"_VH_matrix.npy", self.VH_new)
+      
+      np.save(f"{dirname}/U_matrix_phi_{str(phi+1)}.npy", self.U_new)
+      np.save(f"{dirname}/Sigma_array_phi_{str(phi+1)}.npy", self.Sigma_new)
+      np.save(f"{dirname}/VH_matrix_phi_{str(phi+1)}.npy", self.VH_new)
+      
     return
 
 
