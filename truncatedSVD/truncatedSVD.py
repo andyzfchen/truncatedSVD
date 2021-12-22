@@ -9,7 +9,7 @@ evolution_methods = [ "zha-simon", "bcg" ]
 r_values = [ 10 ]
 m_percent = 0.10
 
-'''
+
 # debug mode
 datasets = [ "CISI" ]
 batch_splits = [ 1 ]
@@ -17,7 +17,7 @@ phis = [ [ 1 ] ]
 evolution_methods = [ "zha-simon", "bcg" ]
 r_values = [ 50 ]
 m_percent = 0.10
-'''
+
 
 
 if not os.path.exists("../cache"):
@@ -69,7 +69,7 @@ for dataset in datasets:
             r_str = "_rval_"+str(r_value)
 
           if ii+1 in phi:
-            model.calculate_new_svd(dataset, batch_split, ii)
+            model.calculate_new_svd(evolution_method, dataset, batch_split, ii)
             relative_errors = model.get_relative_error()
             residual_norms = model.get_residual_norm()
 

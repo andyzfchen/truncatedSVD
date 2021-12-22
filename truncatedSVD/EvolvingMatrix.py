@@ -15,15 +15,10 @@ class EvolvingMatrix(object):
     (self.m_dim, self.n_dim) = np.shape(self.initial_matrix)
     print("Initial matrix of evolving matrix set to shape of (", self.m_dim, ",", self.n_dim, ") .")
 
-    self.U_true = np.array([])
-    self.Sigma_true = np.array([])
-    self.VH_true = np.array([])
-    self.U_new = np.array([])
-    self.Sigma_new = np.array([])
-    self.VH_new = np.array([])
-    self.U_matrix = np.array([])
-    self.Sigma_array = np.array([])
-    self.VH_matrix = np.array([])
+    self.U_true, self.Sigma_true, self.VH_true = np.array([]), np.array([]), np.array([])
+    self.U_new, self.Sigma_new, self.VH_new = np.array([]), np.array([]), np.array([])
+    self.U_matrix, self.Sigma_array, self.VH_matrix = np.array([]), np.array([]), np.array([])
+
     (self.U_matrix, self.Sigma_array, self.VH_matrix) = np.linalg.svd(self.initial_matrix)
 
     # setting truncation data
@@ -60,6 +55,11 @@ class EvolvingMatrix(object):
     self.U_true, self.Sigma_true, self.VH_true = np.linalg.svd(np.append(self.initial_matrix, self.appendix_matrix, axis=0))
 
     print()
+
+
+  def evolve_matrix_brute_force(self):
+    """Calculate optimal rank-k approximation of A using brute force"""
+    return self.Uk_matrix, self.Sigmak_array, self.VHk_matrix
 
 
   '''
@@ -198,7 +198,7 @@ class EvolvingMatrix(object):
   '''
   Calculate the SVD components of the A matrix so far.
   '''
-  def calculate_new_svd(self, dataset, batch_split, phi):
+  def calculate_new_svd(self, evolution_method, dataset, batch_split, phi):
     print("Calculating current A matrix of size ", np.shape(self.A_matrix))
 
     if os.path.exists("../cache/"+dataset+"/"+dataset+"_batch_split_"+str(batch_split)+"_phi_"+str(phi+1)+"_Sigma_array.npy"):
@@ -208,9 +208,9 @@ class EvolvingMatrix(object):
     else:
       self.U_new, self.Sigma_new, self.VH_new = np.linalg.svd(self.A_matrix)
 
-      np.save("../cache/"+dataset+"/"+dataset+"_batch_split_"+str(batch_split)+"_phi_"+str(phi+1)+"_U_matrix.npy", self.U_new)
-      np.save("../cache/"+dataset+"/"+dataset+"_batch_split_"+str(batch_split)+"_phi_"+str(phi+1)+"_Sigma_array.npy", self.Sigma_new)
-      np.save("../cache/"+dataset+"/"+dataset+"_batch_split_"+str(batch_split)+"_phi_"+str(phi+1)+"_VH_matrix.npy", self.VH_new)
+      np.save("../cache/"+evolution_method+"/"+dataset+"_batch_split_"+str(batch_split)+"_phi_"+str(phi+1)+"_U_matrix.npy", self.U_new)
+      np.save("../cache/"+evolution_method+"/"+dataset+"_batch_split_"+str(batch_split)+"_phi_"+str(phi+1)+"_Sigma_array.npy", self.Sigma_new)
+      np.save("../cache/"+evolution_method+"/"+dataset+"_batch_split_"+str(batch_split)+"_phi_"+str(phi+1)+"_VH_matrix.npy", self.VH_new)
     return
 
 
