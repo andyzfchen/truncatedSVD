@@ -3,9 +3,11 @@ import scipy.sparse.linalg
 import sklearn.decomposition
 import os
 from metrics import proj_err, cov_err, rel_err, res_norm
+from evolve import zha_simon_update
+
 
 class EvolvingMatrix(object):
-  def __init__(self, initial_matrix, step_dim=1, k_dim=0):
+  def __init__(self, initial_matrix, step_dim=1, k_dim=None):
     # setting initial matrix
     self.initial_matrix = initial_matrix
 
@@ -15,27 +17,30 @@ class EvolvingMatrix(object):
     (self.m_dim, self.n_dim) = np.shape(self.initial_matrix)
     print("Initial matrix of evolving matrix set to shape of (", self.m_dim, ",", self.n_dim, ") .")
 
+    # SVD of all data
     self.U_true, self.Sigma_true, self.VH_true = np.array([]), np.array([]), np.array([])
+    
+    # SVD of current update
     self.U_new, self.Sigma_new, self.VH_new = np.array([]), np.array([]), np.array([])
-    self.U_matrix, self.Sigma_array, self.VH_matrix = np.array([]), np.array([]), np.array([])
+    
+    # SVD of previous update (initialize to SVD of initial matrix)
+    self.U_matrix, self.Sigma_array, self.VH_matrix = np.linalg.svd(self.initial_matrix)
 
-    (self.U_matrix, self.Sigma_array, self.VH_matrix) = np.linalg.svd(self.initial_matrix)
-
-    # setting truncation data
-    if k_dim == 0:
+    # Get truncated SVD
+    if k_dim is None:
       self.k_dim = self.m_dim
     else:
       self.k_dim = k_dim
-      
-    self.Uk_matrix = self.U_matrix[:,:self.k_dim]
+
+    self.Uk_matrix = self.U_matrix[:, :self.k_dim]
     self.Sigmak_array = self.Sigma_array[:self.k_dim]
-    self.VHk_matrix = self.VH_matrix[:self.k_dim,:]
+    self.VHk_matrix = self.VH_matrix[:self.k_dim, :]
     
     print("Initial Uk  matrix of evolving matrix set to shape of (", np.shape(self.Uk_matrix), ") .")
     print("Initial Sigmak matrix of evolving matrix set to shape of (", np.shape(self.Sigmak_array), ") .")
     print("Initial VHk matrix of evolving matrix set to shape of (", np.shape(self.VHk_matrix), ") .")
 
-    # initializing appendix matrix
+    # Initialize submatrix to be appended
     self.appendix_matrix = np.array([])
     self.step_dim = step_dim
 
@@ -79,31 +84,32 @@ class EvolvingMatrix(object):
 
     #print(1.01 * self.Sigmak_array[0]**2)
     # Z matrix
-    Z_matrix = np.block(
-      [[ self.Uk_matrix , np.zeros((self.m_dim+self.n_rows_appended, step_dim)) ],
-       [ np.zeros((step_dim, self.k_dim)) , np.eye(step_dim) ]]
-    )
+    # Z_matrix = np.block(
+    #   [[ self.Uk_matrix , np.zeros((self.m_dim+self.n_rows_appended, step_dim)) ],
+    #    [ np.zeros((step_dim, self.k_dim)) , np.eye(step_dim) ]]
+    # )
 
-    # kSVD of ZH*A        # TODO: implement unrestarted Lanczos method on ZH*A*AH*Z
-    print("Performing kSVD on ZH*A.")
-    (F_matrix, Theta_array, G_matrix) = np.linalg.svd(np.block(
-      [[ np.dot(np.diag(self.Sigmak_array), self.VHk_matrix) ],
-       [ self.appendix_matrix[self.n_rows_appended:self.n_rows_appended+step_dim,:] ]]
-    ), full_matrices=False)
+    # # kSVD of ZH*A        # TODO: implement unrestarted Lanczos method on ZH*A*AH*Z
+    # print("Performing kSVD on ZH*A.")
+    # (F_matrix, Theta_array, G_matrix) = np.linalg.svd(np.block(
+    #   [[ np.dot(np.diag(self.Sigmak_array), self.VHk_matrix) ],
+    #    [ self.appendix_matrix[self.n_rows_appended:self.n_rows_appended+step_dim,:] ]]
+    # ), full_matrices=False)
     
+    # # recalculation of Uk, Sigmak, and VHk
+    # print("Recalculating U_k, Sigma_k, and VH_k.")
+    # self.Uk_matrix = np.dot(Z_matrix, F_matrix[:,:self.k_dim])
+    # self.Sigmak_array = Theta_array[:self.k_dim]
+    # self.VHk_matrix = np.dot(np.dot(self.A_matrix.T, self.Uk_matrix), np.diag(1/self.Sigmak_array)).T
+
+    # Append to current data matrix
     print("Appending ", step_dim, " rows from appendix matrix and evolving truncated matrix.")
-
     self.A_matrix = np.append(self.A_matrix, self.appendix_matrix[self.n_rows_appended:self.n_rows_appended+step_dim,:], axis=0)
-
     self.n_rows_appended += step_dim
-
     print("Appended ", self.n_rows_appended, " of ", self.s_dim, " rows from appendix matrix so far.")
     
-    # recalculation of Uk, Sigmak, and VHk
-    print("Recalculating U_k, Sigma_k, and VH_k.")
-    self.Uk_matrix = np.dot(Z_matrix, F_matrix[:,:self.k_dim])
-    self.Sigmak_array = Theta_array[:self.k_dim]
-    self.VHk_matrix = np.dot(np.dot(self.A_matrix.T, self.Uk_matrix), np.diag(1/self.Sigmak_array)).T
+    # Perform update using Zha-Simon projection algorithm
+    self.Uk_matrix, self.Sigmak_array, self.VHk_matrix = zha_simon_update(self.A_matrix)
 
     print()
 
