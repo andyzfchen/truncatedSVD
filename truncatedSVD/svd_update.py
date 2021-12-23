@@ -62,3 +62,16 @@ def bcg_update():
     """
     #TODO: implement block CG update
     return None
+
+
+def brute_force_update(A, k, full_matrices=False):
+    """Calculate best rank-k approximation using brute force."""
+    #TODO: implement brute force update
+    _, Sk, VHk = np.linalg.svd(A.T.dot(A), full_matrices=full_matrices)
+    return VHk[:k, :], Sk[:k]
+
+
+def naive_update():
+    """Calculate naive update."""
+    #TODO: implement naive update
+    return None    

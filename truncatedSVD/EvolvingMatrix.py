@@ -66,7 +66,7 @@ class EvolvingMatrix(object):
   def evolve_matrix_zha_simon(self, step_dim=None):
     """Construct Z using Zha-Simon algorithm.
     
-    Z = [[U_k 0] [0 I_s]] 
+    Z = [[U_k 0] [0 I_s]]
     """
     print("Using Zha-Simon method to evolve matrix.")
 
@@ -208,8 +208,6 @@ class EvolvingMatrix(object):
       np.save(f"{dirname}/U_matrix_phi_{str(phi+1)}.npy", self.U_new)
       np.save(f"{dirname}/Sigma_array_phi_{str(phi+1)}.npy", self.Sigma_new)
       np.save(f"{dirname}/VH_matrix_phi_{str(phi+1)}.npy", self.VH_new)
-
-    return
 
 
   def get_relative_error(self, sv_idx=None):

@@ -16,7 +16,7 @@ def plot_residual_norms(errs_list, evolution_methods, filename, title="Residual 
     ax.set_yscale('log')
     ax.set_ylim(1e-4,1)
     ax.legend(loc="lower right")
-    plt.savefig("../figures/"+filename+".pdf", bbox_inches="tight", pad_inches=0.2)
+    plt.savefig("../figures/"+filename+".png", bbox_inches="tight", pad_inches=0.2, dpi=200)
     plt.close()
 
 
@@ -35,7 +35,7 @@ def plot_relative_errs(errs_list, evolution_methods, filename, title="Relative E
     ax.set_yscale('log')
     ax.set_ylim(1e-8,1)
     ax.legend(loc="lower right")
-    plt.savefig("../figures/"+filename+".pdf", bbox_inches="tight", pad_inches=0.2)
+    plt.savefig("../figures/"+filename+".png", bbox_inches="tight", pad_inches=0.2, dpi=200)
     plt.close()
 
 
@@ -54,7 +54,7 @@ def plot_stacked_residual_norms(errs_list, phi_list, filename, title="Residual N
     ax.set_yscale('log')
     ax.set_ylim(1e-2,1)
     ax.legend(loc="lower right")
-    plt.savefig("../figures/"+filename+".pdf", bbox_inches="tight", pad_inches=0.2)
+    plt.savefig("../figures/"+filename+".png", bbox_inches="tight", pad_inches=0.2, dpi=200)
     plt.close()
 
 
@@ -73,5 +73,5 @@ def plot_stacked_relative_errs(errs_list, phi_list, filename, title="Relative Er
     ax.set_yscale('log')
     ax.set_ylim(1e-4,1)
     ax.legend(loc="lower right")
-    plt.savefig("../figures/"+filename+".pdf", bbox_inches="tight", pad_inches=0.2)
+    plt.savefig("../figures/"+filename+".png", bbox_inches="tight", pad_inches=0.2, dpi=200)
     plt.close()
