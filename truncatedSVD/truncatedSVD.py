@@ -11,10 +11,11 @@ m_percent = 0.10
 
 
 # debug mode
-datasets = [ "CISI" ]
+# datasets = [ "CISI" ]
+datasets = [ "CISI", "CRAN", "MED", "ML1M" ]
 batch_splits = [ 10 ]
 phis = [ [ 1, 5, 10 ] ]
-evolution_methods = [ "zha-simon", "bcg" ]
+evolution_methods = [ "zha-simon" ]
 r_values = [ 50 ]
 m_percent = 0.10
 

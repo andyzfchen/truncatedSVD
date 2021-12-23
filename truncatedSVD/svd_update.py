@@ -10,13 +10,13 @@ def zha_simon_update(A, Uk, Sk, VHk, E):
     A : array, shape (m, n)
         Update matrix
     
-    Uk : array, shape ()
+    Uk : array, shape (m, k)
         Left singular vectors from previous update
     
-    Sk : array, shape ()
+    Sk : array, shape (k,)
         Singular values from previous update
     
-    VHk : array, shape ()
+    VHk : array, shape (k, n)
         Right singular vectors from previous update
         
     E : array, shape (s, n)
@@ -24,13 +24,13 @@ def zha_simon_update(A, Uk, Sk, VHk, E):
         
     Returns
     -------
-    Uk_new : array, shape ()
+    Uk_new : array, shape (m, k)
         Updated left singular vectors
     
-    Sk_new : array, shape ()
+    Sk_new : array, shape (k,)
         Updated singular values
 
-    VHk_new : array, shape ()
+    VHk_new : array, shape (k, n)
         Update right singular vectors
         
     References
