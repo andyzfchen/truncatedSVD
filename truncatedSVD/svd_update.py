@@ -36,7 +36,7 @@ def zha_simon_update(A, Uk, Sk, VHk, E):
     References
     ----------
     H. Zha and H. D. Simon, “Timely communication on updating problems in latent semantic indexing,
-    ”Society for Industrial and Applied Mathematics, vol. 21, no. 2, pp. 782-791, 1999.
+      ”Society for Industrial and Applied Mathematics, vol. 21, no. 2, pp. 782-791, 1999.
     """
     # Construct Z and ZH*A matrices
     s = E.shape[0]

@@ -1,3 +1,6 @@
+"""Evolving matrix for calculating truncated SVD of updated matrices.
+"""
+
 import numpy as np
 import scipy.sparse.linalg
 import sklearn.decomposition
@@ -7,7 +10,42 @@ from svd_update import zha_simon_update, bcg_update
 
 
 class EvolvingMatrix(object):
-  def __init__(self, initial_matrix, step_dim=1, k_dim=None):
+  """Evolving matrix with periodically appended rows.
+  
+  This class simulates a matrix subject to the periodic addition of new rows.
+  Applications with such matrices include LSI and recommender systems.
+  
+  Given an initial matrix, rows from a matrix to be appended are added in sequential updates.
+  With each batch update, the truncated SVD of the new matrix can be calculated using 
+  a variety of methods.
+  
+  Parameters
+  ----------
+  initial_matrix : ndarray of shape (s, n)
+    Initial matrix
+  
+  step : int, default=1
+    Number of batch updates
+  
+  k_dim : int, default=50
+    Rank of truncated SVD to be calculated with each batch update
+  
+  Attributes
+  ----------
+  
+  
+  References
+  ----------
+  H. Zha and H. D. Simon, “Timely communication on updating problems in latent semantic indexing,
+    ”Society for Industrial and Applied Mathematics, vol. 21, no. 2, pp. 782-791, 1999.
+  
+  V. Kalantzis, G. Kollias, S. Ubaru, A. N. Nikolakopoulos, L. Horesh, and K. L. Clarkson, 
+    “Projection techniquesto update the truncated SVD of evolving matrices with applications,” 
+    inProceedings of the 38th InternationalConference on Machine Learning, 
+    M. Meila and T. Zhang, Eds.PMLR, 7 2021, pp. 5236-5246.
+  """
+  
+  def __init__(self, initial_matrix, step=1, k_dim=None):
     # setting initial matrix
     self.initial_matrix = initial_matrix
 
@@ -42,11 +80,11 @@ class EvolvingMatrix(object):
 
     # Initialize submatrix to be appended
     self.appendix_matrix = np.array([])
-    self.step_dim = step_dim
+    self.step = step
 
     self.s_dim = 0
     self.n_rows_appended = 0
-
+    
 
   def set_appendix_matrix(self, appendix_matrix):
     """Initialize matrix to append E"""
@@ -58,6 +96,38 @@ class EvolvingMatrix(object):
     self.U_true, self.Sigma_true, self.VH_true = np.linalg.svd(np.append(self.initial_matrix, self.appendix_matrix, axis=0))
 
 
+  def evolve(self, step=None):
+    """Evolve matrix"""
+    
+    # Default number of appended rows
+    if step is None:
+      step = self.step
+
+    # Check if number of appended rows exceeds number of remaining rows in appendix matrix
+    if step > (self.s_dim - self.n_rows_appended):
+      step = self.s_dim - self.n_rows_appended
+
+    # Append to current data matrix
+    print(f"Appending {step} rows from appendix matrix.")
+    self.A_matrix = np.append(self.A_matrix, self.appendix_matrix[self.n_rows_appended:self.n_rows_appended+step,:], axis=0)
+    print(f"Appended {self.n_rows_appended}/{self.s_dim} rows from appendix matrix so far.")  
+ 
+    # Update counter for number of rows appended
+    self.n_rows_appended += step
+ 
+
+  def update_svd(self):
+
+    # Perform truncated SVD update using Zha-Simon projection algorithm
+    self.Uk_matrix, self.Sigmak_array, self.VHk_matrix = zha_simon_update(self.A_matrix, 
+                                                                          self.Uk_matrix, 
+                                                                          self.Sigmak_array, 
+                                                                          self.VHk_matrix, 
+                                                                          self.appendix_matrix[self.n_rows_appended:self.n_rows_appended+step_dim, :])
+    
+    return None
+  
+
   def evolve_matrix_brute_force(self):
     """Calculate optimal rank-k approximation of A using brute force"""
     return self.Uk_matrix, self.Sigmak_array, self.VHk_matrix
@@ -68,7 +138,7 @@ class EvolvingMatrix(object):
     
     Z = [[U_k 0] [0 I_s]]
     """
-    print("Using Zha-Simon method to evolve matrix.")
+    print("Using Zha-Simon method to updated truncated SVD of evolved matrix.")
 
     # default number of appended rows
     if step_dim is None:
@@ -78,7 +148,8 @@ class EvolvingMatrix(object):
     if step_dim > (self.s_dim - self.n_rows_appended):
       step_dim = self.s_dim - self.n_rows_appended
 
-    # # kSVD of ZH*A        # TODO: implement unrestarted Lanczos method on ZH*A*AH*Z
+    # # kSVD of ZH*A        
+    # # TODO: implement unrestarted Lanczos method on ZH*A*AH*Z
     # print("Performing kSVD on ZH*A.")
     # (F_matrix, Theta_array, G_matrix) = np.linalg.svd(np.block(
     #   [[ np.dot(np.diag(self.Sigmak_array), self.VHk_matrix) ],

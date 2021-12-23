@@ -26,9 +26,8 @@ def proj_err(A, Ahat, Ak):
     References
     ----------
     M. Ghashami, E. Liberty, J. M. Phillips, and D. P. Woodruff, 
-    “Frequent Directions: Simple and Deterministic Matrix Sketching,
-    SIAM Journal on Computing, vol. 45, no. 5, pp. 1762-1792, 1 2016.
-    [Online]. Available:http://epubs.siam.org/doi/10.1137/15M1009718
+      “Frequent Directions: Simple and Deterministic Matrix Sketching,
+      SIAM Journal on Computing, vol. 45, no. 5, pp. 1762-1792, 1 2016.
     
     Notes
     -----
@@ -57,9 +56,8 @@ def cov_err(A, B):
     References
     ----------
     M. Ghashami, E. Liberty, J. M. Phillips, and D. P. Woodruff, 
-    “Frequent Directions: Simple and Deterministic Matrix Sketching,"
-    SIAM Journal on Computing, vol. 45, no. 5, pp. 1762-1792, 1 2016.
-    [Online]. Available:http://epubs.siam.org/doi/10.1137/15M1009718 
+      “Frequent Directions: Simple and Deterministic Matrix Sketching,"
+      SIAM Journal on Computing, vol. 45, no. 5, pp. 1762-1792, 1 2016.
     """
     return np.linalg.norm(A.T.dot(A) - B.T.dot(B)) / np.linalg.norm(A, ord='fro') ** 2
 
@@ -84,10 +82,9 @@ def rel_err(sv, sv_hat):
     References
     ----------
     V. Kalantzis, G. Kollias, S. Ubaru, A. N. Nikolakopoulos, L. Horesh, and K. L. Clarkson, 
-    “Projection techniquesto update the truncated SVD of evolving matrices with applications,” 
-    inProceedings of the 38th InternationalConference on Machine Learning, 
-    M. Meila and T. Zhang, Eds.PMLR, 7 2021, pp. 5236-5246.
-    [Online].Available: https://proceedings.mlr.press/v139/kalantzis21a.html
+      “Projection techniquesto update the truncated SVD of evolving matrices with applications,” 
+      inProceedings of the 38th InternationalConference on Machine Learning, 
+      M. Meila and T. Zhang, Eds.PMLR, 7 2021, pp. 5236-5246.
     """
     return np.abs(sv_hat - sv) / sv
 
@@ -118,9 +115,8 @@ def res_norm(A, U, V, s):
     References
     ----------
     V. Kalantzis, G. Kollias, S. Ubaru, A. N. Nikolakopoulos, L. Horesh, and K. L. Clarkson, 
-    “Projection techniquesto update the truncated SVD of evolving matrices with applications,” 
-    inProceedings of the 38th InternationalConference on Machine Learning, 
-    M. Meila and T. Zhang, Eds.PMLR, 7 2021, pp. 5236-5246.
-    [Online].Available: https://proceedings.mlr.press/v139/kalantzis21a.html
+      “Projection techniquesto update the truncated SVD of evolving matrices with applications,” 
+      inProceedings of the 38th InternationalConference on Machine Learning, 
+      M. Meila and T. Zhang, Eds.PMLR, 7 2021, pp. 5236-5246.
     """
     return np.linalg.norm(A.dot(V) - U * s, axis=0) / s
