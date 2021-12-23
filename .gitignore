@@ -1,5 +1,7 @@
 __pycache__
 figures
+datasets
+!datasets/README.md
 cache
 
 *.swp
