@@ -66,7 +66,8 @@ class EvolvingMatrix(object):
     # Truncated SVD of current update
     # Initialized to rank-k SVD of the initial matrix
     if k_dim is None:
-      self.k_dim = min(self.m_dim, self.n_dim)
+      # self.k_dim = min(self.m_dim, self.n_dim)
+      self.k_dim = self.m_dim
     else:
       self.k_dim = k_dim
 

@@ -104,20 +104,6 @@ for dataset in datasets:
             # Caluclate metrics
             model.save_metrics(temp_dir, print_metrics=True, r_str=r_str)
             
-            # relative_errors = model.get_relative_error()
-            # residual_norms = model.get_residual_norm()
-            # covariance_error = model.get_covariance_error()
-            # projection_error = model.get_projection_error()
-
-            # # Print to console and save metrics
-            # print("Singular value Relative Error at phi = "+str(ii+1)+":")
-            # print(relative_errors)
-            # np.save(f"{temp_dir}/relative_errors_phi_{str(ii+1)}{r_str}.npy", relative_errors)
-
-            # print("Last singular vector Residual Norm at phi = "+str(ii+1)+":")
-            # print(residual_norms)
-            # np.save(f"{temp_dir}/residual_norms_phi_{str(ii+1)}{r_str}.npy", residual_norms)
-
           print()
 
 
