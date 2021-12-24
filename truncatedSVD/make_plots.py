@@ -11,7 +11,7 @@ evolution_names = [ "$Z = [U_k, 0; 0, I_s]$", "$Z = [U_k, X_{\lambda,r}; 0, I_s]
 
 
 # debug mode
-datasets = [ "CISI" , "CRAN", "MED", "ML1M" ]
+datasets = [ "CISI", "CRAN", "MED" ]
 batch_splits = [ 10 ]
 phis = [ [ 1, 5, 10 ] ]
 r_value = 50
