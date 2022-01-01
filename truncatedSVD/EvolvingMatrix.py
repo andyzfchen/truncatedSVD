@@ -22,8 +22,11 @@ class EvolvingMatrix(object):
   
   Parameters
   ----------
-  initial_matrix : ndarray of shape (s, n)
+  initial_matrix : ndarray of shape (m, n)
     Initial matrix
+  
+  append_matrix : nd array of shape (s, n)
+    Entire matrix to be appended row-wise to initial matrix
   
   n_batches : int, default=1
     Number of batches
@@ -52,22 +55,19 @@ class EvolvingMatrix(object):
   
   def __init__(self, initial_matrix, append_matrix=None, n_batches=1, k_dim=None):
     # Initial matrix
-    self.initial_matrix = initial_matrix
+    self.initial_matrix = initial_matrix.toarray()  # ensure data is in dense format
     (self.m_dim, self.n_dim) = np.shape(self.initial_matrix)
     print("Initial matrix of evolving matrix set to shape of (", self.m_dim, ",", self.n_dim, ") .")
 
     # Update matrix after each batch
-    self.A = initial_matrix
+    self.A = self.initial_matrix
     
-    # True SVD of current update
-    # Initialized to SVD of the initial matrix
+    # True SVD of current update - initialized to SVD of the initial matrix
     self.U_true, self.sigma_true, self.VH_true = np.linalg.svd(self.initial_matrix)
 
-    # Truncated SVD of current update
-    # Initialized to rank-k SVD of the initial matrix
+    # Truncated SVD of current update - initialized to rank-k SVD of the initial matrix
     if k_dim is None:
-      # self.k_dim = min(self.m_dim, self.n_dim)
-      self.k_dim = self.m_dim
+      self.k_dim = min(self.m_dim, self.n_dim)
     else:
       self.k_dim = k_dim
 
@@ -88,7 +88,6 @@ class EvolvingMatrix(object):
       self.step = 0
     else:
       self.U_all, self.sigma_all, self.VH_all = self.set_append_matrix(append_matrix)
-      self.step = int(np.ceil(self.s_dim / self.n_batches))
     
     # Initialize submatrix to be appended at each update
     self.update_matrix = np.array([])
@@ -101,7 +100,7 @@ class EvolvingMatrix(object):
 
   def set_append_matrix(self, append_matrix):
     """Initialize entire matrix to append E"""
-    self.append_matrix = append_matrix
+    self.append_matrix = append_matrix.toarray() # ensure data is in dense format
     (self.s_dim, n_dim) = np.shape(self.append_matrix)
     self.step = int(np.ceil(self.s_dim / self.n_batches))
     assert n_dim == self.n_dim

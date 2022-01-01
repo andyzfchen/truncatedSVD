@@ -3,6 +3,8 @@
 import numpy as np
 import EvolvingMatrix as EM
 import os
+from scipy.io import loadmat
+
 
 datasets = [ "CISI", "CRAN", "MED", "ML1M", "Reuters" ]
 batch_splits = [ 10 ]
@@ -51,12 +53,15 @@ for dataset in datasets:
         if not os.path.exists(temp_dir):
           os.mkdir(temp_dir)
 
-        # Load dataset
-        A_full = np.load(f"../datasets/{dataset}/{dataset}.npy").T
-
+        # Load dataset (.npy)
+        # A_full = np.load(f"../datasets/{dataset}/{dataset}.npy").T
+        
+        A_full = loadmat(f"../datasets/{dataset}/A_{dataset}.mat")["A_" + f"{dataset}".lower()]
+        
         # Calculate row index to split data
         (m_dim_full, n_dim) = np.shape(A_full)
-        print(m_dim_full, n_dim)
+        print(f"Data is of shape ({m_dim_full}, {n_dim})")
+
         m_dim = int(np.ceil(m_dim_full * m_percent))
         s_dim = int(np.floor(m_dim_full * (1 - m_percent)))
 
