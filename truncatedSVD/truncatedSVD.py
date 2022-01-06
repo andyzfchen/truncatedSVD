@@ -9,7 +9,7 @@ from scipy.io import loadmat
 datasets = ["CISI", "CRAN", "MED", "ML1M", "Reuters"]
 batch_splits = [10]
 phis = [[1, 5, 10]]
-evolution_methods = ["zha-simon", "bcg"]
+update_methods = ["zha-simon", "bcg"]
 r_values = [10]
 m_percent = 0.10
 
@@ -19,7 +19,7 @@ m_percent = 0.10
 datasets = ["CISI", "CRAN", "MED"]
 batch_splits = [10]
 phis = [[1, 5, 10]]
-evolution_methods = ["zha-simon"]
+update_methods = ["bcg"]
 r_values = [50]
 m_percent = 0.10
 
@@ -36,14 +36,14 @@ for dataset in datasets:
     for r_value in r_values:
         print(f"Using r value of {str(r_value)}.")
 
-        for evolution_method in evolution_methods:
-            if evolution_method == "zha-simon" and r_value != r_values[0]:
+        for method in update_methods:
+            if method == "zha-simon" and r_value != r_values[0]:
                 continue
 
-            print(f"Using the {evolution_method} evolution method.")
+            print(f"Using the {method} evolution method.")
 
-            if not os.path.exists("../cache/" + evolution_method):
-                os.mkdir("../cache/" + evolution_method)
+            if not os.path.exists("../cache/" + method):
+                os.mkdir("../cache/" + method)
 
             for n_batches, phi in zip(batch_splits, phis):
                 print(
@@ -51,7 +51,7 @@ for dataset in datasets:
                 )
 
                 # Create directory to save data for this batch split
-                temp_dir = f"../cache/{evolution_method}/{dataset}_batch_split_{str(n_batches)}"
+                temp_dir = f"../cache/{method}/{dataset}_batch_split_{str(n_batches)}"
                 if not os.path.exists(temp_dir):
                     os.mkdir(temp_dir)
 
@@ -88,29 +88,27 @@ for dataset in datasets:
                     model.evolve()
 
                     # Calculate truncated SVD for updated matrix
-                    if evolution_method == "zha-simon":
-                        # Uk, Sigmak, VHk = model.evolve_matrix_zha_simon(step_dim=int(np.ceil(s_dim/batch_split)))
+                    if method == "zha-simon":
                         model.update_svd_zha_simon()
-                        r_str = ""
-                    elif evolution_method == "bcg":
-                        Uk, Sigmak, VHk = model.evolve_matrix_deflated_bcg(
-                            step_dim=int(np.ceil(s_dim / n_batches)), r_dim=r_value
-                        )
+                    elif method == "bcg":
+                        # Uk, Sigmak, VHk = model.evolve_matrix_deflated_bcg(
+                        # step_dim=int(np.ceil(s_dim / n_batches)), r_dim=r_value
+                        # )
+                        model.update_svd_bcg()
                         r_str = "_rval_" + str(r_value)
-                    elif evolution_method == "brute":
-                        # TODO: Update with brute force method
-                        pass
-                    elif evolution_method == "naive":
-                        # TODO: Update with naive method
-                        pass
+                    elif method == "brute":
+                        model.update_svd_brute_force()
+                    elif method == "naive":
+                        model.update_svd_naive()
                     else:
-                        # TODO: Handle invalid methods
-                        pass
+                        raise ValueError(
+                            f"Error: Update method {method} does not exist. Must be one of the following."
+                        )
 
                     # Save results if batch number specified
                     if model.phi in phi:
                         # Calculate true SVD for this batch
-                        model.calculate_true_svd(evolution_method, dataset)
+                        model.calculate_true_svd(method, dataset)
 
                         # Caluclate metrics
                         model.save_metrics(temp_dir, print_metrics=True, r_str=r_str)
@@ -118,10 +116,58 @@ for dataset in datasets:
                     print()
 
 
+# def load_experiment_specs(experiment_directory):
+#     return None
+
+
+# def main(experiment_directory, overwrite):
+
+#     # Load experiment specifications
+#     specs = load_experiment_specs(experiment_directory)
+
+#     print("Experiment description: " + specs["Description"])
+#     print("Overwriting previous data?: " + {specs["Overwrite"]})
+
+#     datasets = specs["Datasets"]
+#     print("Running experiments on datasets:")
+#     print(*specs["Datasets"], sep="\n")
+
+#     update_methods = specs["UpdateMethods"]
+#     print("Running experiments with update methods:")
+#     print(*specs["UpdateMethods"], sep="\n")
+
+#     batch_splits = specs["BatchSplits"]
+#     print("Running experiments with batch splits:")
+#     print(*specs["BatchSplits"], sep="\n")
+
+#     m_percent = specs["m_percent"]
+#     print(f"Initial matrix to be formed my leading {m_percent}% of rows.")
+
+
 # if __name__ == "__main__":
-#   import argparse
 
-#   parser = argparse.ArgumentParser()
-#   parser.add_argument("")
+#     import argparse
 
-#   args = parser.parse_args()
+#     parser = argparse.ArgumentParser(
+#         description="Run experiments for updating truncated SVD of evolving matrices."
+#     )
+#     parser.add_argument(
+#         "--experiment",
+#         "-e",
+#         dest="experiment_directory",
+#         required=True,
+#         help="Experiment directory. This directory includes the experiment specifications in 'specs.json' along with all the datasets."
+#         + "All results will be saved in this directory as well.",
+#     )
+#     parser.add_argument(
+#         "--overwrite",
+#         dest="overwrite",
+#         required=False,
+#         default=True,
+#         help="Option to overwrite existing results. If True, any existing experimental results will be "
+#         + "overwritten with results obtained from the current run.",
+#     )
+
+#     args = parser.parse_args()
+
+#     main(args.experiment_directory, args.overwrite)

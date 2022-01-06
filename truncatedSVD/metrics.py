@@ -1,4 +1,24 @@
 import numpy as np
+from sklearn.metrics import mean_squared_error
+
+
+def mse(y_true, y_pred):
+    """Return mean squared error
+    
+    Parameters
+    ----------
+    y_true : ndarray of shape (n,)
+        True labels
+        
+    y_pred : ndarray of shape (n,)
+        Predicted labels
+        
+    Returns
+    -------
+    loss : float
+        Mean squared error
+    """
+    return mean_squared_error(y_true, y_pred)
 
 
 def proj_err(A, Ahat, Ak):

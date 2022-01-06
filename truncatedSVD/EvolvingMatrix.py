@@ -1,4 +1,4 @@
-"""Evolving matrix for calculating truncated SVD of evolving matrices.
+"""Evolving matrix class for updating truncated singular value decomposition (SVD) of evolving matrices.
 """
 
 import numpy as np
@@ -23,34 +23,34 @@ class EvolvingMatrix(object):
     Parameters
     ----------
     initial_matrix : ndarray of shape (m, n)
-      Initial matrix
+        Initial matrix
 
     append_matrix : nd array of shape (s, n)
-      Entire matrix to be appended row-wise to initial matrix
+        Entire matrix to be appended row-wise to initial matrix
 
     n_batches : int, default=1
-      Number of batches
+        Number of batches
 
     k_dim : int, default=50
-      Rank of truncated SVD to be calculated
+        Rank of truncated SVD to be calculated
 
     Attributes
     ----------
     U_true, VH_true, S_true : ndarrays of shape ()
-      True SVD of current update
+        True SVD of current update
 
     Uk, VHk, Sk : ndarrays of shape ()
-      Truncated SVD calculated using one of the methods
+        Truncated SVD calculated using one of the methods
 
     References
     ----------
     H. Zha and H. D. Simon, “Timely communication on updating problems in latent semantic indexing,
-      ”Society for Industrial and Applied Mathematics, vol. 21, no. 2, pp. 782-791, 1999.
+        ”Society for Industrial and Applied Mathematics, vol. 21, no. 2, pp. 782-791, 1999.
 
     V. Kalantzis, G. Kollias, S. Ubaru, A. N. Nikolakopoulos, L. Horesh, and K. L. Clarkson,
-      “Projection techniquesto update the truncated SVD of evolving matrices with applications,”
-      inProceedings of the 38th InternationalConference on Machine Learning,
-      M. Meila and T. Zhang, Eds.PMLR, 7 2021, pp. 5236-5246.
+        “Projection techniquesto update the truncated SVD of evolving matrices with applications,”
+        inProceedings of the 38th InternationalConference on Machine Learning,
+        M. Meila and T. Zhang, Eds.PMLR, 7 2021, pp. 5236-5246.
     """
 
     def __init__(self, initial_matrix, append_matrix=None, n_batches=1, k_dim=None):
@@ -164,7 +164,14 @@ class EvolvingMatrix(object):
 
     def update_svd_bcg(self):
         """Return truncated SVD of updated matrix using the BCG method."""
-        return None
+        # Get previous data matrix from updated matrix
+        B = self.A[: -self.n_appended, :]
+
+        # Update truncated SVD
+        self.Uk, self.sigmak, self.VHk = bcg_update(
+            B, self.Uk, self.sigmak, self.VHk, self.update_matrix
+        )
+        return self.Uk, self.sigmak, self.Vhk
 
     def update_svd_brute_force(self):
         """Return optimal rank-k approximation of updated matrix using brute force method."""
@@ -338,6 +345,9 @@ class EvolvingMatrix(object):
             np.save(f"{dirname}/U_true_phi_{str(self.phi)}.npy", self.U_true)
             np.save(f"{dirname}/sigma_true_phi_{str(self.phi)}.npy", self.sigma_true)
             np.save(f"{dirname}/VH_true_phi_{str(self.phi)}.npy", self.VH_true)
+
+    def get_mean_squared_error(self):
+        return None
 
     def get_relative_error(self, sv_idx=None):
         """Return relative error of n-th singular value"""

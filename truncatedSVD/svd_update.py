@@ -1,5 +1,7 @@
 import numpy as np
 from scipy.linalg import block_diag
+from blockCG import blockCG
+from sklearn.utils.extmath import randomized_svd as rsvd
 
 
 def zha_simon_update(A, Uk, Sk, VHk, E):
@@ -8,7 +10,7 @@ def zha_simon_update(A, Uk, Sk, VHk, E):
     Parameters
     ----------
     A : array, shape (m, n)
-        Update matrix
+        Updated matrix
 
     Uk : array, shape (m, k)
         Left singular vectors from previous update
@@ -36,22 +38,17 @@ def zha_simon_update(A, Uk, Sk, VHk, E):
     References
     ----------
     H. Zha and H. D. Simon, “Timely communication on updating problems in latent semantic indexing,
-      ”Society for Industrial and Applied Mathematics, vol. 21, no. 2, pp. 782-791, 1999.
+        ”Society for Industrial and Applied Mathematics, vol. 21, no. 2, pp. 782-791, 1999.
     """
+    print("Updating truncated SVD using Zha-Simon projection method...")
+
     # Construct Z and ZH*A matrices
     s = E.shape[0]
     k = Uk.shape[1]
     Z = block_diag(Uk, np.eye(s))
     ZHA = np.vstack((np.diag(Sk).dot(VHk), E))
 
-    # # kSVD of ZH*A
-    # # TODO: implement unrestarted Lanczos method on ZH*A*AH*Z
-    # print("Performing kSVD on ZH*A.")
-    # (F_matrix, Theta_array, G_matrix) = np.linalg.svd(np.block(
-    #   [[ np.dot(np.diag(self.Sigmak_array), self.VHk_matrix) ],
-    #    [ self.appendix_matrix[self.n_rows_appended:self.n_rows_appended+step_dim,:] ]]
-    # ), full_matrices=False)
-
+    # Calculate SVD of ZH*A
     Fk, Tk, _ = np.linalg.svd(ZHA, full_matrices=False)
 
     # Truncate if necessary
@@ -66,20 +63,132 @@ def zha_simon_update(A, Uk, Sk, VHk, E):
     return Uk_new, Tk, Vk_new.T
 
 
-def bcg_update():
-    """Calculate truncated SVD update using enhanced projection matrix."""
-    # TODO: implement block CG update
-    return None
+def bcg_update(B, Uk, sigmak, VHk, E, lam=None, r=10):
+    """Calculate truncated SVD update using enhanced projection matrix.
+
+    Parameters
+    ----------
+    B : ndarray of shape (m, n)
+        Current matrix
+
+    Uk : ndarray of shape ()
+        Left singular vectors
+
+    sigmak : ndarray of shape ()
+        Singular values
+
+    VHk : ndarray of shape ()
+        Right singular vectors
+
+    E : ndarray of shape ()
+        Matrix to be appended
+
+    lam : float, default=None
+        If 'None', lam is set to 1.01 * (sigmahat_1)^2
+
+    r : int, default=10
+
+
+    Returns
+    -------
+    Uk_new : array, shape (m, k)
+        Updated left singular vectors
+
+    Sk_new : array, shape (k,)
+        Updated singular values
+
+    VHk_new : array, shape (k, n)
+        Update right singular vectors
+
+    References
+    ----------
+    H. Zha and H. D. Simon, “Timely communication on updating problems in latent semantic indexing,
+        ”Society for Industrial and Applied Mathematics, vol. 21, no. 2, pp. 782-791, 1999.
+    """
+    print("Updating truncated SVD using enhanced projection method...")
+
+    # Set lambda
+    if lam is None:
+        lam = 1.01 * sigmak[0] ** 2
+
+    # Calculate B(lambda) B E^H
+    print("Calculating B(lambda) B E^H using BCG...")
+    m = B.shape[0]
+    lhs = -(B.dot(B.T) - lam * np.eye(m))
+    rhs = (np.eye(m) - Uk.dot(Uk.T)).dot(B.dot(E.T))
+    BlBEH = blockCG(lhs, rhs)
+
+    # Calculate X_lambda_r using randomized SVD
+    print("Calculating X_lambda_r...")
+    Xlr, _, _ = rsvd(BlBEH.dot(np.random.normal(l, 2 * r)), r)
+
+    # Construct Z matrix
+    print("Constructing Z matrix...")
+    Z = None
+
+    # Construct ZH*A matrix
+    ZHA = np.vstack((np.diag(sigmak).dot(VHk), Xlr.T.dot(B), E))
+
+    # Calculate updated singular triplets
+    Uk_new = Uk
+    Sk_new = sigmak
+    VHk_new = VHk
+
+    return Uk_new, Sk_new, VHk_new
 
 
 def brute_force_update(A, k, full_matrices=False):
-    """Calculate best rank-k approximation using brute force."""
+    """Calculate best rank-k approximation using brute force.
+    
+    Parameters
+    ----------
+    A : ndarray of shape (m, n)
+    
+    k : int
+        Desired rank of approximation
+    
+    full_matrices : bool, default=False
+        Option to return full matrices
+    
+    Returns 
+    -------
+    VHk : ndarray of shape (n, k)
+        Truncated right singular vectors
+    
+    Sk : ndarray of shape (k,)
+        Truncated singular values
+    
+    References
+    ----------
+    M. Ghashami, E. Liberty, J. M. Phillips, and D. P. Woodruff, 
+        “Frequent Directions: Simple and Deterministic Matrix Sketching,
+        ”SIAM Journal on Computing, vol. 45, no. 5, pp. 1762-1792, 1 2016
+    """
     # TODO: implement brute force update
     _, Sk, VHk = np.linalg.svd(A.T.dot(A), full_matrices=full_matrices)
     return VHk[:k, :], Sk[:k]
 
 
-def naive_update():
-    """Calculate naive update."""
-    # TODO: implement naive update
-    return None
+def naive_update(l, d):
+    """Calculate naive update. Given the updated matrix, returns a matrix of zeros.
+    
+    Parameters
+    ----------
+    A : ndarray of shape ()
+        Updated matrix
+        
+    l : int
+        Number of rows appended
+    
+    Returns
+    -------
+    zeros : ndarray of shape (l, d)
+        Zeros of shape (l, d)
+    
+    References
+    ----------
+    M. Ghashami, E. Liberty, J. M. Phillips, and D. P. Woodruff, 
+        “Frequent Directions: Simple and Deterministic Matrix Sketching,
+        ”SIAM Journal on Computing, vol. 45, no. 5, pp. 1762-1792, 1 2016
+    """    
+    return np.zeros((l, d))
