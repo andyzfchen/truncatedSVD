@@ -171,7 +171,7 @@ class EvolvingMatrix(object):
         self.Uk, self.sigmak, self.VHk = bcg_update(
             B, self.Uk, self.sigmak, self.VHk, self.update_matrix
         )
-        return self.Uk, self.sigmak, self.Vhk
+        return self.Uk, self.sigmak, self.VHk
 
     def update_svd_brute_force(self):
         """Return optimal rank-k approximation of updated matrix using brute force method."""

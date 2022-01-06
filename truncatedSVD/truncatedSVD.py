@@ -19,7 +19,7 @@ m_percent = 0.10
 datasets = ["CISI", "CRAN", "MED"]
 batch_splits = [10]
 phis = [[1, 5, 10]]
-update_methods = ["bcg"]
+update_methods = ["zha-simon", "bcg"]
 r_values = [50]
 m_percent = 0.10
 

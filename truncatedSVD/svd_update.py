@@ -106,6 +106,7 @@ def bcg_update(B, Uk, sigmak, VHk, E, lam=None, r=10):
         ”Society for Industrial and Applied Mathematics, vol. 21, no. 2, pp. 782-791, 1999.
     """
     print("Updating truncated SVD using enhanced projection method...")
+    k = len(sigmak)
 
     # Set lambda
     if lam is None:
@@ -116,25 +117,33 @@ def bcg_update(B, Uk, sigmak, VHk, E, lam=None, r=10):
     m = B.shape[0]
     lhs = -(B.dot(B.T) - lam * np.eye(m))
     rhs = (np.eye(m) - Uk.dot(Uk.T)).dot(B.dot(E.T))
-    BlBEH = blockCG(lhs, rhs)
+    BlBEH = blockCG(lhs, rhs, max_iter=1)
 
     # Calculate X_lambda_r using randomized SVD
     print("Calculating X_lambda_r...")
-    Xlr, _, _ = rsvd(BlBEH.dot(np.random.normal(l, 2 * r)), r)
+    Xlr, _, _ = rsvd(BlBEH, n_components=k, n_oversamples=k)
 
     # Construct Z matrix
     print("Constructing Z matrix...")
-    Z = None
+    Z = block_diag(np.hstack((Uk, Xlr)), np.eye(E.shape[0]))
 
     # Construct ZH*A matrix
     ZHA = np.vstack((np.diag(sigmak).dot(VHk), Xlr.T.dot(B), E))
 
-    # Calculate updated singular triplets
-    Uk_new = Uk
-    Sk_new = sigmak
-    VHk_new = VHk
+    # Calculate SVD of ZH*A
+    Fk, Tk, _ = np.linalg.svd(ZHA, full_matrices=False)
 
-    return Uk_new, Sk_new, VHk_new
+    # Truncate if necessary
+    if k < len(Tk):
+        Fk = Fk[:, :k]
+        Tk = Tk[:k]
+
+    # Calculate updated values for Uk, Sk, Vk
+    Uk_new = Z.dot(Fk)
+    A = np.vstack((B, E))
+    Vk_new = A.T.dot(Uk_new.dot(np.diag(1 / Tk)))
+
+    return Uk_new, Tk, Vk_new.T
 
 
 def brute_force_update(A, k, full_matrices=False):

@@ -35,12 +35,12 @@ def blockCG(A, B, X=None, max_iter=1, tol=1e-1):
     """
     # Set initial guess if none given
     if X is None:
-        X = np.zeros()
+        X = np.zeros((A.shape[1], B.shape[1]))
 
     # Calculate residual
     R = B - A.dot(X)
-    if R < tol:
-        print(f"Initial solution satisifes threshold.")
+    if calc_residual(B, R) < tol:
+        print(f"Initial guess satisifes residual threshold.")
         return X
 
     # Iteratively calculate solution matrix X
@@ -56,8 +56,12 @@ def blockCG(A, B, X=None, max_iter=1, tol=1e-1):
         # Recalculate residual
         R -= A.dot(P.dot(L))
 
-        # Check convergence
-        if R < tol:
+        # Calculate relative residual
+        res = calc_residual(B, R)
+        print(f"Relative residual: {res}.")
+
+        # Check convergene
+        if res < tol:
             print(f"Converged at iteration {ii + 1}.")
             return X
         else:
@@ -65,3 +69,22 @@ def blockCG(A, B, X=None, max_iter=1, tol=1e-1):
             P = R + P.dot(Phi)
 
     return X
+
+
+def calc_residual(B, R):
+    """Calculate relative residual for block conjugate gradient
+    
+    Parameters
+    ----------
+    B : ndarray of shape (m, p)
+        Right hand side matrix
+    
+    R : ndarray of shape (m, p)
+        Residual matrix
+    
+    Returns
+    -------
+    residual : float
+        Residual
+    """
+    return np.linalg.norm(R[:, 0]) / np.linalg.norm(B[:, 0])
