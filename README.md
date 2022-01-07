@@ -30,6 +30,7 @@ The experimental parameters are specified in a `specs.json` file with the follow
     "datasets": ["CRAN", "CISI", "MED"],
     "overwrite": "y",
 }
+```
 
 | Parameter | Description                                | Value |
 | --------- | ------------------------------------------ | ----- |
