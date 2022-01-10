@@ -5,6 +5,7 @@ import numpy as np
 import scipy.sparse.linalg
 import sklearn.decomposition
 import os
+import time
 from metrics import proj_err, cov_err, rel_err, res_norm
 from svd_update import zha_simon_update, bcg_update, brute_force_update, naive_update
 
@@ -42,6 +43,9 @@ class EvolvingMatrix(object):
     Uk, VHk, Sk : ndarrays of shape ()
         Truncated SVD calculated using one of the methods
 
+    runtime : float
+        Total time elapsed in calculating updates so far    
+    
     References
     ----------
     H. Zha and H. D. Simon, “Timely communication on updating problems in latent semantic indexing,
@@ -113,6 +117,9 @@ class EvolvingMatrix(object):
         self.n_appended = 0
         self.n_appended_total = 0
 
+        # Initialize total runtime
+        self.runtime = 0.0
+
     def set_append_matrix(self, append_matrix):
         """Initialize entire matrix to append E"""
         self.append_matrix = append_matrix.toarray()  # ensure data is in dense format
@@ -157,9 +164,11 @@ class EvolvingMatrix(object):
 
     def update_svd_zha_simon(self):
         """Return truncated SVD of updated matrix using the Zha-Simon projection method."""
+        start = time.perf_counter()
         self.Uk, self.sigmak, self.VHk = zha_simon_update(
             self.A, self.Uk, self.sigmak, self.VHk, self.update_matrix
         )
+        self.runtime += time.perf_counter() - start
         return self.Uk, self.sigmak, self.VHk
 
     def update_svd_bcg(self):
@@ -168,9 +177,11 @@ class EvolvingMatrix(object):
         B = self.A[: -self.n_appended, :]
 
         # Update truncated SVD
+        start = time.perf_counter()
         self.Uk, self.sigmak, self.VHk = bcg_update(
             B, self.Uk, self.sigmak, self.VHk, self.update_matrix
         )
+        self.runtime += time.perf_counter() - start
         return self.Uk, self.sigmak, self.VHk
 
     def update_svd_brute_force(self):
@@ -388,6 +399,7 @@ class EvolvingMatrix(object):
         np.save(f"{fdir}/residual_norms_phi_{self.phi}{r_str}.npy", res_norm)
         # np.save(f"{fdir}/covariance_error_phi_{self.phi}{r_str}.npy", cov_err)
         # np.save(f"{fdir}/projection_error_phi_{self.phi}{r_str}.npy", proj_err)
+        np.save(f"{fdir}/runtime_phi_{self.phi}{r_str}.npy", self.runtime)
 
         # Optionally print metrics to console
         if print_metrics:

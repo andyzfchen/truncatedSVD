@@ -1,4 +1,5 @@
 import numpy as np
+import time
 from scipy.linalg import block_diag
 from blockCG import blockCG
 from sklearn.utils.extmath import randomized_svd as rsvd
@@ -201,3 +202,7 @@ def naive_update(l, d):
         ”SIAM Journal on Computing, vol. 45, no. 5, pp. 1762-1792, 1 2016
     """    
     return np.zeros((l, d))
+
+
+def frequent_directions_update():
+    return None

@@ -79,8 +79,6 @@ for dataset in datasets:
                 print()
 
                 r_str = ""
-
-                # Update truncated SVD with each batch update
                 for ii in range(n_batches):
                     print(f"Batch {str(ii+1)}/{str(n_batches)}.")
 
@@ -100,6 +98,8 @@ for dataset in datasets:
                         model.update_svd_brute_force()
                     elif method == "naive":
                         model.update_svd_naive()
+                    elif method == "fd":
+                        model.update_fd()
                     else:
                         raise ValueError(
                             f"Error: Update method {method} does not exist. Must be one of the following."
@@ -114,7 +114,6 @@ for dataset in datasets:
                         model.save_metrics(temp_dir, print_metrics=True, r_str=r_str)
 
                     print()
-
 
 # def load_experiment_specs(experiment_directory):
 #     return None
