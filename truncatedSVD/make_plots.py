@@ -25,7 +25,7 @@ r_value = 50
 update_methods = ["zha-simon", "bcg"]
 update_names = [
     "$Z = [U_k, 0; 0, I_s]$",
-    "$Z = [U_k, X_{\lambda,r}; 0, I_s]$" "$Z = [U_k, X_{\lambda,r}; 0, I_s]$",
+    "$Z = [U_k, X_{\lambda,r}; 0, I_s]$",
 ]
 
 
@@ -35,9 +35,6 @@ if not os.path.exists("../figures"):
 for dataset in datasets:
     print(f"Making plots for {dataset}.")
     for batch_split, phi_list in zip(batch_splits, phis):
-
-        # Define top folder
-        folder = f"../cache/{method}/{dataset}_batch_split_{str(batch_split)}"
 
         # Single batch update plots
         if batch_split == 1:
@@ -49,6 +46,8 @@ for dataset in datasets:
                     r_str = ""
                 elif method == "bcg":
                     r_str = "_rval_" + str(r_value)
+                
+                folder = f"../cache/{method}/{dataset}_batch_split_{str(batch_split)}"
 
                 relative_errors = np.load(f"{folder}/relative_errors_phi_1{r_str}.npy")
                 residual_norms = np.load(f"{folder}/residual_norms_phi_1{r_str}.npy")
@@ -79,6 +78,8 @@ for dataset in datasets:
                     r_str = ""
                 elif method == "bcg":
                     r_str = "_rval_" + str(r_value)
+                
+                folder = f"../cache/{method}/{dataset}_batch_split_{str(batch_split)}"
 
                 for phi in phi_list:
                     relative_errors = np.load(f"{folder}/relative_errors_phi_{str(phi)}{r_str}.npy")
