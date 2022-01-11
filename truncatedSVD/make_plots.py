@@ -1,8 +1,8 @@
 import numpy as np
 from plotting_helper import (
-    plot_relative_errs,
+    plot_relative_errors,
     plot_residual_norms,
-    plot_stacked_relative_errs,
+    plot_stacked_relative_errors,
     plot_stacked_residual_norms,
 )
 import os
@@ -55,7 +55,7 @@ for dataset in datasets:
                 relative_errors_list.append(relative_errors)
                 residual_norms_list.append(residual_norms)
 
-                plot_relative_errs(
+                plot_relative_errors(
                     relative_errors_list,
                     update_names,
                     f"relative_errors_{dataset}_batch_split_{str(batch_split)}",
@@ -91,7 +91,7 @@ for dataset in datasets:
                 title = f"{dataset}, {update_names[ii]}"
                 # plot_stacked_relative_errs(relative_errors_list, phi_list, "relative_errors_"+dataset+"_batch_split_"+str(batch_split)+"_"+method, "Relative Errors for "+dataset+" using "+evolution_names[ii])
                 # plot_stacked_residual_norms(residual_norms_list, phi_list, "residual_norms_"+dataset+"_batch_split_"+str(batch_split)+"_"+method, "Residual Norms for "+dataset+" using "+evolution_names[ii])
-                plot_stacked_relative_errs(
+                plot_stacked_relative_errors(
                     relative_errors_list,
                     phi_list,
                     f"relative_errors_{dataset}_batch_split_{str(batch_split)}_{method}",

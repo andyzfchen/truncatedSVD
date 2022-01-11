@@ -27,7 +27,7 @@ def plot_residual_norms(errs_list, evolution_methods, filename, title="Residual 
     plt.close()
 
 
-def plot_relative_errs(errs_list, evolution_methods, filename, title="Relative Error for Singular Vectors", ylim=None):
+def plot_relative_errors(errs_list, evolution_methods, filename, title="Relative Error for Singular Vectors", ylim=None):
     position = np.arange(1, errs_list[0].shape[0] + 1)
 
     fig, ax = plt.subplots(figsize=(4, 3))
@@ -77,7 +77,7 @@ def plot_stacked_residual_norms(errs_list, phi_list, filename, title="Residual N
     plt.close()
 
 
-def plot_stacked_relative_errs(errs_list, phi_list, filename, title="Relative Error for Singular Vectors", ylim=None):
+def plot_stacked_relative_errors(errs_list, phi_list, filename, title="Relative Error for Singular Vectors", ylim=None):
     position = np.arange(1, errs_list[0].shape[0] + 1)
 
     fig, ax = plt.subplots(figsize=(4, 3))
