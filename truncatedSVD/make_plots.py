@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from plotting_helper import (
     plot_relative_errors,
@@ -5,7 +6,7 @@ from plotting_helper import (
     plot_stacked_relative_errors,
     plot_stacked_residual_norms,
 )
-import os
+
 
 datasets = ["CISI", "CRAN", "MED", "ML1M", "Reuters"]
 batch_splits = [10]
