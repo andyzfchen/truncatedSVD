@@ -20,7 +20,7 @@ update_names = ["$Z = [U_k, 0; 0, I_s]$", "$Z = [U_k, X_{\lambda,r}; 0, I_s]$"]
 datasets = ["CISI", "CRAN", "MED"]
 batch_splits = [10]
 phis = [[1, 5, 10]]
-r_value = 50
+r_value = 10
 # evolution_methods = [ "bcg" ]
 # evolution_names = [ "$Z = [U_k, X_{\lambda,r}; 0, I_s]$" ]
 update_methods = ["zha-simon", "bcg"]

@@ -1,3 +1,6 @@
+"""Various algorithms for updating the truncated singular value decomposition (SVD) of evolving matrices.
+"""
+
 import numpy as np
 import time
 from scipy.linalg import block_diag
@@ -41,7 +44,7 @@ def zha_simon_update(A, Uk, Sk, VHk, E):
     H. Zha and H. D. Simon, “Timely communication on updating problems in latent semantic indexing,
         ”Society for Industrial and Applied Mathematics, vol. 21, no. 2, pp. 782-791, 1999.
     """
-    print("Updating truncated SVD using Zha-Simon projection method...")
+    print("Updating truncated SVD using Zha-Simon projection method.")
 
     # Construct Z and ZH*A matrices
     s = E.shape[0]
@@ -88,7 +91,7 @@ def bcg_update(B, Uk, sigmak, VHk, E, lam=None, r=10):
         If 'None', lam is set to 1.01 * (sigmahat_1)^2
 
     r : int, default=10
-
+        Parameter determining number of columns in matrix R
 
     Returns
     -------
@@ -106,7 +109,7 @@ def bcg_update(B, Uk, sigmak, VHk, E, lam=None, r=10):
     H. Zha and H. D. Simon, “Timely communication on updating problems in latent semantic indexing,
         ”Society for Industrial and Applied Mathematics, vol. 21, no. 2, pp. 782-791, 1999.
     """
-    print("Updating truncated SVD using enhanced projection method...")
+    print("Updating truncated SVD using enhanced projection method.")
     k = len(sigmak)
 
     # Set lambda
@@ -114,18 +117,23 @@ def bcg_update(B, Uk, sigmak, VHk, E, lam=None, r=10):
         lam = 1.01 * sigmak[0] ** 2
 
     # Calculate B(lambda) B E^H
-    print("Calculating B(lambda) B E^H using BCG...")
+    print("Calculating B(lambda) B E^H using BCG.")
     m = B.shape[0]
     lhs = -(B.dot(B.T) - lam * np.eye(m))
     rhs = (np.eye(m) - Uk.dot(Uk.T)).dot(B.dot(E.T))
     BlBEH = blockCG(lhs, rhs, max_iter=1)
 
+    # Calculate B(lambda) B E^H R
+    BlBEHR = BlBEH.dot(np.random.normal(size=(E.shape[0], 2 * r)))
+
     # Calculate X_lambda_r using randomized SVD
-    print("Calculating X_lambda_r...")
-    Xlr, _, _ = rsvd(BlBEH, n_components=k, n_oversamples=k)
+    print("Calculating X_lambda_r.")
+    # Xlr, _, _ = np.linalg.svd(BlBEHR, full_matrices=False)
+    # Xlr = Xlr[:, :r]
+    Xlr, _, _ = rsvd(BlBEH, n_components=r, n_oversamples=r, n_iter=0)
 
     # Construct Z matrix
-    print("Constructing Z matrix...")
+    print("Constructing Z matrix.")
     Z = block_diag(np.hstack((Uk, Xlr)), np.eye(E.shape[0]))
 
     # Construct ZH*A matrix
@@ -145,7 +153,7 @@ def bcg_update(B, Uk, sigmak, VHk, E, lam=None, r=10):
     Vk_new = A.T.dot(Uk_new.dot(np.diag(1 / Tk)))
 
     return Uk_new, Tk, Vk_new.T
-
+    
 
 def brute_force_update(A, k, full_matrices=False):
     """Calculate best rank-k approximation using brute force.

@@ -46,6 +46,15 @@ class EvolvingMatrix(object):
     runtime : float
         Total time elapsed in calculating updates so far    
     
+    append_matrix : ndarray of shape ()
+        Entire matrix to be appended over the course of updates
+    
+    update_matrix : ndarray of shape ()
+        Matrix appended in last update
+    
+    n_appended : int
+        Number of rows appended in last update
+    
     References
     ----------
     H. Zha and H. D. Simon, “Timely communication on updating problems in latent semantic indexing,
@@ -63,10 +72,10 @@ class EvolvingMatrix(object):
         (self.m_dim, self.n_dim) = np.shape(self.initial_matrix)
         print(f"Initial matrix of evolving matrix set to shape of ( {self.m_dim}, {self.n_dim} ).")
 
-        # Update matrix after each batch
+        # Matrix after update (initialize to initial matrix)
         self.A = self.initial_matrix
 
-        # True SVD of current update - initialized to SVD of the initial matrix
+        # True SVD of current update (initialize to SVD of the initial matrix)
         self.U_true, self.sigma_true, self.VH_true = np.linalg.svd(
             self.initial_matrix, full_matrices=False
         )
@@ -75,6 +84,7 @@ class EvolvingMatrix(object):
         if k_dim is None:
             self.k_dim = min(self.m_dim, self.n_dim)
         else:
+            assert k_dim < min(self.m_dim, self.n_dim), "k must be smaller than or equal to min(m,n)."
             self.k_dim = k_dim
 
         # Get intial truncated SVD
@@ -89,14 +99,14 @@ class EvolvingMatrix(object):
         # Initialize matrix to be appended
         self.n_batches = n_batches
         if append_matrix is None:
+            self.append_matrix = np.array([])
+            self.s_dim = 0
+            self.step = 0
             self.U_all, self.sigma_all, self.VH_all = (
                 np.array([]),
                 np.array([]),
                 np.array([]),
             )
-            self.append_matrix = np.array([])
-            self.s_dim = 0
-            self.step = 0
         else:
             self.U_all, self.sigma_all, self.VH_all = self.set_append_matrix(
                 append_matrix
@@ -114,15 +124,21 @@ class EvolvingMatrix(object):
         self.runtime = 0.0
 
     def set_append_matrix(self, append_matrix):
-        """Initialize entire matrix to append E"""
+        """Set entire matrix to appended over the course of updates and calculates SVD for final matrix
+        
+        Parameters
+        ----------
+        append_matrix : ndarray of shape (s, n)
+            Matrix to be appended
+        """
         self.append_matrix = append_matrix.toarray()  # ensure data is in dense format
         (self.s_dim, n_dim) = np.shape(self.append_matrix)
         self.step = int(np.ceil(self.s_dim / self.n_batches))
-        assert n_dim == self.n_dim
-        print(f"Appendix matrix set to shape of ( {self.s_dim} , {self.n_dim} ).")
+        assert n_dim == self.n_dim, "Number of columns must be the same for initial matrix and matrix to be appended."
+        print(f"Appending matrix set to shape of ( {self.s_dim} , {self.n_dim} ).")
 
         self.U_all, self.Sigma_all, self.VH_all = np.linalg.svd(
-            np.append(self.initial_matrix, self.append_matrix, axis=0)
+            np.append(self.initial_matrix, self.append_matrix, axis=0), full_matrices=False
         )
 
     def evolve(self):
@@ -135,7 +151,7 @@ class EvolvingMatrix(object):
         )
 
         # Append to current data matrix
-        print(f"Appending {self.n_appended} rows from appendix matrix.")
+        print(f"Appending {self.n_appended} rows from appending matrix.")
         self.update_matrix = self.append_matrix[
             self.n_appended_total : self.n_appended_total + self.n_appended, :
         ]
@@ -145,7 +161,7 @@ class EvolvingMatrix(object):
         self.phi += 1
         self.n_appended_total += self.n_appended
         print(
-            f"Appended {self.n_appended_total}/{self.s_dim} rows from appendix matrix so far."
+            f"Appended {self.n_appended_total}/{self.s_dim} rows from appending matrix so far."
         )
 
     def reset(self):

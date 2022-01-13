@@ -20,7 +20,7 @@ datasets = ["CISI", "CRAN", "MED"]
 batch_splits = [10]
 phis = [[1, 5, 10]]
 update_methods = ["zha-simon", "bcg"]
-r_values = [50]
+r_values = [10]
 m_percent = 0.10
 
 # TODO: loop through various values of k (25,50,100)
@@ -88,10 +88,7 @@ for dataset in datasets:
                     # Calculate truncated SVD for updated matrix
                     if method == "zha-simon":
                         model.update_svd_zha_simon()
-                    elif method == "bcg":
-                        # Uk, Sigmak, VHk = model.evolve_matrix_deflated_bcg(
-                        # step_dim=int(np.ceil(s_dim / n_batches)), r_dim=r_value
-                        # )
+                    elif method == "bcg": 
                         model.update_svd_bcg()
                         r_str = "_rval_" + str(r_value)
                     elif method == "brute":
