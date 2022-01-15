@@ -5,9 +5,13 @@ import numpy as np
 import scipy.sparse.linalg
 import sklearn.decomposition
 import os
+import sys
 import time
 from metrics import proj_err, cov_err, rel_err, res_norm
 from svd_update import zha_simon_update, bcg_update, brute_force_update, naive_update
+
+sys.path.append('../frequent-directions')
+from frequentDirections import FrequentDirections
 
 
 class EvolvingMatrix(object):
@@ -75,6 +79,13 @@ class EvolvingMatrix(object):
         # Matrix after update (initialize to initial matrix)
         self.A = self.initial_matrix
 
+        # Initialize FD object
+        self.freq_dir = FrequentDirections(self.n_dim, (self.m_dim+1)//2)   # FD takes k, ell = m/2
+
+        # setting FD initial matrix
+        for ii in range(self.m_dim):
+            self.freq_dir.append(self.append_matrix[ii,:])
+
         # True SVD of current update (initialize to SVD of the initial matrix)
         self.U_true, self.sigma_true, self.VH_true = np.linalg.svd(
             self.initial_matrix, full_matrices=False
@@ -87,7 +98,7 @@ class EvolvingMatrix(object):
             assert k_dim < min(self.m_dim, self.n_dim), "k must be smaller than or equal to min(m,n)."
             self.k_dim = k_dim
 
-        # Get intial truncated SVD
+        # Get initial truncated SVD
         self.Uk = self.U_true[:, : self.k_dim]
         self.sigmak = self.sigma_true[: self.k_dim]
         self.VHk = self.VH_true[: self.k_dim, :]
@@ -141,6 +152,11 @@ class EvolvingMatrix(object):
             np.append(self.initial_matrix, self.append_matrix, axis=0), full_matrices=False
         )
 
+        # reset Frequent Directions
+        self.freq_dir.reset()
+        for ii in range(self.m_dim):
+            self.freq_dir.append(self.append_matrix[ii,:])
+
     def evolve(self):
         """Evolve matrix by one update according to update parameters specified."""
         # Check if number of appended rows exceeds number of remaining rows in appendix matrix
@@ -170,6 +186,10 @@ class EvolvingMatrix(object):
         self.update_matrix = np.array([])
         self.n_appended = 0
         self.n_appended_total = 0
+
+        self.freq_dir.reset()
+        for ii in range(self.m_dim):
+            self.freq_dir.append(self.append_matrix[ii,:])
 
     def update_svd_zha_simon(self):
         """Return truncated SVD of updated matrix using the Zha-Simon projection method."""
@@ -205,6 +225,11 @@ class EvolvingMatrix(object):
         self.Uk, self.sigmak, self.VHk = naive_update(
             self.A, self.Uk, self.sigmak, self.VHk, self.update_matrix
         )
+        return self.Uk, self.sigmak, self.VHk
+
+    def update_svd_fd(self):
+        """Return truncated SVD of updated matrix using the Frequent Directions method."""
+
         return self.Uk, self.sigmak, self.VHk
  
     def calculate_true_svd(self, evolution_method, dataset):
