@@ -1,7 +1,7 @@
 # ML Reproducibility Challenge 2021
 
-This repository hosts documents and code for reproducing the Truncated SVD algorithm for evolving matrices outlined by Vassilis Kalantzis, Georgios Kollias, Shashanka Ubaru, Athanasios N. Nikolakopoulos, Lior Horesh, and Kenneth L. Clarkson in their paper [Projection techniques to update the truncated SVD of evolving matrices](http://proceedings.mlr.press/v139/kalantzis21a/kalantzis21a.pdfV) published in the 38th International Conference on Machine Learning 2021.
-We (Andy Chen, Shion Matsumoto, and Rohan Sinha Varma) present this repository as part of a submission to the [ML Reproducibility Challenge 2021](https://paperswithcode.com/rc2021v).
+This repository hosts documents and code for reproducing the Truncated SVD algorithm for evolving matrices outlined by Vassilis Kalantzis, Georgios Kollias, Shashanka Ubaru, Athanasios N. Nikolakopoulos, Lior Horesh, and Kenneth L. Clarkson in their paper [Projection techniques to update the truncated SVD of evolving matrices](http://proceedings.mlr.press/v139/kalantzis21a/kalantzis21a.pdf) published in the 38th International Conference on Machine Learning 2021.
+We (Andy Chen, Shion Matsumoto, and Rohan Sinha Varma) present this repository as part of a submission to the [ML Reproducibility Challenge 2021](https://paperswithcode.com/rc2021) along with our [report]().
 
 ## File Organization
 
@@ -58,6 +58,4 @@ python make_plots.py
 ## Team
 
 
-## ML Reproducibility Submission
-
-This study was submitted to the [ML Reproducibility 2021 Challenge](https://paperswithcode.com/rc2021). The full report can be found [here]().
+## Acknowledgments

@@ -1,5 +1,27 @@
 import numpy as np
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, precision_recall_curve
+
+
+def precision_recall(y_true, y_pred):
+    """Return precision-recall metrics
+    
+    Parameters
+    ----------
+    y_true : ndarray of shape (n,)
+        True labels
+        
+    y_pred : ndarray of shape (n,)
+        Predicted labels
+         
+    Returns
+    -------
+    precision : float
+        Precision
+    
+    Recall : float
+        Recall
+    """
+    return None
 
 
 def mse(y_true, y_pred):
