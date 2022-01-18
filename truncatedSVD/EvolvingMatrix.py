@@ -59,7 +59,8 @@ class EvolvingMatrix(object):
 
     def __init__(self, initial_matrix, append_matrix=None, n_batches=1, k_dim=None):
         # Initial matrix
-        self.initial_matrix = initial_matrix.toarray()  # ensure data is in dense format
+        #self.initial_matrix = initial_matrix.toarray()  # ensure data is in dense format
+        self.initial_matrix = initial_matrix
         (self.m_dim, self.n_dim) = np.shape(self.initial_matrix)
         print(
             f"Initial matrix of evolving matrix set to shape of ( {self.m_dim}, {self.n_dim} )."
@@ -122,7 +123,8 @@ class EvolvingMatrix(object):
 
     def set_append_matrix(self, append_matrix):
         """Initialize entire matrix to append E"""
-        self.append_matrix = append_matrix.toarray()  # ensure data is in dense format
+        #self.append_matrix = append_matrix.toarray()  # ensure data is in dense format
+        self.append_matrix = append_matrix
         (self.s_dim, n_dim) = np.shape(self.append_matrix)
         self.step = int(np.ceil(self.s_dim / self.n_batches))
         assert n_dim == self.n_dim
@@ -340,22 +342,25 @@ class EvolvingMatrix(object):
         """Calculate true SVD of the current A matrix."""
         print("Calculating current A matrix of size ", np.shape(self.A))
 
+
         # Folder to save U,S,V arrays
         dirname = (
-            f"../cache/{evolution_method}/{dataset}_batch_split_{str(self.n_batches)}"
+            f"../cache/{evolution_method}/{dataset}/{dataset}_batch_split_{str(self.n_batches)}_k_dims_{str(self.k_dim)}"
         )
+        if not os.path.exists(os.path.normpath(dirname)):
+            os.mkdir(os.path.normpath(dirname))
 
         # Load from cache if pre-calculated
-        if os.path.exists(f"{dirname}/U_true_phi_{str(self.phi)}.npy"):
+        if os.path.exists(os.path.normpath(f"{dirname}/U_true_phi_{str(self.phi)}.npy")):
             print("Loading from cache")
-            self.U_true = np.load(f"{dirname}/U_true_phi_{str(self.phi)}.npy")
-            self.sigma_true = np.load(f"{dirname}/sigma_true_phi_{str(self.phi)}.npy")
-            self.VH_true = np.load(f"{dirname}/VH_true_phi_{str(self.phi)}.npy")
+            self.U_true = np.load(os.path.normpath(f"{dirname}/U_true_phi_{str(self.phi)}.npy"))
+            self.sigma_true = np.load(os.path.normpath(f"{dirname}/sigma_true_phi_{str(self.phi)}.npy"))
+            self.VH_true = np.load(os.path.normpath(f"{dirname}/VH_true_phi_{str(self.phi)}.npy"))
         else:
             self.U_true, self.sigma_true, self.VH_true = np.linalg.svd(self.A)
-            np.save(f"{dirname}/U_true_phi_{str(self.phi)}.npy", self.U_true)
-            np.save(f"{dirname}/sigma_true_phi_{str(self.phi)}.npy", self.sigma_true)
-            np.save(f"{dirname}/VH_true_phi_{str(self.phi)}.npy", self.VH_true)
+            np.save(os.path.normpath(f"{dirname}/U_true_phi_{str(self.phi)}.npy"), self.U_true)
+            np.save(os.path.normpath(f"{dirname}/sigma_true_phi_{str(self.phi)}.npy"), self.sigma_true)
+            np.save(os.path.normpath(f"{dirname}/VH_true_phi_{str(self.phi)}.npy"), self.VH_true)
 
     def get_mean_squared_error(self):
         return None
