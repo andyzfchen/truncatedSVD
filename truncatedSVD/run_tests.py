@@ -6,14 +6,17 @@ import EvolvingMatrix as EM
 import pdb
 
 
-def perform_updates(dataset,n_batches,phi,model,method,update_method,r_str,save_dir):
+def perform_updates(dataset,n_batches,phi,model,method,update_method,r_str,save_dir,**kwargs):
        
         for ii in range(n_batches):
             print(f"Batch {str(ii+1)}/{str(n_batches)}.")
 
             # Evolve matrix by appending new rows
             model.evolve()
-            update_method()
+            if not kwargs:
+                update_method()
+            else:
+                update_method(**kwargs)
 
             # Save results if batch number specified
             if model.phi in phi:
@@ -93,7 +96,7 @@ for test in test_spec['tests']:
                             model.set_append_matrix(E)
                             print()                                 
                             r_str = f"_rval_{str(r)}"
-                            perform_updates(dataset,n_batches,phis,model,method,model.update_svd_bcg,r_str,save_dir_run)
+                            perform_updates(dataset,n_batches,phis,model,method,model.update_svd_bcg,r_str,save_dir_run,lam_coeff=test['lam_coeff'],r=r)
                 else:
                     raise ValueError(
                         f"Error: Update method {method} does not exist. Must be one of the following."                  

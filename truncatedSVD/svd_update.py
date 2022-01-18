@@ -64,7 +64,7 @@ def zha_simon_update(A, Uk, Sk, VHk, E):
     return Uk_new, Tk, Vk_new.T
 
 
-def bcg_update(B, Uk, sigmak, VHk, E, lam=None, r=10):
+def bcg_update(B, Uk, sigmak, VHk, E, lam_coeff=None, r=10):
     """Calculate truncated SVD update using enhanced projection matrix.
 
     Parameters
@@ -84,8 +84,8 @@ def bcg_update(B, Uk, sigmak, VHk, E, lam=None, r=10):
     E : ndarray of shape ()
         Matrix to be appended
 
-    lam : float, default=None
-        If 'None', lam is set to 1.01 * (sigmahat_1)^2
+    lam_coeff : float, default=None
+        If 'None', lam_coeff is set to 1.01 * (sigmahat_1)^2
 
     r : int, default=10
 
@@ -109,19 +109,19 @@ def bcg_update(B, Uk, sigmak, VHk, E, lam=None, r=10):
     print("Updating truncated SVD using enhanced projection method...")
     k = len(sigmak)
 
-    # Set lambda
-    if lam is None:
-        lam = 1.01 * sigmak[0] ** 2
+    # Set lam_coeffbda
+    if lam_coeff is None:
+        lam_coeff = 1.01 * sigmak[0] ** 2
 
-    # Calculate B(lambda) B E^H
-    print("Calculating B(lambda) B E^H using BCG...")
+    # Calculate B(lam_coeffbda) B E^H
+    print("Calculating B(lam_coeffbda) B E^H using BCG...")
     m = B.shape[0]
-    lhs = -(B.dot(B.T) - lam * np.eye(m))
+    lhs = -(B.dot(B.T) - lam_coeff * np.eye(m))
     rhs = (np.eye(m) - Uk.dot(Uk.T)).dot(B.dot(E.T))
     BlBEH = blockCG(lhs, rhs, max_iter=1)
 
-    # Calculate X_lambda_r using randomized SVD
-    print("Calculating X_lambda_r...")
+    # Calculate X_lam_coeffbda_r using randomized SVD
+    print("Calculating X_lam_coeffbda_r...")
     Xlr, _, _ = rsvd(BlBEH, n_components=k, n_oversamples=k)
 
     # Construct Z matrix

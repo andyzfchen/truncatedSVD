@@ -173,7 +173,7 @@ class EvolvingMatrix(object):
         self.runtime += time.perf_counter() - start
         return self.Uk, self.sigmak, self.VHk
 
-    def update_svd_bcg(self):
+    def update_svd_bcg(self,lam_coeff,r):
         """Return truncated SVD of updated matrix using the BCG method."""
         # Get previous data matrix from updated matrix
         B = self.A[: -self.n_appended, :]
@@ -181,7 +181,7 @@ class EvolvingMatrix(object):
         # Update truncated SVD
         start = time.perf_counter()
         self.Uk, self.sigmak, self.VHk = bcg_update(
-            B, self.Uk, self.sigmak, self.VHk, self.update_matrix
+            B, self.Uk, self.sigmak, self.VHk, self.update_matrix,lam_coeff=lam_coeff,r=r
         )
         self.runtime += time.perf_counter() - start
         return self.Uk, self.sigmak, self.VHk
