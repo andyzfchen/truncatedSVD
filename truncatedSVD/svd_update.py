@@ -75,16 +75,16 @@ def bcg_update(B, Uk, sigmak, VHk, E, lam=None, r=10):
     B : ndarray of shape (m, n)
         Current matrix
 
-    Uk : ndarray of shape ()
+    Uk : ndarray of shape (m, k)
         Left singular vectors
 
-    sigmak : ndarray of shape ()
+    sigmak : ndarray of shape (k,)
         Singular values
 
-    VHk : ndarray of shape ()
+    VHk : ndarray of shape (n, k)
         Right singular vectors
 
-    E : ndarray of shape ()
+    E : ndarray of shape (s, n)
         Matrix to be appended
 
     lam : float, default=None

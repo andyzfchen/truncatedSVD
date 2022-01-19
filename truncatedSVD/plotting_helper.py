@@ -116,3 +116,24 @@ def plot_runtimes(runtimes, xval, filename, title=None):
     ax.legend(loc="lower right")
     plt.savefig(f"../figures/{filename}.png", bbox_inches="tight", pad_inches=0.2, dpi=200)
     plt.close()
+
+
+def plot_pr_curve(precision, recall, leg_name, filename, title=None):
+    fig, ax = plt.subplots(figsize=(4, 3))
+    ax.grid(True, which="both", linewidth=1, linestyle="--", color="k", alpha=0.1)
+    ax.tick_params(which="both", direction="in", bottom=True, top=True, left=True, right=True)
+    
+    for p, r, l in zip(precision, recall, leg_name):
+        ax.plot(p, r, label=l) 
+    
+    ax.set_title(title)
+    ax.set_xlabel("Recall")
+    ax.set_ylabel("Precision")
+    
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+
+    ax.legend(loc="lower left")
+    plt.savefig(f"../figures/{filename}.png", bbox_inches="tight", pad_inches=0.2, dpi=200)
+    plt.close()
+    

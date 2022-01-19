@@ -41,19 +41,19 @@ class EvolvingMatrix(object):
 
     Attributes
     ----------
-    U_true, VH_true, S_true : ndarrays of shape ()
+    U_true, VH_true, sigma_true : ndarrays of shape (m, k), (k, n), (k,)
         True SVD of current update
 
-    Uk, VHk, Sk : ndarrays of shape ()
+    Uk, VHk, sigmak : ndarrays of shape (m, k), (k, n), (k,)
         Truncated SVD calculated using one of the methods
 
     runtime : float
         Total time elapsed in calculating updates so far    
     
-    append_matrix : ndarray of shape ()
+    append_matrix : ndarray of shape (s, n)
         Entire matrix to be appended over the course of updates
     
-    update_matrix : ndarray of shape ()
+    update_matrix : ndarray of shape (u, n)
         Matrix appended in last update
     
     n_appended : int
@@ -133,6 +133,7 @@ class EvolvingMatrix(object):
 
         # Initialize total runtime
         self.runtime = 0.0
+
 
     def set_append_matrix(self, append_matrix):
         """Set entire matrix to appended over the course of updates and calculates SVD for final matrix
@@ -215,16 +216,20 @@ class EvolvingMatrix(object):
 
     def update_svd_brute_force(self):
         """Return optimal rank-k approximation of updated matrix using brute force method."""
+        start = time.perf_counter()
         self.Uk, self.sigmak, self.VHk = brute_force_update(
             self.A, self.Uk, self.sigmak, self.VHk, self.update_matrix
         )
+        self.runtime += time.perf_counter() - start
         return self.Uk_matrix, self.Sigmak_array, self.VHk_matrix
 
     def update_svd_naive(self):
         """Return truncated SVD of updated matrix using the naïve update method."""
+        start = time.perf_counter()
         self.Uk, self.sigmak, self.VHk = naive_update(
             self.A, self.Uk, self.sigmak, self.VHk, self.update_matrix
         )
+        self.runtime += time.perf_counter() - start
         return self.Uk, self.sigmak, self.VHk
 
     def update_svd_fd(self):
@@ -307,3 +312,19 @@ class EvolvingMatrix(object):
             )
             # print(f"Covariance error at phi = {str(self.phi)}:\n{cov_err}")
             # print(f"Projection error at phi = {str(self.phi)}:\n{proj_err}")
+
+    def query(self, q):
+        """
+        Query using the truncated SVD
+        
+        Parameters
+        ----------
+        q : ndarray of shape (n_queries, n)
+            Queries
+        
+        Returns
+        -------
+        score : ndarray of shape (n_queries, m)
+            Similarity scores for each document for each query
+        """
+        return None

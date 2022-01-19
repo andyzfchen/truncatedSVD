@@ -1,25 +1,15 @@
 # Datasets
 
-For this reproducibility study, we chose five different datasets.
+For this reproducibility study, we chose five different datasets. The datasets can are uploaded to and can be downloaded from the following Google Drive folders.
 
-The datasets use for this project can be downloaded from the following links.
+CISI: [Source](http://web.eecs.utk.edu/research/lsi/) [Google Drive](https://drive.google.com/drive/folders/1VDxtvXUiPhKEu99n_H4wnHDEfqN_nHnO)
 
-## CISI
+CRAN: [Source](http://web.eecs.utk.edu/research/lsi/) [Google Drive](https://drive.google.com/drive/folders/17xMUpCvRdOjcVwB-bJ3FWVtDmr51F9aq)
 
-[Google Drive](https://drive.google.com/drive/folders/1do9YSQ-JTYYW_1O7YkwzXlthaQ4E1Eke?usp=sharing)
+MED: [Source](http://web.eecs.utk.edu/research/lsi/) [Google Drive](https://drive.google.com/drive/folders/1MUiGQ93VNGGDh8KQztjAimEaQG50093o)
 
-## CRAN
+ML1M: [Source](https://grouplens.org/datasets/movielens/) [Google Drive](https://drive.google.com/drive/folders/1L5CS0IRCGJzN6ZIjKQnVYQCtDQ43dKr2)
 
-[Google Drive](https://drive.google.com/drive/folders/1sQ-aShTAH9X2SNF2taoQXW_OOj15Gihd?usp=sharing)
+Reuters: [Source](https://archive.ics.uci.edu/ml/datasets/reuters-21578+text+categorization+collection) [Google Drive](https://drive.google.com/drive/folders/1-YDurx7RnbPVjeIyJR2msX1GerF-yjDi)
 
-## MED
-
-[Google Drive](https://drive.google.com/drive/folders/1_DdhiBHxqUgmlY42WUrAwI87MSipYt4j?usp=sharing)
-
-## ML1M
-
-[Google Drive](https://drive.google.com/drive/folders/1CNaFvoNLJ7kMi54uBpGxzkiT3LJRF7S7?usp=sharing)
-
-## Reuters
-
-[Google Drive](https://drive.google.com/file/d/152841ZsqINwkHgb8lnCNqq4yYvuITrMM/view?usp=sharing)
+Birds: [Source](http://www.vision.caltech.edu/visipedia/CUB-200-2011.html) [Google Drive](https://drive.google.com/drive/folders/1gTgX1E5Jht5VOA2EY17WwyVN9pi1_ZsL)

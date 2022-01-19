@@ -1,5 +1,34 @@
 import numpy as np
-from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_error, precision_recall_curve
+
+
+def pr_curve(y_true, y_score):
+    """Return precision-recall curve
+    
+    Wrapper for sklearn implementation of computing precision-recall pairs.
+    
+    Parameters
+    ----------
+    y_true : ndarray of shape (n,)
+        True labels
+        
+    y_score : ndarray of shape (n,)
+        Predicted labels
+         
+    Returns
+    -------
+    precision : float
+        Precision
+    
+    Recall : float
+        Recall
+        
+    References
+    ----------
+    https://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_recall_curve.html#sklearn.metrics.precision_recall_curve
+    """
+    precision, recall, _ = precision_recall_curve(y_true, y_score)
+    return precision, recall
 
 
 def mse(y_true, y_pred):
