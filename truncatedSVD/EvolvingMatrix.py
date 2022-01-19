@@ -37,19 +37,19 @@ class EvolvingMatrix(object):
 
     Attributes
     ----------
-    U_true, VH_true, S_true : ndarrays of shape ()
+    U_true, VH_true, sigma_true : ndarrays of shape (m, k), (k, n), (k,)
         True SVD of current update
 
-    Uk, VHk, Sk : ndarrays of shape ()
+    Uk, VHk, sigmak : ndarrays of shape (m, k), (k, n), (k,)
         Truncated SVD calculated using one of the methods
 
     runtime : float
         Total time elapsed in calculating updates so far    
     
-    append_matrix : ndarray of shape ()
+    append_matrix : ndarray of shape (s, n)
         Entire matrix to be appended over the course of updates
     
-    update_matrix : ndarray of shape ()
+    update_matrix : ndarray of shape (u, n)
         Matrix appended in last update
     
     n_appended : int
@@ -282,3 +282,19 @@ class EvolvingMatrix(object):
             )
             # print(f"Covariance error at phi = {str(self.phi)}:\n{cov_err}")
             # print(f"Projection error at phi = {str(self.phi)}:\n{proj_err}")
+
+    def query(self, q):
+        """
+        Query using the truncated SVD
+        
+        Parameters
+        ----------
+        q : ndarray of shape (n_queries, n)
+            Queries
+        
+        Returns
+        -------
+        score : ndarray of shape (n_queries, m)
+            Similarity scores for each document for each query
+        """
+        return None
