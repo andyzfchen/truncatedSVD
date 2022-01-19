@@ -19,7 +19,7 @@ m_percent = 0.10
 datasets = ["CISI", "CRAN", "MED"]
 batch_splits = [10]
 phis = [[1, 5, 10]]
-update_methods = ["zha-simon", "bcg"]
+update_methods = ["zha-simon"]
 r_values = [10]
 m_percent = 0.10
 
@@ -55,12 +55,8 @@ for dataset in datasets:
                 if not os.path.exists(temp_dir):
                     os.mkdir(temp_dir)
 
-                # Load dataset (.npy)
-                # A_full = np.load(f"../datasets/{dataset}/{dataset}.npy").T
-
-                A_full = loadmat(f"../datasets/{dataset}/A_{dataset}.mat")[
-                    "A_" + f"{dataset}".lower()
-                ]
+                # Load dataset
+                A_full = np.load(f"../datasets/{dataset}/{dataset}_KKU.npy")
 
                 # Calculate row index to split data
                 (m_dim_full, n_dim) = np.shape(A_full)
