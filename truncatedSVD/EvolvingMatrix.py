@@ -123,6 +123,7 @@ class EvolvingMatrix(object):
         # Initialize total runtime
         self.runtime = 0.0
 
+
     def set_append_matrix(self, append_matrix):
         """Set entire matrix to appended over the course of updates and calculates SVD for final matrix
         
@@ -195,16 +196,20 @@ class EvolvingMatrix(object):
 
     def update_svd_brute_force(self):
         """Return optimal rank-k approximation of updated matrix using brute force method."""
+        start = time.perf_counter()
         self.Uk, self.sigmak, self.VHk = brute_force_update(
             self.A, self.Uk, self.sigmak, self.VHk, self.update_matrix
         )
+        self.runtime += time.perf_counter() - start
         return self.Uk_matrix, self.Sigmak_array, self.VHk_matrix
 
     def update_svd_naive(self):
         """Return truncated SVD of updated matrix using the naïve update method."""
+        start = time.perf_counter()
         self.Uk, self.sigmak, self.VHk = naive_update(
             self.A, self.Uk, self.sigmak, self.VHk, self.update_matrix
         )
+        self.runtime += time.perf_counter() - start
         return self.Uk, self.sigmak, self.VHk
  
     def calculate_true_svd(self, evolution_method, dataset):
