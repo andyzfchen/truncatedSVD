@@ -72,7 +72,7 @@ class EvolvingMatrix(object):
 
     def __init__(self, initial_matrix, append_matrix=None, n_batches=1, k_dim=None):
         # Initial matrix
-        self.initial_matrix = initial_matrix.toarray()  # ensure data is in dense format
+        self.initial_matrix = initial_matrix  # ensure data is in dense format
         (self.m_dim, self.n_dim) = np.shape(self.initial_matrix)
         print(f"Initial matrix of evolving matrix set to shape of ( {self.m_dim}, {self.n_dim} ).")
 
@@ -143,7 +143,7 @@ class EvolvingMatrix(object):
         append_matrix : ndarray of shape (s, n)
             Matrix to be appended
         """
-        self.append_matrix = append_matrix.toarray()  # ensure data is in dense format
+        self.append_matrix = append_matrix  # ensure data is in dense format
         (self.s_dim, n_dim) = np.shape(self.append_matrix)
         self.step = int(np.ceil(self.s_dim / self.n_batches))
         assert n_dim == self.n_dim, "Number of columns must be the same for initial matrix and matrix to be appended."
@@ -315,7 +315,7 @@ class EvolvingMatrix(object):
 
     def query(self, q):
         """
-        Query using the truncated SVD
+        Query using the matrix reconstructed from most recent truncated SVD
         
         Parameters
         ----------
