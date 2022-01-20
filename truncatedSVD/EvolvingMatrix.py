@@ -6,7 +6,7 @@ import scipy.sparse.linalg
 import sklearn.decomposition
 import os
 import time
-from metrics import proj_err, cov_err, rel_err, res_norm
+from metrics import proj_err, cov_err, rel_err, res_norm, mean_squared_error
 from svd_update import zha_simon_update, bcg_update, brute_force_update, naive_update
 
 
@@ -234,7 +234,7 @@ class EvolvingMatrix(object):
             np.save(f"{dirname}/VH_true_phi_{str(self.phi)}.npy", self.VH_true)
 
     def get_mean_squared_error(self):
-        return None
+        return mean_squared_error(self)
 
     def get_relative_error(self, sv_idx=None):
         """Return relative error of n-th singular value"""

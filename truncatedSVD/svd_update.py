@@ -182,7 +182,6 @@ def brute_force_update(A, k, full_matrices=False):
         “Frequent Directions: Simple and Deterministic Matrix Sketching,
         ”SIAM Journal on Computing, vol. 45, no. 5, pp. 1762-1792, 1 2016
     """
-    # TODO: implement brute force update
     _, Sk, VHk = np.linalg.svd(A.T.dot(A), full_matrices=full_matrices)
     return VHk[:k, :], Sk[:k]
 
@@ -208,7 +207,7 @@ def naive_update(l, d):
     M. Ghashami, E. Liberty, J. M. Phillips, and D. P. Woodruff, 
         “Frequent Directions: Simple and Deterministic Matrix Sketching,
         ”SIAM Journal on Computing, vol. 45, no. 5, pp. 1762-1792, 1 2016
-    """    
+    """
     return np.zeros((l, d))
 
 
