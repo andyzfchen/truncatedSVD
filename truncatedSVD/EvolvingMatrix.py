@@ -8,7 +8,7 @@ import os
 import sys
 import time
 from metrics import proj_err, cov_err, rel_err, res_norm
-from svd_update import zha_simon_update, bcg_update, brute_force_update, naive_update
+from svd_update import zha_simon_update, bcg_update, brute_force_update, naive_update, fd_update
 
 sys.path.append('../frequent-directions')
 from frequentDirections import FrequentDirections
@@ -84,7 +84,7 @@ class EvolvingMatrix(object):
 
         # setting FD initial matrix
         for ii in range(self.m_dim):
-            self.freq_dir.append(self.append_matrix[ii,:])
+            self.freq_dir.append(self.initial_matrix[ii,:])
 
         # True SVD of current update (initialize to SVD of the initial matrix)
         self.U_true, self.sigma_true, self.VH_true = np.linalg.svd(
@@ -156,7 +156,7 @@ class EvolvingMatrix(object):
         # reset Frequent Directions
         self.freq_dir.reset()
         for ii in range(self.m_dim):
-            self.freq_dir.append(self.append_matrix[ii,:])
+            self.freq_dir.append(self.initial_matrix[ii,:])
 
     def evolve(self):
         """Evolve matrix by one update according to update parameters specified."""
@@ -234,7 +234,12 @@ class EvolvingMatrix(object):
 
     def update_svd_fd(self):
         """Return truncated SVD of updated matrix using the Frequent Directions method."""
-
+        start = time.perf_counter()
+        fd_update(
+            self.freq_dir, self.update_matrix
+        )
+        self.Uk, self.sigmak, self.VHk = np.linalg.svd(self.freq_dir.get(), full_matrices=False)
+        self.runtime += time.perf_counter() - start
         return self.Uk, self.sigmak, self.VHk
  
     def calculate_true_svd(self, evolution_method, dataset):
@@ -268,14 +273,25 @@ class EvolvingMatrix(object):
 
         return rel_err(self.sigma_true[sv_idx], self.sigmak[sv_idx])
 
-    def get_residual_norm(self, sv_idx=None):
+    def get_residual_norm(self, sv_idx=None, A_idx=None):
         """Return residual norm of n-th singular vector"""
         if sv_idx is None:
             sv_idx = np.arange(self.k_dim)
 
-        return res_norm(
-            self.A, self.Uk[:, sv_idx], self.VHk[sv_idx, :].T, self.sigmak[sv_idx]
-        )
+        if A_idx is None:
+          return res_norm(
+              self.A, self.Uk[:, sv_idx], self.VHk[sv_idx, :].T, self.sigmak[sv_idx]
+          )
+        else:
+          U, sigma, VH = np.linalg.svd(self.A, full_matrices=False)
+          print(f"U: {np.shape(U)}")
+          print(f"s: {np.shape(sigma)}")
+          print(f"VH: {np.shape(VH)}")
+          A = np.dot(np.dot(U[:A_idx,:], np.diag(sigma)), VH)
+
+          return res_norm(
+              A, self.Uk[:, sv_idx], self.VHk[sv_idx, :].T, self.sigmak[sv_idx]
+          )
 
     def get_covariance_error(self):
         """Return covariance error"""
@@ -287,11 +303,11 @@ class EvolvingMatrix(object):
         """Return projection error"""
         return proj_err()
 
-    def save_metrics(self, fdir, print_metrics=True, sv_idx=None, r_str=""):
+    def save_metrics(self, fdir, print_metrics=True, sv_idx=None, A_idx=None, r_str=""):
         """Calculate and save metrics and optionally print to console."""
         # Calculate metrics
         rel_err = self.get_relative_error(sv_idx=sv_idx)
-        res_norm = self.get_residual_norm(sv_idx=sv_idx)
+        res_norm = self.get_residual_norm(sv_idx=sv_idx, A_idx=A_idx)
         # cov_err = self.get_covariance_error()
         # proj_err = self.get_projection_error()
 
