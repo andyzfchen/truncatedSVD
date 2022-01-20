@@ -19,7 +19,7 @@ m_percent = 0.10
 datasets = ["CISI", "CRAN", "MED"]
 batch_splits = [10]
 phis = [[1, 5, 10]]
-update_methods = ["zha-simon"]
+update_methods = ["fd"]
 r_values = [10]
 m_percent = 0.10
 
@@ -92,7 +92,7 @@ for dataset in datasets:
                     elif method == "naive":
                         model.update_svd_naive()
                     elif method == "fd":
-                        model.update_fd()
+                        model.update_svd_fd()
                     else:
                         raise ValueError(
                             f"Error: Update method {method} does not exist. Must be one of the following."
@@ -103,8 +103,11 @@ for dataset in datasets:
                         # Calculate true SVD for this batch
                         model.calculate_true_svd(method, dataset)
 
-                        # Caluclate metrics
-                        model.save_metrics(temp_dir, print_metrics=True, r_str=r_str)
+                        # Calculate metrics
+                        if method == "fd":
+                          model.save_metrics(temp_dir, print_metrics=True, A_idx=model.freq_dir.ell, r_str=r_str)
+                        else:
+                          model.save_metrics(temp_dir, print_metrics=True, r_str=r_str)
 
                     print()
 

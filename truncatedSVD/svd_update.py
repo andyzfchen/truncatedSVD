@@ -211,5 +211,29 @@ def naive_update(l, d):
     return np.zeros((l, d))
 
 
-def frequent_directions_update():
-    return None
+def fd_update(fd, E):
+    """Calculate truncated SVD update using Frequent Directions algorithm.
+    
+    Parameters
+    ----------
+    fd : FrequentDirections object
+        FrequentDirections object used for performing FD updates
+    
+    E : array, shape (s, n)
+        Appended submatrix
+
+    Returns
+    -------
+    fd : FrequentDirections object
+        FrequentDirections object used for performing FD updates
+    
+    References
+    ----------
+    M. Ghashami, E. Liberty, J. M. Phillips, and D. P. Woodruff, 
+        “Frequent Directions: Simple and Deterministic Matrix Sketching,
+        ”SIAM Journal on Computing, vol. 45, no. 5, pp. 1762-1792, 1 2016
+    """    
+    for row in E:
+      fd.append(row)
+    
+    return fd

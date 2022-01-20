@@ -5,9 +5,13 @@ import numpy as np
 import scipy.sparse.linalg
 import sklearn.decomposition
 import os
+import sys
 import time
-from metrics import proj_err, cov_err, rel_err, res_norm, mean_squared_error
-from svd_update import zha_simon_update, bcg_update, brute_force_update, naive_update
+from metrics import proj_err, cov_err, rel_err, res_norm
+from svd_update import zha_simon_update, bcg_update, brute_force_update, naive_update, fd_update
+
+sys.path.append('../frequent-directions')
+from frequentDirections import FrequentDirections
 
 
 class EvolvingMatrix(object):
@@ -75,6 +79,13 @@ class EvolvingMatrix(object):
         # Matrix after update (initialize to initial matrix)
         self.A = self.initial_matrix
 
+        # Initialize FD object
+        self.freq_dir = FrequentDirections(self.n_dim, (self.m_dim+1)//2)   # FD takes k, ell = m/2
+
+        # setting FD initial matrix
+        for ii in range(self.m_dim):
+            self.freq_dir.append(self.initial_matrix[ii,:])
+
         # True SVD of current update (initialize to SVD of the initial matrix)
         self.U_true, self.sigma_true, self.VH_true = np.linalg.svd(
             self.initial_matrix, full_matrices=False
@@ -87,7 +98,7 @@ class EvolvingMatrix(object):
             assert k_dim < min(self.m_dim, self.n_dim), "k must be smaller than or equal to min(m,n)."
             self.k_dim = k_dim
 
-        # Get intial truncated SVD
+        # Get initial truncated SVD
         self.Uk = self.U_true[:, : self.k_dim]
         self.sigmak = self.sigma_true[: self.k_dim]
         self.VHk = self.VH_true[: self.k_dim, :]
@@ -142,6 +153,11 @@ class EvolvingMatrix(object):
             np.append(self.initial_matrix, self.append_matrix, axis=0), full_matrices=False
         )
 
+        # reset Frequent Directions
+        self.freq_dir.reset()
+        for ii in range(self.m_dim):
+            self.freq_dir.append(self.initial_matrix[ii,:])
+
     def evolve(self):
         """Evolve matrix by one update according to update parameters specified."""
         # Check if number of appended rows exceeds number of remaining rows in appendix matrix
@@ -171,6 +187,10 @@ class EvolvingMatrix(object):
         self.update_matrix = np.array([])
         self.n_appended = 0
         self.n_appended_total = 0
+
+        self.freq_dir.reset()
+        for ii in range(self.m_dim):
+            self.freq_dir.append(self.append_matrix[ii,:])
 
     def update_svd_zha_simon(self):
         """Return truncated SVD of updated matrix using the Zha-Simon projection method."""
@@ -211,6 +231,16 @@ class EvolvingMatrix(object):
         )
         self.runtime += time.perf_counter() - start
         return self.Uk, self.sigmak, self.VHk
+
+    def update_svd_fd(self):
+        """Return truncated SVD of updated matrix using the Frequent Directions method."""
+        start = time.perf_counter()
+        fd_update(
+            self.freq_dir, self.update_matrix
+        )
+        self.Uk, self.sigmak, self.VHk = np.linalg.svd(self.freq_dir.get(), full_matrices=False)
+        self.runtime += time.perf_counter() - start
+        return self.Uk, self.sigmak, self.VHk
  
     def calculate_true_svd(self, evolution_method, dataset):
         """Calculate true SVD of the current A matrix."""
@@ -243,14 +273,25 @@ class EvolvingMatrix(object):
 
         return rel_err(self.sigma_true[sv_idx], self.sigmak[sv_idx])
 
-    def get_residual_norm(self, sv_idx=None):
+    def get_residual_norm(self, sv_idx=None, A_idx=None):
         """Return residual norm of n-th singular vector"""
         if sv_idx is None:
             sv_idx = np.arange(self.k_dim)
 
-        return res_norm(
-            self.A, self.Uk[:, sv_idx], self.VHk[sv_idx, :].T, self.sigmak[sv_idx]
-        )
+        if A_idx is None:
+          return res_norm(
+              self.A, self.Uk[:, sv_idx], self.VHk[sv_idx, :].T, self.sigmak[sv_idx]
+          )
+        else:
+          U, sigma, VH = np.linalg.svd(self.A, full_matrices=False)
+          print(f"U: {np.shape(U)}")
+          print(f"s: {np.shape(sigma)}")
+          print(f"VH: {np.shape(VH)}")
+          A = np.dot(np.dot(U[:A_idx,:], np.diag(sigma)), VH)
+
+          return res_norm(
+              A, self.Uk[:, sv_idx], self.VHk[sv_idx, :].T, self.sigmak[sv_idx]
+          )
 
     def get_covariance_error(self):
         """Return covariance error"""
@@ -262,11 +303,11 @@ class EvolvingMatrix(object):
         """Return projection error"""
         return proj_err()
 
-    def save_metrics(self, fdir, print_metrics=True, sv_idx=None, r_str=""):
+    def save_metrics(self, fdir, print_metrics=True, sv_idx=None, A_idx=None, r_str=""):
         """Calculate and save metrics and optionally print to console."""
         # Calculate metrics
         rel_err = self.get_relative_error(sv_idx=sv_idx)
-        res_norm = self.get_residual_norm(sv_idx=sv_idx)
+        res_norm = self.get_residual_norm(sv_idx=sv_idx, A_idx=A_idx)
         # cov_err = self.get_covariance_error()
         # proj_err = self.get_projection_error()
 
