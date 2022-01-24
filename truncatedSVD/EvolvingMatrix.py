@@ -7,7 +7,7 @@ import sklearn.decomposition
 import os
 import sys
 import time
-from metrics import proj_err, cov_err, rel_err, res_norm
+from metrics import proj_err, cov_err, rel_err, res_norm, mse
 from svd_update import zha_simon_update, bcg_update, brute_force_update, naive_update, fd_update
 
 sys.path.append('../frequent-directions')
@@ -107,6 +107,9 @@ class EvolvingMatrix(object):
         print(f"Initial Sigmak matrix of evolving matrix set to shape of ( {np.shape(self.sigmak)} ).")
         print(f"Initial VHk matrix of evolving matrix set to shape of ( {np.shape(self.VHk)} ).")
 
+        # Calculate rank-k reconstruction using truncated SVD
+        self.Ak = self.reconstruct()
+
         # Initialize matrix to be appended
         self.n_batches = n_batches
         if append_matrix is None:
@@ -157,6 +160,19 @@ class EvolvingMatrix(object):
         self.freq_dir.reset()
         for ii in range(self.m_dim):
             self.freq_dir.append(self.initial_matrix[ii,:])
+
+
+    def reconstruct(self):
+        """Return rank-k approximation of A using truncated SVD
+        
+        Returns
+        -------
+        Ak : ndarray of shape (m, n)
+            Rank-k approximation of A using truncated SVD
+        """
+        self.Ak = self.Uk.dot(np.diag(self.sigmak).dot(self.VHk))
+        return self.Ak
+        
 
     def evolve(self):
         """Evolve matrix by one update according to update parameters specified."""
@@ -263,9 +279,6 @@ class EvolvingMatrix(object):
             np.save(f"{dirname}/sigma_true_phi_{str(self.phi)}.npy", self.sigma_true)
             np.save(f"{dirname}/VH_true_phi_{str(self.phi)}.npy", self.VH_true)
 
-    def get_mean_squared_error(self):
-        return mean_squared_error(self)
-
     def get_relative_error(self, sv_idx=None):
         """Return relative error of n-th singular value"""
         if sv_idx is None:
@@ -303,6 +316,9 @@ class EvolvingMatrix(object):
         """Return projection error"""
         return proj_err()
 
+    def get_mean_squared_error(self):
+        return mse(self)
+
     def save_metrics(self, fdir, print_metrics=True, sv_idx=None, A_idx=None, r_str=""):
         """Calculate and save metrics and optionally print to console."""
         # Calculate metrics
@@ -331,16 +347,19 @@ class EvolvingMatrix(object):
 
     def query(self, q):
         """
-        Query using the matrix reconstructed from most recent truncated SVD
+        Return score for query using updated truncated SVD
+        
+        The score for a query of shape (n_terms, 1) for a term-document matrix A of shape (n_docs, n_terms) is q.T.dot(A)
+        The scores can also be calculated for a set of queries of shape (n_terms, n_queries).
         
         Parameters
         ----------
-        q : ndarray of shape (n_queries, n)
-            Queries
-        
+        q : ndarray of shape (n_queries, n_terms)
+            Each row is a query where the i-th entry represents the weight of the i-th term.
+   
         Returns
         -------
-        score : ndarray of shape (n_queries, m)
-            Similarity scores for each document for each query
+        score : ndarray of shape (n_queries, n_docs)
+            Similarity scores of each query for each document
         """
-        return None
+        return self.Ak.dot(q)
