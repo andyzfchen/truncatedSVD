@@ -1,3 +1,4 @@
+
 import json
 from os import mkdir
 from os.path import normpath, exists,join
@@ -40,30 +41,46 @@ def perform_updates(dataset,n_batches,phi,model,method,update_method,r_str,save_
             print()
 
 
-if len(sys.argv) != 2:
-    print("Usage: python run_tests.py <path to test json file>")
+if len(sys.argv) != 3:
+    print("Usage: python run_tests.py <path to test json file> <path to folder to hold cache>")
     exit()
-f = open(sys.argv[1])
-test_spec = json.load(f)
 
-if not exists(normpath("../cache")):
-    mkdir(normpath("../cache"))
+if not exists(sys.argv[1]):
+    print("Usage: python run_tests.py <path to test json file> <path to folder to hold cache>\nPath to test file does not exist") 
+    exit()
+if not exists(sys.argv[2]):
+    print("Usage: python run_tests.py <path to test json file> <path to folder to hold cache>\nPath to parent directory for cache does not exist")  
+    exit()      
+
+
+f = open(sys.argv[1])
+
+try:
+    test_spec = json.load(f)
+except ValueError as err:
+    print("Tests file is not valid json, please double check syntax")
+    exit()
+
+cache_path = normpath(join(sys.argv[2],"cache"))
+
+if not exists(cache_path):
+    mkdir(normpath(cache_path))
 
 for test in test_spec['tests']:
 
     method = test['method']
 
     #Create directory to store results for method
-    if not exists(normpath(f"../cache/{method}")):
-        mkdir(normpath(f"../cache/{method}"))
+    if not exists(normpath(join(cache_path,method))):
+        mkdir(normpath(join(cache_path,method)))
 
     for dataset in test['datasets']:
 
     
 
         #Create directory to store results for method and dataset
-        if not exists(normpath(f"../cache/{method}/{dataset}")):
-            mkdir(normpath(f"../cache/{method}/{dataset}"))
+        if not exists(normpath(join(cache_path,method,dataset))):
+            mkdir(normpath(join(cache_path,method,dataset)))
 
         data = np.load(test_spec['dataset_info'][dataset])
 
@@ -92,7 +109,7 @@ for test in test_spec['tests']:
 
 
                 # Create directory to save data for this batch split and k
-                save_dir = f"../cache/{method}/{dataset}/{dataset}_batch_split_{str(n_batches)}_k_dims_{str(k)}"
+                save_dir = join(cache_path,method,dataset,f"{dataset}_batch_split_{str(n_batches)}_k_dims_{str(k)}")
                 if not exists(normpath(save_dir)):
                     mkdir(normpath(save_dir))                   
                 
