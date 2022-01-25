@@ -1,8 +1,7 @@
-"""Various algorithms for updating the truncated singular value decomposition (SVD) of evolving matrices.
+"""Algorithms for updating the truncated singular value decomposition (SVD) of evolving matrices.
 """
 
 import numpy as np
-import time
 from scipy.linalg import block_diag
 from blockCG import blockCG
 from sklearn.utils.extmath import randomized_svd as rsvd
@@ -41,6 +40,11 @@ def zha_simon_update(A, Uk, Sk, VHk, E):
 
     References
     ----------
+    V. Kalantzis, G. Kollias, S. Ubaru, A. N. Nikolakopoulos, L. Horesh, and K. L. Clarkson,
+        “Projection techniquesto update the truncated SVD of evolving matrices with applications,”
+        inProceedings of the 38th InternationalConference on Machine Learning,
+        M. Meila and T. Zhang, Eds.PMLR, 7 2021, pp. 5236-5246.
+
     H. Zha and H. D. Simon, “Timely communication on updating problems in latent semantic indexing,
         ”Society for Industrial and Applied Mathematics, vol. 21, no. 2, pp. 782-791, 1999.
     """
@@ -67,7 +71,7 @@ def zha_simon_update(A, Uk, Sk, VHk, E):
     return Uk_new, Tk, Vk_new.T
 
 
-def bcg_update(B, Uk, sigmak, VHk, E, lam=None, r=10):
+def bcg_update(B, Uk, sigmak, VHk, E, lam=None, r=10, rsvd_opt=True):
     """Calculate truncated SVD update using enhanced projection matrix.
 
     Parameters
@@ -93,6 +97,10 @@ def bcg_update(B, Uk, sigmak, VHk, E, lam=None, r=10):
     r : int, default=10
         Parameter determining number of columns in matrix R
 
+    rsvd_opt : bool, default=False
+        If True, use randomized SVD to approximate X_lambda_r.
+        Otherwise, use truncated SVD of random projection in calculating approximation.
+        
     Returns
     -------
     Uk_new : array, shape (m, k)
@@ -106,8 +114,10 @@ def bcg_update(B, Uk, sigmak, VHk, E, lam=None, r=10):
 
     References
     ----------
-    H. Zha and H. D. Simon, “Timely communication on updating problems in latent semantic indexing,
-        ”Society for Industrial and Applied Mathematics, vol. 21, no. 2, pp. 782-791, 1999.
+    V. Kalantzis, G. Kollias, S. Ubaru, A. N. Nikolakopoulos, L. Horesh, and K. L. Clarkson,
+        “Projection techniquesto update the truncated SVD of evolving matrices with applications,”
+        inProceedings of the 38th InternationalConference on Machine Learning,
+        M. Meila and T. Zhang, Eds.PMLR, 7 2021, pp. 5236-5246.
     """
     print("Updating truncated SVD using enhanced projection method.")
     k = len(sigmak)
@@ -123,15 +133,15 @@ def bcg_update(B, Uk, sigmak, VHk, E, lam=None, r=10):
     rhs = (np.eye(m) - Uk.dot(Uk.T)).dot(B.dot(E.T))
     BlBEH = blockCG(lhs, rhs, max_iter=1)
 
-    # Calculate B(lambda) B E^H R
-    BlBEHR = BlBEH.dot(np.random.normal(size=(E.shape[0], 2 * r)))
-
-    # Calculate X_lambda_r using randomized SVD
+    # Calculate X_lambda_r
     print("Calculating X_lambda_r.")
-    # Xlr, _, _ = np.linalg.svd(BlBEHR, full_matrices=False)
-    # Xlr = Xlr[:, :r]
-    Xlr, _, _ = rsvd(BlBEH, n_components=r, n_oversamples=r, n_iter=0)
-
+    if rsvd_opt:    # calculate using randomized SVD
+        Xlr, _, _ = rsvd(BlBEH, n_components=r, n_oversamples=2 * r, n_iter=0)
+    else:           # calculate using truncated SVD of random normal projection
+        BlBEHR = BlBEH.dot(np.random.normal(size=(E.shape[0], 2 * r)))
+        Xlr, _, _ = np.linalg.svd(BlBEHR, full_matrices=False)
+        Xlr = Xlr[:, :r]
+    
     # Construct Z matrix
     print("Constructing Z matrix.")
     Z = block_diag(np.hstack((Uk, Xlr)), np.eye(E.shape[0]))
@@ -170,11 +180,14 @@ def brute_force_update(A, k, full_matrices=False):
     
     Returns 
     -------
-    VHk : ndarray of shape (n, k)
-        Truncated right singular vectors
+    Uk : ndarray of shape (m, k)
+        Truncated left singular vectors
     
-    Sk : ndarray of shape (k,)
+    sk : ndarray of shape (k,)
         Truncated singular values
+    
+    VHk : ndarray of shape (k, n)
+        Truncated right singular vectors
     
     References
     ----------
@@ -182,8 +195,8 @@ def brute_force_update(A, k, full_matrices=False):
         “Frequent Directions: Simple and Deterministic Matrix Sketching,
         ”SIAM Journal on Computing, vol. 45, no. 5, pp. 1762-1792, 1 2016
     """
-    _, Sk, VHk = np.linalg.svd(A.T.dot(A), full_matrices=full_matrices)
-    return VHk[:k, :], Sk[:k]
+    u, s, vh = np.linalg.svd(A, full_matrices=full_matrices)
+    return u[:, :k], s[:k], vh[:k, :]
 
 
 def naive_update(l, d):

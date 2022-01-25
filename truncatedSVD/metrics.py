@@ -1,33 +1,44 @@
 import numpy as np
-from sklearn.metrics import mean_squared_error, precision_recall_curve
+from sklearn.metrics import mean_squared_error
 
 
-def pr_curve(y_true, y_score):
-    """Return precision-recall curve
+def query_precision_recall(A, Q, relevant_docs):
+    """Return precision-recall curve for LSI application
     
     Wrapper for sklearn implementation of computing precision-recall pairs.
     
     Parameters
     ----------
-    y_true : ndarray of shape (n,)
-        True labels
+    A : ndarray of shape (n_terms, n_docs)
+         Term-document matrix
         
-    y_score : ndarray of shape (n,)
-        Predicted labels
-         
+    Q : ndarray of shape (n_queries, n_terms)
+        Query matrix
+    
+    relevant_docs : ndarray of shape (n_queries, n_)
+    
     Returns
     -------
-    precision : float
-        Precision
+    precision : ndarray of shape (,)
+        11-point interpolated precision
     
-    Recall : float
+    recall : ndarray of shape (,)
         Recall
-        
+    
     References
     ----------
     https://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_recall_curve.html#sklearn.metrics.precision_recall_curve
     """
-    precision, recall, _ = precision_recall_curve(y_true, y_score)
+    # Check dimensions of query and term-document matrices
+    assert Q.shape[1] == A.shape[0]
+    
+    # Calculate scores for each query
+    scores = Q.dot(A)
+    
+    # Calculate 11-point average precision
+    precision = 0
+    recall = 0
+    
     return precision, recall
 
 
@@ -96,8 +107,10 @@ def cov_err(A, B):
     Parameters
     ----------
     A : array, shape (n, d)
+        Original data matrix
 
-    B : array, shape (n, d)
+    B : array, shape (l, d)
+        Sketch matrix
 
     Returns
     -------
@@ -171,11 +184,3 @@ def res_norm(A, U, V, s):
       M. Meila and T. Zhang, Eds.PMLR, 7 2021, pp. 5236-5246.
     """
     return np.linalg.norm(A.dot(V) - U * s, axis=0) / s
-
-
-def precision():
-    return None
-
-
-def recall():
-    return None

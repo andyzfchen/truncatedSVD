@@ -4,6 +4,7 @@ import numpy as np
 import EvolvingMatrix as EM
 import os
 from scipy.io import loadmat
+from metrics import query_precision_recall
 
 
 datasets = ["CISI", "CRAN", "MED", "ML1M", "Reuters"]
@@ -15,16 +16,18 @@ m_percent = 0.10
 
 
 # debug mode
-# datasets = [ "CISI" ]
 datasets = ["CISI", "CRAN", "MED"]
 batch_splits = [10]
 phis = [[1, 5, 10]]
-update_methods = ["fd"]
+update_methods = ["zha-simon", 
+                #   "bcg", 
+                #   "brute-force", 
+                #   "naive"
+                 ]
 r_values = [10]
 m_percent = 0.10
 
-# TODO: loop through various values of k (25,50,100)
-k_dim = 50
+k_dim = 25
 
 # Create local folder to save outputs
 if not os.path.exists("../cache"):
@@ -40,7 +43,7 @@ for dataset in datasets:
             if method == "zha-simon" and r_value != r_values[0]:
                 continue
 
-            print(f"Using the {method} evolution method.")
+            print(f"Using the {method} update method.")
 
             if not os.path.exists("../cache/" + method):
                 os.mkdir("../cache/" + method)
@@ -87,7 +90,7 @@ for dataset in datasets:
                     elif method == "bcg": 
                         model.update_svd_bcg()
                         r_str = "_rval_" + str(r_value)
-                    elif method == "brute":
+                    elif method == "brute-force":
                         model.update_svd_brute_force()
                     elif method == "naive":
                         model.update_svd_naive()
@@ -110,3 +113,8 @@ for dataset in datasets:
                           model.save_metrics(temp_dir, print_metrics=True, r_str=r_str)
 
                     print()
+                
+                # # Calculate precision-recall metric for LSI-related datasets
+                # if any(dataset in ["CISI", "CRAN", "MED"]):
+                #     Ak = model.reconstruct()
+                #     p, r = query_precision_recall(Ak, Q, rel_docs)

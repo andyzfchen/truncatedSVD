@@ -1,4 +1,4 @@
-"""Evolving matrix class for updating truncated singular value decomposition (SVD) of evolving matrices.
+"""EvolvingMatrix class for updating the truncated singular value decomposition (SVD) of evolving matrices.
 """
 
 import numpy as np
@@ -41,11 +41,32 @@ class EvolvingMatrix(object):
 
     Attributes
     ----------
-    U_true, VH_true, sigma_true : ndarrays of shape (m, k), (k, n), (k,)
-        True SVD of current update
+    m_dim : int
+        Number of rows in current data matrix
+    
+    n_dim : int
+        Number of columns in data matrix. Does not change in row-update case.
+    
+    s_dim : int
+        Number of rows in matrix to be appended
 
-    Uk, VHk, sigmak : ndarrays of shape (m, k), (k, n), (k,)
-        Truncated SVD calculated using one of the methods
+    k_dim : int
+        Desired rank for truncated SVD
+    
+    A : ndarray (m + n_appended_total, n)
+        Current data matrix 
+    
+    Ak : ndarray of shape (m, n)
+        Matrix reconstructed from truncated SVD 
+    
+    U_true, sigma_true, VH_true : ndarrays of shape (m, k), (k,), (k, n)
+        Truncated SVD of current update
+
+    Uk, sigmak, VHk : ndarrays of shape (m, k), (k,), (n, k)
+        Truncated SVD of current update calculated using update method
+
+    U_all, sigma_all, VH_all : ndarrays of shape (m, k,), (k,), (k,n)
+        Truncated SVD of entire matrix
 
     runtime : float
         Total time elapsed in calculating updates so far    
@@ -56,35 +77,49 @@ class EvolvingMatrix(object):
     update_matrix : ndarray of shape (u, n)
         Matrix appended in last update
     
+    phi : int
+        Current update index
+    
+    n_batches : int
+        Number of batches (updates)
+    
     n_appended : int
         Number of rows appended in last update
     
+    n_appended_total : int
+        Number of rows appended in all updates
+    
+    runtime : float
+        Total runtime for updates
+    
+    freq_dir : FrequentDirections
+        FrequentDirections object based on Ghashami et al. (2016)
+    
     References
     ----------
-    H. Zha and H. D. Simon, “Timely communication on updating problems in latent semantic indexing,
-        ”Society for Industrial and Applied Mathematics, vol. 21, no. 2, pp. 782-791, 1999.
-
     V. Kalantzis, G. Kollias, S. Ubaru, A. N. Nikolakopoulos, L. Horesh, and K. L. Clarkson,
         “Projection techniquesto update the truncated SVD of evolving matrices with applications,”
         inProceedings of the 38th InternationalConference on Machine Learning,
         M. Meila and T. Zhang, Eds.PMLR, 7 2021, pp. 5236-5246.
+        
+    Mina Ghashami et al. “Frequent Directions: Simple and Deterministic Matrix Sketching”. 
+        In: SIAM Journalon Computing45.5 (Jan. 2016), pp. 1762-1792.
     """
-
     def __init__(self, initial_matrix, append_matrix=None, n_batches=1, k_dim=None):
         # Initial matrix
         self.initial_matrix = initial_matrix  # ensure data is in dense format
         (self.m_dim, self.n_dim) = np.shape(self.initial_matrix)
-        print(f"Initial matrix of evolving matrix set to shape of ( {self.m_dim}, {self.n_dim} ).")
+        print(f"Initial matrix of evolving matrix set to shape of ({self.m_dim}, {self.n_dim}).")
 
         # Matrix after update (initialize to initial matrix)
         self.A = self.initial_matrix
 
         # Initialize FD object
-        self.freq_dir = FrequentDirections(self.n_dim, (self.m_dim+1)//2)   # FD takes k, ell = m/2
+        self.freq_dir = FrequentDirections(self.n_dim, (self.m_dim + 1) // 2)   # FD takes k, ell = m/2
 
         # setting FD initial matrix
         for ii in range(self.m_dim):
-            self.freq_dir.append(self.initial_matrix[ii,:])
+            self.freq_dir.append(self.initial_matrix[ii, :])
 
         # True SVD of current update (initialize to SVD of the initial matrix)
         self.U_true, self.sigma_true, self.VH_true = np.linalg.svd(
@@ -103,10 +138,11 @@ class EvolvingMatrix(object):
         self.sigmak = self.sigma_true[: self.k_dim]
         self.VHk = self.VH_true[: self.k_dim, :]
 
-        print(f"Initial Uk  matrix of evolving matrix set to shape of ( {np.shape(self.Uk)} ).")
-        print(f"Initial Sigmak matrix of evolving matrix set to shape of ( {np.shape(self.sigmak)} ).")
-        print(f"Initial VHk matrix of evolving matrix set to shape of ( {np.shape(self.VHk)} ).")
-
+        print("")
+        print(f"Initial Uk  matrix of evolving matrix set to shape of    {np.shape(self.Uk)}.")
+        print(f"Initial Sigmak matrix of evolving matrix set to shape of {np.shape(self.sigmak)}.")
+        print(f"Initial VHk matrix of evolving matrix set to shape of    {np.shape(self.VHk)}.\n")
+        
         # Calculate rank-k reconstruction using truncated SVD
         self.Ak = self.reconstruct()
 
@@ -156,22 +192,33 @@ class EvolvingMatrix(object):
             np.append(self.initial_matrix, self.append_matrix, axis=0), full_matrices=False
         )
 
-        # reset Frequent Directions
+        # Reset Frequent Directions
         self.freq_dir.reset()
         for ii in range(self.m_dim):
             self.freq_dir.append(self.initial_matrix[ii,:])
+        
+        return None
 
 
-    def reconstruct(self):
+    def reconstruct(self, update=True):
         """Return rank-k approximation of A using truncated SVD
+        
+        Parameters
+        ----------
+        update : bool, default=True
+            If True, sets and returns reconstruction based on truncated SVD update.
+            Otherwise, returns reconstruction but does not update class atrribute.
         
         Returns
         -------
         Ak : ndarray of shape (m, n)
             Rank-k approximation of A using truncated SVD
         """
-        self.Ak = self.Uk.dot(np.diag(self.sigmak).dot(self.VHk))
-        return self.Ak
+        if update:
+            self.Ak = self.Uk.dot(np.diag(self.sigmak).dot(self.VHk))
+            return self.Ak
+        else:
+            return self.Uk.dot(np.diag(self.sigmak).dot(self.VHk)) 
         
 
     def evolve(self):
@@ -184,11 +231,12 @@ class EvolvingMatrix(object):
         )
 
         # Append to current data matrix
-        print(f"Appending {self.n_appended} rows from appending matrix.")
+        print(f"Appending {self.n_appended} rows from matrix to be appended.")
         self.update_matrix = self.append_matrix[
             self.n_appended_total : self.n_appended_total + self.n_appended, :
         ]
         self.A = np.append(self.A, self.update_matrix, axis=0)
+        self.m_dim = self.A.shape[0]
 
         # Update counters for update
         self.phi += 1
@@ -196,9 +244,13 @@ class EvolvingMatrix(object):
         print(
             f"Appended {self.n_appended_total}/{self.s_dim} rows from appending matrix so far."
         )
+        
+        return None
+
 
     def reset(self):
         """Undo all evolutions and set current matrix to the initial matrix. Matrix to be appended is unchanged."""
+        print(f"Undoing all evolutions.\nSetting current matrix to initial matrix.")
         self.A_matrix = self.initial_matrix
         self.update_matrix = np.array([])
         self.n_appended = 0
@@ -207,6 +259,9 @@ class EvolvingMatrix(object):
         self.freq_dir.reset()
         for ii in range(self.m_dim):
             self.freq_dir.append(self.append_matrix[ii,:])
+            
+        return None
+
 
     def update_svd_zha_simon(self):
         """Return truncated SVD of updated matrix using the Zha-Simon projection method."""
@@ -216,6 +271,7 @@ class EvolvingMatrix(object):
         )
         self.runtime += time.perf_counter() - start
         return self.Uk, self.sigmak, self.VHk
+
 
     def update_svd_bcg(self):
         """Return truncated SVD of updated matrix using the BCG method."""
@@ -230,14 +286,14 @@ class EvolvingMatrix(object):
         self.runtime += time.perf_counter() - start
         return self.Uk, self.sigmak, self.VHk
 
+
     def update_svd_brute_force(self):
         """Return optimal rank-k approximation of updated matrix using brute force method."""
         start = time.perf_counter()
-        self.Uk, self.sigmak, self.VHk = brute_force_update(
-            self.A, self.Uk, self.sigmak, self.VHk, self.update_matrix
-        )
+        self.Uk, self.sigmak, self.VHk = brute_force_update(self.A, len(self.sigmak))
         self.runtime += time.perf_counter() - start
-        return self.Uk_matrix, self.Sigmak_array, self.VHk_matrix
+        return self.Uk, self.sigmak, self.VHk
+
 
     def update_svd_naive(self):
         """Return truncated SVD of updated matrix using the naïve update method."""
@@ -248,23 +304,32 @@ class EvolvingMatrix(object):
         self.runtime += time.perf_counter() - start
         return self.Uk, self.sigmak, self.VHk
 
+
     def update_svd_fd(self):
         """Return truncated SVD of updated matrix using the Frequent Directions method."""
         start = time.perf_counter()
-        fd_update(
-            self.freq_dir, self.update_matrix
-        )
+        fd_update(self.freq_dir, self.update_matrix)
         self.Uk, self.sigmak, self.VHk = np.linalg.svd(self.freq_dir.get(), full_matrices=False)
         self.runtime += time.perf_counter() - start
         return self.Uk, self.sigmak, self.VHk
  
-    def calculate_true_svd(self, evolution_method, dataset):
-        """Calculate true SVD of the current A matrix."""
+ 
+    def calculate_true_svd(self, update_method, dataset):
+        """Calculate true SVD of the current A matrix.
+        
+        Parameters
+        ----------
+        update_method : str, {"zha-simon", "bcg", "brute-force", "naive"}
+            Update method used
+            
+        dataset : str
+            Name of dataset
+        """
         print("Calculating current A matrix of size ", np.shape(self.A))
 
-        # Folder to save U,S,V arrays
+        # Folder to save U, sigma, V arrays
         dirname = (
-            f"../cache/{evolution_method}/{dataset}_batch_split_{str(self.n_batches)}"
+            f"../cache/{update_method}/{dataset}_batch_split_{str(self.n_batches)}"
         )
 
         # Load from cache if pre-calculated
@@ -278,72 +343,131 @@ class EvolvingMatrix(object):
             np.save(f"{dirname}/U_true_phi_{str(self.phi)}.npy", self.U_true)
             np.save(f"{dirname}/sigma_true_phi_{str(self.phi)}.npy", self.sigma_true)
             np.save(f"{dirname}/VH_true_phi_{str(self.phi)}.npy", self.VH_true)
+        
+        return None
+
 
     def get_relative_error(self, sv_idx=None):
-        """Return relative error of n-th singular value"""
+        """Return relative error of n-th singular value
+        
+        Parameters
+        ----------
+        sv_idx : int, default=None
+            Index of singular values for which to calculate relative error.
+            If None, calculates relative errors for all singular values.
+        
+        Returns
+        -------
+        rel_err : ndarray of shape (len(sv_idx),)
+            Relative errors of singular values
+        """
         if sv_idx is None:
             sv_idx = np.arange(self.k_dim)
 
         return rel_err(self.sigma_true[sv_idx], self.sigmak[sv_idx])
 
+
     def get_residual_norm(self, sv_idx=None, A_idx=None):
-        """Return residual norm of n-th singular vector"""
+        """Return residual norm of n-th singular triplet.
+        
+        Parameters
+        ----------
+        sv_idx : int, default=None
+            Calculates relative errors and residual norms for singular triplets specified.
+            If None, calculates metrics for all singular triplets.
+        
+        A_idx : int, default=None
+            Rank of approximation of A used in calculating metrics.
+            If None, uses original A
+        
+        Returns
+        -------
+        res_norm : ndarray of shape (len(sv_idx),)
+            Residual norms of singular triplets
+        """
         if sv_idx is None:
             sv_idx = np.arange(self.k_dim)
 
         if A_idx is None:
-          return res_norm(
-              self.A, self.Uk[:, sv_idx], self.VHk[sv_idx, :].T, self.sigmak[sv_idx]
-          )
+            return res_norm(
+                self.A, self.Uk[:, sv_idx], self.VHk[sv_idx, :].T, self.sigmak[sv_idx]
+            )
         else:
-          U, sigma, VH = np.linalg.svd(self.A, full_matrices=False)
-          print(f"U: {np.shape(U)}")
-          print(f"s: {np.shape(sigma)}")
-          print(f"VH: {np.shape(VH)}")
-          A = np.dot(np.dot(U[:A_idx,:], np.diag(sigma)), VH)
+            U, sigma, VH = np.linalg.svd(self.A, full_matrices=False)
+            print(f"U:  {np.shape(U)}")
+            print(f"s:  {np.shape(sigma)}")
+            print(f"VH: {np.shape(VH)}")
+            A = np.dot(np.dot(U[:A_idx, :], np.diag(sigma)), VH)
 
-          return res_norm(
-              A, self.Uk[:, sv_idx], self.VHk[sv_idx, :].T, self.sigmak[sv_idx]
-          )
+            return res_norm(
+                A, self.Uk[:, sv_idx], self.VHk[sv_idx, :].T, self.sigmak[sv_idx]
+            )
+
 
     def get_covariance_error(self):
         """Return covariance error"""
-        return cov_err(
-            self.A, self.U_true.dot(np.diag(self.sigma_true).dot(self.VH_true))
-        )
+        return cov_err(self.A, self.reconstruct(update=False))
+
 
     def get_projection_error(self):
         """Return projection error"""
-        return proj_err()
+        u, s, vh = np.linalg.svd(self.A)
+        return proj_err(self.A, self.reconstruct(update=False), 
+                        (u[:, :self.k_dim].dot(np.diag(s[:self.k_dim])).dot(vh[:self.k_dim, :])))
+
 
     def get_mean_squared_error(self):
+        """Return mean squared error"""
         return mse(self)
 
+
     def save_metrics(self, fdir, print_metrics=True, sv_idx=None, A_idx=None, r_str=""):
-        """Calculate and save metrics and optionally print to console."""
+        """Calculate and save metrics and optionally print to console.
+        
+        Parameters
+        ----------
+        fdir : str
+            Main directory containing error metrics
+        
+        print_metrics : bool, default=True
+            If True, prints calculated metrics to console.
+            
+        sv_idx : int, default=None
+            Calculates relative errors and residual norms for singular triplets specified.
+            If None, calculates metrics for all singular triplets.
+        
+        A_idx : int, default=None
+            Rank of approximation of A used in calculating metrics.
+            If None, uses original A
+        
+        r_str : str, default=""
+            r-value for BCG method
+        """
         # Calculate metrics
         rel_err = self.get_relative_error(sv_idx=sv_idx)
         res_norm = self.get_residual_norm(sv_idx=sv_idx, A_idx=A_idx)
-        # cov_err = self.get_covariance_error()
-        # proj_err = self.get_projection_error()
+        cov_err = self.get_covariance_error()
+        proj_err = self.get_projection_error()
 
         # Save metrics
         np.save(f"{fdir}/relative_errors_phi_{self.phi}{r_str}.npy", rel_err)
         np.save(f"{fdir}/residual_norms_phi_{self.phi}{r_str}.npy", res_norm)
-        # np.save(f"{fdir}/covariance_error_phi_{self.phi}{r_str}.npy", cov_err)
-        # np.save(f"{fdir}/projection_error_phi_{self.phi}{r_str}.npy", proj_err)
+        np.save(f"{fdir}/covariance_error_phi_{self.phi}{r_str}.npy", cov_err)
+        np.save(f"{fdir}/projection_error_phi_{self.phi}{r_str}.npy", proj_err)
         np.save(f"{fdir}/runtime_phi_{self.phi}{r_str}.npy", self.runtime)
 
         # Optionally print metrics to console
         if print_metrics:
-            print(
-                f"Singular value relative errors at phi = {str(self.phi)}:\n{rel_err}"
-            )
-            print(
-                f"Last singular vector residual norm at phi = {str(self.phi)}:\n{res_norm}"
-            )
-            # print(f"Covariance error at phi = {str(self.phi)}:\n{cov_err}")
-            # print(f"Projection error at phi = {str(self.phi)}:\n{proj_err}")
+            print(f"\nMetrics for update {str(self.phi)}")
+            print(f"---------------------------------------------------")
+            print(f"Singular value relative errors:\n{rel_err}\n")
+            print(f"Last singular vector residual norm:\n{res_norm}\n")
+            print(f"Covariance error: {cov_err}")
+            print(f"Projection error: {proj_err}")
+            print(f"Runtime:          {self.runtime}\n")
+
+        return None
+
 
     def query(self, q):
         """
