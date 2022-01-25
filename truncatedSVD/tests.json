@@ -1,25 +1,57 @@
 {
     "tests": [
-
         {
             "method": "bcg",
-            "datasets": ["CISI","MED","CRAN"],
+            "datasets": [
+                "CISI",
+                "MED",
+                "CRAN"
+            ],
             "m_percent": 0.1,
-            "n_batches": [10,12],
-            "phis_to_plot": [1,5,10],
-            "r_values": [50],
-            "lam_coeff":1.01,
-            "num_runs": 5,
-            "k_dims": [50,25]
+            "n_batches": [
+                1,
+                10,
+                12
+            ],
+            "phis_to_plot": [
+                1,
+                5,
+                10
+            ],
+            "r_values": [
+                50
+            ],
+            "lam_coeff": 1.01,
+            "num_runs": 2,
+            "k_dims": [
+                50,
+                25
+            ],
+            "make_plots": true
         },
         {
             "method": "zha-simon",
-            "datasets": ["CISI","MED","CRAN"],
+            "datasets": [
+                "CISI",
+                "MED",
+                "CRAN"
+            ],
             "m_percent": 0.1,
-            "n_batches": [10,12],
-            "phis_to_plot": [1,5,10],
-            "k_dims": [50,25]
-        }               
+            "n_batches": [
+                10,
+                12
+            ],
+            "phis_to_plot": [
+                1,
+                5,
+                10
+            ],
+            "k_dims": [
+                50,
+                25
+            ],
+            "make_plots":true
+        }
     ],
     "dataset_info": {
         "CISI": "..\\datasets\\CISI.npy",
