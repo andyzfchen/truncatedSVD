@@ -19,8 +19,8 @@ m_percent = 0.10
 datasets = ["CISI", "CRAN", "MED"]
 batch_splits = [10]
 phis = [[1, 5, 10]]
-update_methods = ["zha-simon", "bcg"]
-r_values = [50]
+update_methods = ["fd"]
+r_values = [10]
 m_percent = 0.10
 
 # TODO: loop through various values of k (25,50,100)
@@ -55,12 +55,8 @@ for dataset in datasets:
                 if not os.path.exists(temp_dir):
                     os.mkdir(temp_dir)
 
-                # Load dataset (.npy)
-                # A_full = np.load(f"../datasets/{dataset}/{dataset}.npy").T
-
-                A_full = loadmat(f"../datasets/{dataset}/A_{dataset}.mat")[
-                    "A_" + f"{dataset}".lower()
-                ]
+                # Load dataset
+                A_full = np.load(f"../datasets/{dataset}/{dataset}_KKU.npy")
 
                 # Calculate row index to split data
                 (m_dim_full, n_dim) = np.shape(A_full)
@@ -88,10 +84,7 @@ for dataset in datasets:
                     # Calculate truncated SVD for updated matrix
                     if method == "zha-simon":
                         model.update_svd_zha_simon()
-                    elif method == "bcg":
-                        # Uk, Sigmak, VHk = model.evolve_matrix_deflated_bcg(
-                        # step_dim=int(np.ceil(s_dim / n_batches)), r_dim=r_value
-                        # )
+                    elif method == "bcg": 
                         model.update_svd_bcg()
                         r_str = "_rval_" + str(r_value)
                     elif method == "brute":
@@ -99,7 +92,7 @@ for dataset in datasets:
                     elif method == "naive":
                         model.update_svd_naive()
                     elif method == "fd":
-                        model.update_fd()
+                        model.update_svd_fd()
                     else:
                         raise ValueError(
                             f"Error: Update method {method} does not exist. Must be one of the following."
@@ -110,63 +103,10 @@ for dataset in datasets:
                         # Calculate true SVD for this batch
                         model.calculate_true_svd(method, dataset)
 
-                        # Caluclate metrics
-                        model.save_metrics(temp_dir, print_metrics=True, r_str=r_str)
+                        # Calculate metrics
+                        if method == "fd":
+                          model.save_metrics(temp_dir, print_metrics=True, A_idx=model.freq_dir.ell, r_str=r_str)
+                        else:
+                          model.save_metrics(temp_dir, print_metrics=True, r_str=r_str)
 
                     print()
-
-# def load_experiment_specs(experiment_directory):
-#     return None
-
-
-# def main(experiment_directory, overwrite):
-
-#     # Load experiment specifications
-#     specs = load_experiment_specs(experiment_directory)
-
-#     print("Experiment description: " + specs["Description"])
-#     print("Overwriting previous data?: " + {specs["Overwrite"]})
-
-#     datasets = specs["Datasets"]
-#     print("Running experiments on datasets:")
-#     print(*specs["Datasets"], sep="\n")
-
-#     update_methods = specs["UpdateMethods"]
-#     print("Running experiments with update methods:")
-#     print(*specs["UpdateMethods"], sep="\n")
-
-#     batch_splits = specs["BatchSplits"]
-#     print("Running experiments with batch splits:")
-#     print(*specs["BatchSplits"], sep="\n")
-
-#     m_percent = specs["m_percent"]
-#     print(f"Initial matrix to be formed my leading {m_percent}% of rows.")
-
-
-# if __name__ == "__main__":
-
-#     import argparse
-
-#     parser = argparse.ArgumentParser(
-#         description="Run experiments for updating truncated SVD of evolving matrices."
-#     )
-#     parser.add_argument(
-#         "--experiment",
-#         "-e",
-#         dest="experiment_directory",
-#         required=True,
-#         help="Experiment directory. This directory includes the experiment specifications in 'specs.json' along with all the datasets."
-#         + "All results will be saved in this directory as well.",
-#     )
-#     parser.add_argument(
-#         "--overwrite",
-#         dest="overwrite",
-#         required=False,
-#         default=True,
-#         help="Option to overwrite existing results. If True, any existing experimental results will be "
-#         + "overwritten with results obtained from the current run.",
-#     )
-
-#     args = parser.parse_args()
-
-#     main(args.experiment_directory, args.overwrite)

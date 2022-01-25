@@ -1,3 +1,6 @@
+"""Various algorithms for updating the truncated singular value decomposition (SVD) of evolving matrices.
+"""
+
 import numpy as np
 import time
 from scipy.linalg import block_diag
@@ -41,7 +44,7 @@ def zha_simon_update(A, Uk, Sk, VHk, E):
     H. Zha and H. D. Simon, “Timely communication on updating problems in latent semantic indexing,
         ”Society for Industrial and Applied Mathematics, vol. 21, no. 2, pp. 782-791, 1999.
     """
-    print("Updating truncated SVD using Zha-Simon projection method...")
+    print("Updating truncated SVD using Zha-Simon projection method.")
 
     # Construct Z and ZH*A matrices
     s = E.shape[0]
@@ -72,23 +75,23 @@ def bcg_update(B, Uk, sigmak, VHk, E, lam_coeff=None, r=10):
     B : ndarray of shape (m, n)
         Current matrix
 
-    Uk : ndarray of shape ()
+    Uk : ndarray of shape (m, k)
         Left singular vectors
 
-    sigmak : ndarray of shape ()
+    sigmak : ndarray of shape (k,)
         Singular values
 
-    VHk : ndarray of shape ()
+    VHk : ndarray of shape (n, k)
         Right singular vectors
 
-    E : ndarray of shape ()
+    E : ndarray of shape (s, n)
         Matrix to be appended
 
     lam_coeff : float, default=None
         If 'None', lam_coeff is set to 1.01 * (sigmahat_1)^2
 
     r : int, default=10
-
+        Parameter determining number of columns in matrix R
 
     Returns
     -------
@@ -106,26 +109,31 @@ def bcg_update(B, Uk, sigmak, VHk, E, lam_coeff=None, r=10):
     H. Zha and H. D. Simon, “Timely communication on updating problems in latent semantic indexing,
         ”Society for Industrial and Applied Mathematics, vol. 21, no. 2, pp. 782-791, 1999.
     """
-    print("Updating truncated SVD using enhanced projection method...")
+    print("Updating truncated SVD using enhanced projection method.")
     k = len(sigmak)
 
     # Set lam_coeffbda
     if lam_coeff is None:
         lam_coeff = 1.01 * sigmak[0] ** 2
 
-    # Calculate B(lam_coeffbda) B E^H
-    print("Calculating B(lam_coeffbda) B E^H using BCG...")
+    # Calculate B(lambda) B E^H
+    print("Calculating B(lambda) B E^H using BCG.")
     m = B.shape[0]
     lhs = -(B.dot(B.T) - lam_coeff * np.eye(m))
     rhs = (np.eye(m) - Uk.dot(Uk.T)).dot(B.dot(E.T))
     BlBEH = blockCG(lhs, rhs, max_iter=1)
 
-    # Calculate X_lam_coeffbda_r using randomized SVD
-    print("Calculating X_lam_coeffbda_r...")
-    Xlr, _, _ = rsvd(BlBEH, n_components=k, n_oversamples=k)
+    # Calculate B(lambda) B E^H R
+    BlBEHR = BlBEH.dot(np.random.normal(size=(E.shape[0], 2 * r)))
+
+    # Calculate X_lambda_r using randomized SVD
+    print("Calculating X_lambda_r.")
+    # Xlr, _, _ = np.linalg.svd(BlBEHR, full_matrices=False)
+    # Xlr = Xlr[:, :r]
+    Xlr, _, _ = rsvd(BlBEH, n_components=r, n_oversamples=r, n_iter=0)
 
     # Construct Z matrix
-    print("Constructing Z matrix...")
+    print("Constructing Z matrix.")
     Z = block_diag(np.hstack((Uk, Xlr)), np.eye(E.shape[0]))
 
     # Construct ZH*A matrix
@@ -145,7 +153,7 @@ def bcg_update(B, Uk, sigmak, VHk, E, lam_coeff=None, r=10):
     Vk_new = A.T.dot(Uk_new.dot(np.diag(1 / Tk)))
 
     return Uk_new, Tk, Vk_new.T
-
+    
 
 def brute_force_update(A, k, full_matrices=False):
     """Calculate best rank-k approximation using brute force.
@@ -174,7 +182,6 @@ def brute_force_update(A, k, full_matrices=False):
         “Frequent Directions: Simple and Deterministic Matrix Sketching,
         ”SIAM Journal on Computing, vol. 45, no. 5, pp. 1762-1792, 1 2016
     """
-    # TODO: implement brute force update
     _, Sk, VHk = np.linalg.svd(A.T.dot(A), full_matrices=full_matrices)
     return VHk[:k, :], Sk[:k]
 
@@ -200,9 +207,33 @@ def naive_update(l, d):
     M. Ghashami, E. Liberty, J. M. Phillips, and D. P. Woodruff, 
         “Frequent Directions: Simple and Deterministic Matrix Sketching,
         ”SIAM Journal on Computing, vol. 45, no. 5, pp. 1762-1792, 1 2016
-    """    
+    """
     return np.zeros((l, d))
 
 
-def frequent_directions_update():
-    return None
+def fd_update(fd, E):
+    """Calculate truncated SVD update using Frequent Directions algorithm.
+    
+    Parameters
+    ----------
+    fd : FrequentDirections object
+        FrequentDirections object used for performing FD updates
+    
+    E : array, shape (s, n)
+        Appended submatrix
+
+    Returns
+    -------
+    fd : FrequentDirections object
+        FrequentDirections object used for performing FD updates
+    
+    References
+    ----------
+    M. Ghashami, E. Liberty, J. M. Phillips, and D. P. Woodruff, 
+        “Frequent Directions: Simple and Deterministic Matrix Sketching,
+        ”SIAM Journal on Computing, vol. 45, no. 5, pp. 1762-1792, 1 2016
+    """    
+    for row in E:
+      fd.append(row)
+    
+    return fd
