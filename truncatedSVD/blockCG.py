@@ -14,7 +14,6 @@ def blockCG(A, B, X=None, max_iter=1, tol=1e-1):
 
     X : ndarray of shape (n, p), default=None
         Initial guess
-
         If 'None', X is set to a matrix of zeros of shape ()
 
     max_iter : int, default=1

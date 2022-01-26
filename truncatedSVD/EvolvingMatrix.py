@@ -186,7 +186,7 @@ class EvolvingMatrix(object):
         (self.s_dim, n_dim) = np.shape(self.append_matrix)
         self.step = int(np.ceil(self.s_dim / self.n_batches))
         assert n_dim == self.n_dim, "Number of columns must be the same for initial matrix and matrix to be appended."
-        print(f"Appending matrix set to shape of ( {self.s_dim} , {self.n_dim} ).")
+        print(f"Appending matrix set to shape of {np.shape(self.append_matrix)}.")
 
         self.U_all, self.Sigma_all, self.VH_all = np.linalg.svd(
             np.append(self.initial_matrix, self.append_matrix, axis=0), full_matrices=False
@@ -231,7 +231,7 @@ class EvolvingMatrix(object):
         )
 
         # Append to current data matrix
-        print(f"Appending {self.n_appended} rows from matrix to be appended.")
+        print(f"Appending {self.n_appended}/{self.s_dim} rows from matrix to be appended.")
         self.update_matrix = self.append_matrix[
             self.n_appended_total : self.n_appended_total + self.n_appended, :
         ]
@@ -244,7 +244,6 @@ class EvolvingMatrix(object):
         print(
             f"Appended {self.n_appended_total}/{self.s_dim} rows from appending matrix so far."
         )
-        
         return None
 
 
@@ -417,9 +416,8 @@ class EvolvingMatrix(object):
 
 
     def get_mean_squared_error(self):
-        """Return mean squared error"""
-        return mse(self)
-
+        """Return mean squared error."""
+        return mse(self.Ak, self.reconstruct(update=False))
 
     def save_metrics(self, fdir, print_metrics=True, sv_idx=None, A_idx=None, r_str=""):
         """Calculate and save metrics and optionally print to console.
@@ -447,14 +445,14 @@ class EvolvingMatrix(object):
         rel_err = self.get_relative_error(sv_idx=sv_idx)
         res_norm = self.get_residual_norm(sv_idx=sv_idx, A_idx=A_idx)
         cov_err = self.get_covariance_error()
-        proj_err = self.get_projection_error()
+        # proj_err = self.get_projection_error()
 
         # Save metrics
         np.save(f"{fdir}/relative_errors_phi_{self.phi}{r_str}.npy", rel_err)
         np.save(f"{fdir}/residual_norms_phi_{self.phi}{r_str}.npy", res_norm)
-        np.save(f"{fdir}/covariance_error_phi_{self.phi}{r_str}.npy", cov_err)
-        np.save(f"{fdir}/projection_error_phi_{self.phi}{r_str}.npy", proj_err)
-        np.save(f"{fdir}/runtime_phi_{self.phi}{r_str}.npy", self.runtime)
+        np.save(f"{fdir}/covariance_errors_phi_{self.phi}{r_str}.npy", cov_err)
+        # np.save(f"{fdir}/projection_errors_phi_{self.phi}{r_str}.npy", proj_err)
+        np.save(f"{fdir}/runtimes_phi_{self.phi}{r_str}.npy", self.runtime)
 
         # Optionally print metrics to console
         if print_metrics:
@@ -463,7 +461,7 @@ class EvolvingMatrix(object):
             print(f"Singular value relative errors:\n{rel_err}\n")
             print(f"Last singular vector residual norm:\n{res_norm}\n")
             print(f"Covariance error: {cov_err}")
-            print(f"Projection error: {proj_err}")
+            # print(f"Projection error: {proj_err}")
             print(f"Runtime:          {self.runtime}\n")
 
         return None

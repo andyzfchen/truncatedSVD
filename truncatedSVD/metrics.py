@@ -1,5 +1,4 @@
 import numpy as np
-from sklearn.metrics import mean_squared_error
 
 
 def query_precision_recall(A, Q, relevant_docs):
@@ -42,29 +41,32 @@ def query_precision_recall(A, Q, relevant_docs):
     return precision, recall
 
 
-def mse(y_true, y_pred):
-    """Return mean squared error
+def mse(Ak, Ahat):
+    """Calculate mean squared error (Frobenius norm) of difference 
+    between best rank-k approximation of A and the approximation 
+    using update method.
     
     Parameters
     ----------
-    y_true : ndarray of shape (n,)
-        True labels
-        
-    y_pred : ndarray of shape (n,)
-        Predicted labels
-        
+    Ak : ndarray of shape (m, k)
+        Best rank-k approximation of A
+    
+    Ahat : ndarray of shape (m, k)
+        Rank-k reconstruction using update method
+    
     Returns
     -------
-    loss : float
-        Mean squared error
+    mean_squared_error : float
+        Frobenius norm of difference between Ak and Ahat
     """
-    return mean_squared_error(y_true, y_pred)
+    return np.linalg.norm(Ak - Ahat, ord='fro')
 
 
 def proj_err(A, Ahat, Ak):
     """Calculate projection error
 
     Calculate projection error as defined by Ghashami et al. (2016).
+    Lower bound is 1 (when Ahat is best rank-k approximation Ak)
 
     Parameters
     ----------
@@ -86,8 +88,8 @@ def proj_err(A, Ahat, Ak):
     References
     ----------
     M. Ghashami, E. Liberty, J. M. Phillips, and D. P. Woodruff,
-      “Frequent Directions: Simple and Deterministic Matrix Sketching,
-      SIAM Journal on Computing, vol. 45, no. 5, pp. 1762-1792, 1 2016.
+        “Frequent Directions: Simple and Deterministic Matrix Sketching,"
+        SIAM Journal on Computing, vol. 45, no. 5, pp. 1762-1792, 1 2016.
 
     Notes
     -----
@@ -120,8 +122,8 @@ def cov_err(A, B):
     References
     ----------
     M. Ghashami, E. Liberty, J. M. Phillips, and D. P. Woodruff,
-      “Frequent Directions: Simple and Deterministic Matrix Sketching,"
-      SIAM Journal on Computing, vol. 45, no. 5, pp. 1762-1792, 1 2016.
+        “Frequent Directions: Simple and Deterministic Matrix Sketching,"
+        SIAM Journal on Computing, vol. 45, no. 5, pp. 1762-1792, 1 2016.
     """
     return np.linalg.norm(A.T.dot(A) - B.T.dot(B)) / np.linalg.norm(A, ord="fro") ** 2
 
@@ -146,9 +148,9 @@ def rel_err(sv, sv_hat):
     References
     ----------
     V. Kalantzis, G. Kollias, S. Ubaru, A. N. Nikolakopoulos, L. Horesh, and K. L. Clarkson,
-      “Projection techniquesto update the truncated SVD of evolving matrices with applications,”
-      inProceedings of the 38th InternationalConference on Machine Learning,
-      M. Meila and T. Zhang, Eds.PMLR, 7 2021, pp. 5236-5246.
+        “Projection techniquesto update the truncated SVD of evolving matrices with applications,”
+        inProceedings of the 38th InternationalConference on Machine Learning,
+        M. Meila and T. Zhang, Eds.PMLR, 7 2021, pp. 5236-5246.
     """
     return np.abs(sv_hat - sv) / sv
 
@@ -179,8 +181,8 @@ def res_norm(A, U, V, s):
     References
     ----------
     V. Kalantzis, G. Kollias, S. Ubaru, A. N. Nikolakopoulos, L. Horesh, and K. L. Clarkson,
-      “Projection techniquesto update the truncated SVD of evolving matrices with applications,”
-      inProceedings of the 38th InternationalConference on Machine Learning,
-      M. Meila and T. Zhang, Eds.PMLR, 7 2021, pp. 5236-5246.
+        “Projection techniquesto update the truncated SVD of evolving matrices with applications,”
+        inProceedings of the 38th InternationalConference on Machine Learning,
+        M. Meila and T. Zhang, Eds.PMLR, 7 2021, pp. 5236-5246.
     """
     return np.linalg.norm(A.dot(V) - U * s, axis=0) / s

@@ -19,15 +19,17 @@ m_percent = 0.10
 datasets = ["CISI", "CRAN", "MED"]
 batch_splits = [10]
 phis = [[1, 5, 10]]
-update_methods = ["zha-simon", 
-                #   "bcg", 
-                #   "brute-force", 
-                #   "naive"
+update_methods = [
+    # "zha-simon", 
+    # "bcg", 
+    # "brute-force", 
+    # "naive",
+    "fd"
                  ]
 r_values = [10]
 m_percent = 0.10
 
-k_dim = 25
+k_dim = 50
 
 # Create local folder to save outputs
 if not os.path.exists("../cache"):

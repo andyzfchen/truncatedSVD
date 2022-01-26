@@ -43,7 +43,7 @@ def zha_simon_update(A, Uk, Sk, VHk, E):
     V. Kalantzis, G. Kollias, S. Ubaru, A. N. Nikolakopoulos, L. Horesh, and K. L. Clarkson,
         “Projection techniquesto update the truncated SVD of evolving matrices with applications,”
         inProceedings of the 38th InternationalConference on Machine Learning,
-        M. Meila and T. Zhang, Eds.PMLR, 7 2021, pp. 5236-5246.
+        M. Meila and T. Zhang, Eds. PMLR, 7 2021, pp. 5236-5246.
 
     H. Zha and H. D. Simon, “Timely communication on updating problems in latent semantic indexing,
         ”Society for Industrial and Applied Mathematics, vol. 21, no. 2, pp. 782-791, 1999.
@@ -117,7 +117,7 @@ def bcg_update(B, Uk, sigmak, VHk, E, lam=None, r=10, rsvd_opt=True):
     V. Kalantzis, G. Kollias, S. Ubaru, A. N. Nikolakopoulos, L. Horesh, and K. L. Clarkson,
         “Projection techniquesto update the truncated SVD of evolving matrices with applications,”
         inProceedings of the 38th InternationalConference on Machine Learning,
-        M. Meila and T. Zhang, Eds.PMLR, 7 2021, pp. 5236-5246.
+        M. Meila and T. Zhang, Eds. PMLR, 7 2021, pp. 5236-5246.
     """
     print("Updating truncated SVD using enhanced projection method.")
     k = len(sigmak)
@@ -192,8 +192,8 @@ def brute_force_update(A, k, full_matrices=False):
     References
     ----------
     M. Ghashami, E. Liberty, J. M. Phillips, and D. P. Woodruff, 
-        “Frequent Directions: Simple and Deterministic Matrix Sketching,
-        ”SIAM Journal on Computing, vol. 45, no. 5, pp. 1762-1792, 1 2016
+        “Frequent Directions: Simple and Deterministic Matrix Sketching,”
+        SIAM Journal on Computing, vol. 45, no. 5, pp. 1762-1792, 1 2016
     """
     u, s, vh = np.linalg.svd(A, full_matrices=full_matrices)
     return u[:, :k], s[:k], vh[:k, :]
@@ -218,8 +218,8 @@ def naive_update(l, d):
     References
     ----------
     M. Ghashami, E. Liberty, J. M. Phillips, and D. P. Woodruff, 
-        “Frequent Directions: Simple and Deterministic Matrix Sketching,
-        ”SIAM Journal on Computing, vol. 45, no. 5, pp. 1762-1792, 1 2016
+        “Frequent Directions: Simple and Deterministic Matrix Sketching,”
+        SIAM Journal on Computing, vol. 45, no. 5, pp. 1762-1792, 1 2016
     """
     return np.zeros((l, d))
 
@@ -243,8 +243,8 @@ def fd_update(fd, E):
     References
     ----------
     M. Ghashami, E. Liberty, J. M. Phillips, and D. P. Woodruff, 
-        “Frequent Directions: Simple and Deterministic Matrix Sketching,
-        ”SIAM Journal on Computing, vol. 45, no. 5, pp. 1762-1792, 1 2016
+        “Frequent Directions: Simple and Deterministic Matrix Sketching,”
+        SIAM Journal on Computing, vol. 45, no. 5, pp. 1762-1792, 1 2016
     """    
     for row in E:
       fd.append(row)
