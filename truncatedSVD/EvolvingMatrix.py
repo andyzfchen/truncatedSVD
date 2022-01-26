@@ -9,7 +9,7 @@ import sys
 import time
 from metrics import proj_err, cov_err, rel_err, res_norm, mse
 from svd_update import zha_simon_update, bcg_update, brute_force_update, naive_update, fd_update
-
+import pdb
 sys.path.append('../frequent-directions')
 from frequentDirections import FrequentDirections
 
@@ -291,6 +291,7 @@ class EvolvingMatrix(object):
 
     def get_residual_norm(self, sv_idx=None, A_idx=None):
         """Return residual norm of n-th singular vector"""
+
         if sv_idx is None:
             sv_idx = np.arange(self.k_dim)
 

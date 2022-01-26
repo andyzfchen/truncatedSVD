@@ -9,7 +9,7 @@ from test_plotter import plot_stacked_residual_norms,plot_stacked_relative_error
 import sys
 
 def perform_updates(dataset,n_batches,phi,model,method,update_method,r_str,save_dir,res_norms_list,rel_errs_list,make_plots=False,**kwargs):
-       
+        print(method)
         for ii in range(n_batches):
             print(f"Batch {str(ii+1)}/{str(n_batches)}.")
 
@@ -26,12 +26,19 @@ def perform_updates(dataset,n_batches,phi,model,method,update_method,r_str,save_
                 model.calculate_true_svd(method, dataset)
 
                 # Caluclate metrics
-                model.save_metrics(save_dir, print_metrics=True, r_str=r_str)
+                if method == 'frequent-directions':
+                    print(f"INSIDE FREQUENT DIRECTIONS: {model.freq_dir.ell}\n")
+                    model.save_metrics(save_dir,print_metrics=True,A_idx=model.freq_dir.ell,r_str=r_str)
+                else:    
+                    model.save_metrics(save_dir, print_metrics=True, r_str=r_str)
 
                 #gather results for plotting
                 if make_plots:
                     rel_err = model.get_relative_error(sv_idx=None)
-                    res_norm = model.get_residual_norm(sv_idx=None)  
+                    if method == "frequent-directions":
+                        res_norm = model.get_residual_norm(sv_idx=None,A_idx=model.freq_dir.ell) 
+                    else:
+                        res_norm = model.get_residual_norm(sv_idx=None) 
 
                     res_norms_list.append(res_norm)
                     rel_errs_list.append(rel_err)
@@ -84,6 +91,9 @@ for test in test_spec['tests']:
 
         data = np.load(test_spec['dataset_info'][dataset])
 
+        if data.shape[0] < data.shape[1]:
+            data = data.T
+
         for n_batches in test['n_batches']:
             batch_phis = [x for x in test['phis_to_plot'] if x <= n_batches]
             if n_batches not in batch_phis:
@@ -117,7 +127,14 @@ for test in test_spec['tests']:
 
                 res_norms_list = []
                 rel_errs_list = []    
-                if method =="zha-simon":
+                if method == "frequent-directions":
+                    model = EM.EvolvingMatrix(B,n_batches=n_batches,k_dim=k)
+                    model.set_append_matrix(E)
+                    print()                     
+                    perform_updates(dataset,n_batches,batch_phis,model,method,model.update_svd_fd,"",save_dir,res_norms_list,rel_errs_list,make_plots=test['make_plots'])
+                    plot_stacked_relative_errors(rel_errs_list,batch_phis,save_dir)
+                    plot_stacked_residual_norms(res_norms_list,batch_phis,save_dir)                    
+                elif method =="zha-simon":
                 # Initialize EM object with initial matrix and matrix to be appended and set desired rank of truncated SVD
                     model = EM.EvolvingMatrix(B, n_batches=n_batches, k_dim=k)
                     model.set_append_matrix(E)

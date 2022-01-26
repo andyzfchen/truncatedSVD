@@ -1,3 +1,3 @@
 [submodule "frequent-directions"]
 	path = frequent-directions
-	url = git@github.com:andyzfchen/frequent-directions.git
+	url = https://github.com/andyzfchen/frequent-directions.git

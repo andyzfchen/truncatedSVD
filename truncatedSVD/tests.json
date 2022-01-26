@@ -1,6 +1,29 @@
 {
     "tests": [
         {
+            "method": "frequent-directions",
+            "datasets": [
+                "CISI",
+                "MED",
+                "CRAN"
+            ],
+            "m_percent": 0.1,
+            "n_batches": [
+                10,
+                12
+            ],
+            "phis_to_plot": [
+                1,
+                5,
+                10
+            ],
+            "k_dims": [
+                50,
+                25
+            ],
+            "make_plots": true
+        },
+        {
             "method": "bcg",
             "datasets": [
                 "CISI",
@@ -50,7 +73,7 @@
                 50,
                 25
             ],
-            "make_plots":true
+            "make_plots": true
         }
     ],
     "dataset_info": {
