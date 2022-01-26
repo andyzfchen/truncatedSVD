@@ -1,15 +1,12 @@
 """EvolvingMatrix class for updating the truncated singular value decomposition (SVD) of evolving matrices.
 """
 
-import numpy as np
-import scipy.sparse.linalg
-import sklearn.decomposition
 import os
 import sys
 import time
+import numpy as np
 from metrics import proj_err, cov_err, rel_err, res_norm, mse
 from svd_update import zha_simon_update, bcg_update, brute_force_update, naive_update, fd_update
-
 sys.path.append('../frequent-directions')
 from frequentDirections import FrequentDirections
 
@@ -272,7 +269,7 @@ class EvolvingMatrix(object):
         return self.Uk, self.sigmak, self.VHk
 
 
-    def update_svd_bcg(self):
+    def update_svd_bcg(self, lam_coeff, r):
         """Return truncated SVD of updated matrix using the BCG method."""
         # Get previous data matrix from updated matrix
         B = self.A[: -self.n_appended, :]
@@ -280,7 +277,7 @@ class EvolvingMatrix(object):
         # Update truncated SVD
         start = time.perf_counter()
         self.Uk, self.sigmak, self.VHk = bcg_update(
-            B, self.Uk, self.sigmak, self.VHk, self.update_matrix
+            B, self.Uk, self.sigmak, self.VHk, self.update_matrix,lam_coeff=lam_coeff,r=r
         )
         self.runtime += time.perf_counter() - start
         return self.Uk, self.sigmak, self.VHk
@@ -326,24 +323,25 @@ class EvolvingMatrix(object):
         """
         print("Calculating current A matrix of size ", np.shape(self.A))
 
-        # Folder to save U, sigma, V arrays
+
+        # Folder to save U,S,V arrays
         dirname = (
-            f"../cache/{update_method}/{dataset}_batch_split_{str(self.n_batches)}"
+            f"../cache/{evolution_method}/{dataset}/{dataset}_batch_split_{str(self.n_batches)}_k_dims_{str(self.k_dim)}"
         )
+        if not os.path.exists(os.path.normpath(dirname)):
+            os.mkdir(os.path.normpath(dirname))
 
         # Load from cache if pre-calculated
-        if os.path.exists(f"{dirname}/U_true_phi_{str(self.phi)}.npy"):
+        if os.path.exists(os.path.normpath(f"{dirname}/U_true_phi_{str(self.phi)}.npy")):
             print("Loading from cache")
-            self.U_true = np.load(f"{dirname}/U_true_phi_{str(self.phi)}.npy")
-            self.sigma_true = np.load(f"{dirname}/sigma_true_phi_{str(self.phi)}.npy")
-            self.VH_true = np.load(f"{dirname}/VH_true_phi_{str(self.phi)}.npy")
+            self.U_true = np.load(os.path.normpath(f"{dirname}/U_true_phi_{str(self.phi)}.npy"))
+            self.sigma_true = np.load(os.path.normpath(f"{dirname}/sigma_true_phi_{str(self.phi)}.npy"))
+            self.VH_true = np.load(os.path.normpath(f"{dirname}/VH_true_phi_{str(self.phi)}.npy"))
         else:
             self.U_true, self.sigma_true, self.VH_true = np.linalg.svd(self.A)
-            np.save(f"{dirname}/U_true_phi_{str(self.phi)}.npy", self.U_true)
-            np.save(f"{dirname}/sigma_true_phi_{str(self.phi)}.npy", self.sigma_true)
-            np.save(f"{dirname}/VH_true_phi_{str(self.phi)}.npy", self.VH_true)
-        
-        return None
+            np.save(os.path.normpath(f"{dirname}/U_true_phi_{str(self.phi)}.npy"), self.U_true)
+            np.save(os.path.normpath(f"{dirname}/sigma_true_phi_{str(self.phi)}.npy"), self.sigma_true)
+            np.save(os.path.normpath(f"{dirname}/VH_true_phi_{str(self.phi)}.npy"), self.VH_true)
 
 
     def get_relative_error(self, sv_idx=None):

@@ -1,9 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from os.path import join,normpath
 
 
-def plot_residual_norms(errs_list, evolution_methods, filename, title="Residual Norms for Singular Vectors", ylim=None):
-    """Helper function to plot residual norms."""
+def plot_residual_norms(errs_list, evolution_methods,save_dir, title="Residual Norms for Singular Vectors", ylim=None):
     position = np.arange(1, errs_list[0].shape[0] + 1)
 
     fig, ax = plt.subplots(figsize=(4, 3))
@@ -19,12 +19,11 @@ def plot_residual_norms(errs_list, evolution_methods, filename, title="Residual 
     ax.set_yscale("log")
 
     ax.legend(loc="lower right")
-    plt.savefig(f"../figures/{filename}.png", bbox_inches="tight", pad_inches=0.2, dpi=200)
+    plt.savefig(normpath(join(save_dir,f"resnorms.png")), bbox_inches="tight", pad_inches=0.2, dpi=200)
     plt.close()
 
 
-def plot_relative_errors(errs_list, evolution_methods, filename, title="Relative Error for Singular Vectors", ylim=None):
-    """Helper function to plot relative errors."""
+def plot_relative_errors(errs_list, evolution_methods, save_dir, title="Relative Error for Singular Vectors", ylim=None):
     position = np.arange(1, errs_list[0].shape[0] + 1)
 
     fig, ax = plt.subplots(figsize=(4, 3))
@@ -40,12 +39,11 @@ def plot_relative_errors(errs_list, evolution_methods, filename, title="Relative
     ax.set_yscale("log")
     
     ax.legend(loc="lower right")
-    plt.savefig(f"../figures/{filename}.png", bbox_inches="tight", pad_inches=0.2, dpi=200)
+    plt.savefig(normpath(join(save_dir,f"relerrs.png")), bbox_inches="tight", pad_inches=0.2, dpi=200)
     plt.close()
 
 
-def plot_stacked_residual_norms(errs_list, phi_list, filename, title="Residual Norms for Singular Vectors", ylim=None):
-    """Help function to plot residual norms for multi-batch update results."""
+def plot_stacked_residual_norms(errs_list, phi_list, save_dir, title="Residual Norms for Singular Vectors", ylim=None):
     position = np.arange(1, errs_list[0].shape[0] + 1)
 
     fig, ax = plt.subplots(figsize=(4, 3))
@@ -61,12 +59,11 @@ def plot_stacked_residual_norms(errs_list, phi_list, filename, title="Residual N
     ax.set_yscale("log")
     
     ax.legend(loc="lower right")
-    plt.savefig(f"../figures/{filename}.png", bbox_inches="tight", pad_inches=0.2, dpi=200)
+    plt.savefig(normpath(join(save_dir,f"resnorms.png")), bbox_inches="tight", pad_inches=0.2, dpi=200)
     plt.close()
 
 
-def plot_stacked_relative_errors(errs_list, phi_list, filename, title="Relative Error for Singular Vectors", ylim=None):
-    """Help function to plot relative errors for multi-batch update results."""
+def plot_stacked_relative_errors(errs_list, phi_list, save_dir, title="Relative Error for Singular Vectors", ylim=None):
     position = np.arange(1, errs_list[0].shape[0] + 1)
 
     fig, ax = plt.subplots(figsize=(4, 3))
@@ -82,7 +79,7 @@ def plot_stacked_relative_errors(errs_list, phi_list, filename, title="Relative 
     ax.set_yscale("log")
     
     ax.legend(loc="lower right")
-    plt.savefig(f"../figures/{filename}.png", bbox_inches="tight", pad_inches=0.2, dpi=200)
+    plt.savefig(normpath(join(save_dir,f"relerrs.png")), bbox_inches="tight", pad_inches=0.2, dpi=200)
     plt.close()
 
 

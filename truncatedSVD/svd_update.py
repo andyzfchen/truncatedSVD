@@ -71,7 +71,7 @@ def zha_simon_update(A, Uk, Sk, VHk, E):
     return Uk_new, Tk, Vk_new.T
 
 
-def bcg_update(B, Uk, sigmak, VHk, E, lam=None, r=10, rsvd_opt=True):
+def bcg_update(B, Uk, sigmak, VHk, E, lam_coeff=None, r=10, rsvd_opt=True):
     """Calculate truncated SVD update using enhanced projection matrix.
 
     Parameters
@@ -91,8 +91,8 @@ def bcg_update(B, Uk, sigmak, VHk, E, lam=None, r=10, rsvd_opt=True):
     E : ndarray of shape (s, n)
         Matrix to be appended
 
-    lam : float, default=None
-        If 'None', lam is set to 1.01 * (sigmahat_1)^2
+    lam_coeff : float, default=None
+        If 'None', lam_coeff is set to 1.01 * (sigmahat_1)^2
 
     r : int, default=10
         Parameter determining number of columns in matrix R
@@ -122,14 +122,14 @@ def bcg_update(B, Uk, sigmak, VHk, E, lam=None, r=10, rsvd_opt=True):
     print("Updating truncated SVD using enhanced projection method.")
     k = len(sigmak)
 
-    # Set lambda
-    if lam is None:
-        lam = 1.01 * sigmak[0] ** 2
+    # Set lam_coeffbda
+    if lam_coeff is None:
+        lam_coeff = 1.01 * sigmak[0] ** 2
 
     # Calculate B(lambda) B E^H
     print("Calculating B(lambda) B E^H using BCG.")
     m = B.shape[0]
-    lhs = -(B.dot(B.T) - lam * np.eye(m))
+    lhs = -(B.dot(B.T) - lam_coeff * np.eye(m))
     rhs = (np.eye(m) - Uk.dot(Uk.T)).dot(B.dot(E.T))
     BlBEH = blockCG(lhs, rhs, max_iter=1)
 
