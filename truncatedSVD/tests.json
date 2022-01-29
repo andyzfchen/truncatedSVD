@@ -9,8 +9,7 @@
             ],
             "m_percent": 0.1,
             "n_batches": [
-                10,
-                12
+                10
             ],
             "phis_to_plot": [
                 1,
@@ -18,8 +17,7 @@
                 10
             ],
             "k_dims": [
-                50,
-                25
+                50
             ],
             "make_plots": true
         },
@@ -32,9 +30,7 @@
             ],
             "m_percent": 0.1,
             "n_batches": [
-                1,
-                10,
-                12
+                10
             ],
             "phis_to_plot": [
                 1,
@@ -42,13 +38,12 @@
                 10
             ],
             "r_values": [
-                50
+                10, 20, 30, 40, 50
             ],
             "lam_coeff": 1.01,
-            "num_runs": 2,
+            "num_runs": 1,
             "k_dims": [
-                50,
-                25
+                50
             ],
             "make_plots": true
         },
@@ -61,8 +56,7 @@
             ],
             "m_percent": 0.1,
             "n_batches": [
-                10,
-                12
+                10
             ],
             "phis_to_plot": [
                 1,
@@ -70,15 +64,14 @@
                 10
             ],
             "k_dims": [
-                50,
-                25
+                50
             ],
             "make_plots": true
         }
     ],
     "dataset_info": {
-        "CISI": "..\\datasets\\CISI.npy",
-        "CRAN": "..\\datasets\\CRAN.npy",
-        "MED": "..\\datasets\\MED.npy"
+        "CISI": "../datasets/CISI/CISI_KKU.npy",
+        "CRAN": "../datasets/CRAN/CRAN_KKU.npy",
+        "MED": "../datasets/MED/MED_KKU.npy"
     }
 }

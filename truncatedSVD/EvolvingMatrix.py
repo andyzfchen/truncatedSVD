@@ -326,7 +326,7 @@ class EvolvingMatrix(object):
 
         # Folder to save U,S,V arrays
         dirname = (
-            f"../cache/{evolution_method}/{dataset}/{dataset}_batch_split_{str(self.n_batches)}_k_dims_{str(self.k_dim)}"
+            f"../cache/{update_method}/{dataset}/{dataset}_batch_split_{str(self.n_batches)}_k_dims_{str(self.k_dim)}"
         )
         if not os.path.exists(os.path.normpath(dirname)):
             os.mkdir(os.path.normpath(dirname))
@@ -417,6 +417,7 @@ class EvolvingMatrix(object):
         """Return mean squared error."""
         return mse(self.Ak, self.reconstruct(update=False))
 
+
     def save_metrics(self, fdir, print_metrics=True, sv_idx=None, A_idx=None, r_str=""):
         """Calculate and save metrics and optionally print to console.
         
@@ -463,23 +464,3 @@ class EvolvingMatrix(object):
             print(f"Runtime:          {self.runtime}\n")
 
         return None
-
-
-    def query(self, q):
-        """
-        Return score for query using updated truncated SVD
-        
-        The score for a query of shape (n_terms, 1) for a term-document matrix A of shape (n_docs, n_terms) is q.T.dot(A)
-        The scores can also be calculated for a set of queries of shape (n_terms, n_queries).
-        
-        Parameters
-        ----------
-        q : ndarray of shape (n_queries, n_terms)
-            Each row is a query where the i-th entry represents the weight of the i-th term.
-   
-        Returns
-        -------
-        score : ndarray of shape (n_queries, n_docs)
-            Similarity scores of each query for each document
-        """
-        return self.Ak.dot(q)

@@ -23,12 +23,12 @@ batch_splits = [10]
 phis = [[1, 5, 10]]
 r_value = 10
 update_methods = [
-    "zha-simon", 
+    "zha-simon",
     "bcg",
     # "brute-force"
     # "naive",
     # "fd"
-    ]
+]
 update_names = [
     # "$Z = [U_k, 0; 0, I_s]$",
     # "$Z = [U_k, X_{\lambda,r}; 0, I_s]$",
@@ -55,7 +55,7 @@ for dataset in datasets:
                     r_str = ""
                 elif method == "bcg":
                     r_str = "_rval_" + str(r_value)
-                
+
                 folder = f"../cache/{method}/{dataset}_batch_split_{str(batch_split)}"
 
                 relative_errors = np.load(f"{folder}/relative_errors_phi_1{r_str}.npy")
@@ -83,7 +83,7 @@ for dataset in datasets:
             covariance_errors_list = []
             projection_errors_list = []
             update_method_list = []
-            
+
             for ii, method in enumerate(update_methods):
                 # Initilize lists to store metrics
                 relative_errors_list = []
@@ -100,10 +100,16 @@ for dataset in datasets:
 
                 # Append metrics to list for each phi
                 for phi in phi_list:
-                    rel_err = np.load(f"{folder}/relative_errors_phi_{str(phi)}{r_str}.npy")
-                    res_norm = np.load(f"{folder}/residual_norms_phi_{str(phi)}{r_str}.npy")
-                    cov_err = np.load(f"{folder}/covariance_errors_phi_{str(phi)}{r_str}.npy")
-                    # proj_err = np.load(f"{folder}/projection_errors_phi_{str(phi)}{r_str}.npy") 
+                    rel_err = np.load(
+                        f"{folder}/relative_errors_phi_{str(phi)}{r_str}.npy"
+                    )
+                    res_norm = np.load(
+                        f"{folder}/residual_norms_phi_{str(phi)}{r_str}.npy"
+                    )
+                    cov_err = np.load(
+                        f"{folder}/covariance_errors_phi_{str(phi)}{r_str}.npy"
+                    )
+                    # proj_err = np.load(f"{folder}/projection_errors_phi_{str(phi)}{r_str}.npy")
 
                     relative_errors_list.append(rel_err)
                     residual_norms_list.append(res_norm)
@@ -112,28 +118,28 @@ for dataset in datasets:
                     update_method_list.append(method)
 
                 title = f"{dataset}, {update_names[ii]}"
-            
+
                 # Plot metrics for each update method
                 plot_stacked_relative_errors(
                     relative_errors_list,
                     phi_list,
                     f"relative_errors_{dataset}_batch_split_{str(batch_split)}_{method}",
-                    title=title
+                    title=title,
                 )
 
                 plot_stacked_residual_norms(
                     residual_norms_list,
                     phi_list,
                     f"residual_norms_{dataset}_batch_split_{str(batch_split)}_{method}",
-                    title=title
+                    title=title,
                 )
-            
+
             # Plot covariance and projection errors for each update method
             plot_errors(
-                covariance_errors_list, 
-                projection_errors_list, 
+                covariance_errors_list,
+                projection_errors_list,
                 phi_list,
-                update_methods, 
-                f"proj_cov_err_{dataset}_batch_split_{str(batch_split)}", 
-                title=dataset
+                update_methods,
+                f"proj_cov_err_{dataset}_batch_split_{str(batch_split)}",
+                title=dataset,
             )
