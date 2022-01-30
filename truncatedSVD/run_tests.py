@@ -52,7 +52,7 @@ def perform_updates(
             else:
                 model.save_metrics(save_dir, print_metrics=True, r_str=r_str)
 
-            # gather results for plotting
+            # Save results for plotting
             if make_plots:
                 rel_err = model.get_relative_error(sv_idx=None)
                 if method == "frequent-directions":
@@ -66,6 +66,19 @@ def perform_updates(
                 rel_errs_list.append(rel_err)
 
         print()
+
+
+def check_and_create_dir(dirname):
+    """Check if directory exists. If it does not exist, create it.
+
+    Parameters
+    ----------
+    dirname : str
+        Directory name
+    """
+    if not exists(normpath(dirname)):
+        mkdir(normpath(dirname))
+    return None
 
 
 # Check for correct number of arguments
@@ -96,53 +109,48 @@ except ValueError as err:
     exit()
 
 # Create cache path to save results
-cache_path = normpath(join(sys.argv[2], "cache"))
-
-if not exists(cache_path):
-    mkdir(normpath(cache_path))
+cache_path = join(sys.argv[2], "cache")
+check_and_create_dir(cache_path)
 
 # Run tests for each method
 for test in test_spec["tests"]:
-
     method = test["method"]
-
-    # Create directory to store results for method
-    if not exists(normpath(join(cache_path, method))):
-        mkdir(normpath(join(cache_path, method)))
+    check_and_create_dir(join(cache_path, method))
 
     for dataset in test["datasets"]:
+        check_and_create_dir(join(cache_path, method, dataset))
 
-        # Create directory to store results for method and dataset
-        if not exists(normpath(join(cache_path, method, dataset))):
-            mkdir(normpath(join(cache_path, method, dataset)))
-
+        # Load data
         data = np.load(test_spec["dataset_info"][dataset])
-
         if data.shape[0] < data.shape[1]:
             data = data.T
 
+        # Run test for each set of batches
         for n_batches in test["n_batches"]:
+
+            # Get batch numbers to plot for given batch size
             batch_phis = [x for x in test["phis_to_plot"] if x <= n_batches]
             if n_batches not in batch_phis:
-                batch_phis.append(n_batches)
+                batch_phis.append(n_batches)  # add last batch if not already included
 
-            # Calculate data split indices
+            # Calculate data split index
             m_percent = test["m_percent"]
             (m_dim_full, n_dim) = np.shape(data)
-            print(f"Data is of shape ({m_dim_full}, {n_dim})")
-
             m_dim = int(np.ceil(m_dim_full * m_percent))
-            s_dim = int(np.floor(m_dim_full * (1 - m_percent)))
+            s_dim = m_dim_full - m_dim
 
             # Split into initial matrix and matrix to be appended
             B = data[:m_dim, :]
             E = data[m_dim:, :]
 
+            # Run test for each desired rank k
             for k in test["k_dims"]:
 
-                print(
-                    f"Performing truncated SVD on dataset {dataset} using batch_split = {str(n_batches)} and k_dims = {str(k)}."
-                )
+                # Print message for current experiment
+                print(f"Update method:     {method}")
+                print(f"Dataset:           {dataset} {data.shape}")
+                print(f"Number of batches: {n_batches}")
+                print(f"Rank k of updates: {k}")
 
                 # Create directory to save data for this batch split and k
                 save_dir = join(
@@ -151,11 +159,11 @@ for test in test_spec["tests"]:
                     dataset,
                     f"{dataset}_batch_split_{str(n_batches)}_k_dims_{str(k)}",
                 )
-                if not exists(normpath(save_dir)):
-                    mkdir(normpath(save_dir))
+                check_and_create_dir(save_dir)
 
                 res_norms_list = []
                 rel_errs_list = []
+
                 if method == "frequent-directions":
                     model = EM.EvolvingMatrix(B, n_batches=n_batches, k_dim=k)
                     model.set_append_matrix(E)
@@ -173,12 +181,13 @@ for test in test_spec["tests"]:
                         rel_errs_list,
                         make_plots=test["make_plots"],
                     )
+
                     if test["make_plots"]:
                         fig_dir = save_dir + "/figures"
-                        if not exists(normpath(fig_dir)):
-                            mkdir(normpath(fig_dir))
+                        check_and_create_dir(fig_dir)
                         plot_stacked_relative_errors(rel_errs_list, batch_phis, fig_dir)
                         plot_stacked_residual_norms(res_norms_list, batch_phis, fig_dir)
+
                 elif method == "zha-simon":
                     # Initialize EM object with initial matrix and matrix to be appended and set desired rank of truncated SVD
                     model = EM.EvolvingMatrix(B, n_batches=n_batches, k_dim=k)
@@ -197,12 +206,13 @@ for test in test_spec["tests"]:
                         rel_errs_list,
                         make_plots=test["make_plots"],
                     )
+
                     if test["make_plots"]:
                         fig_dir = save_dir + "/figures"
-                        if not exists(normpath(fig_dir)):
-                            mkdir(normpath(fig_dir))
+                        check_and_create_dir(fig_dir)
                         plot_stacked_relative_errors(rel_errs_list, batch_phis, fig_dir)
                         plot_stacked_residual_norms(res_norms_list, batch_phis, fig_dir)
+
                 elif method == "bcg":
                     for r in test["r_values"]:
                         for run_num in range(test["num_runs"]):
@@ -211,8 +221,7 @@ for test in test_spec["tests"]:
                             save_dir_run = normpath(
                                 join(save_dir, f"run_{str(run_num)}")
                             )
-                            if not exists(save_dir_run):
-                                mkdir(save_dir_run)
+                            check_and_create_dir(save_dir_run)
                             model = EM.EvolvingMatrix(B, n_batches=n_batches, k_dim=k)
                             model.set_append_matrix(E)
                             print()
@@ -232,17 +241,18 @@ for test in test_spec["tests"]:
                                 lam_coeff=test["lam_coeff"],
                                 r=r,
                             )
+
                             if test["make_plots"]:
                                 fig_dir = save_dir_run + "/figures"
-                                if not exists(normpath(fig_dir)):
-                                    mkdir(normpath(fig_dir))
+                                check_and_create_dir(fig_dir)
                                 plot_stacked_relative_errors(
                                     rel_errs_list, batch_phis, fig_dir
                                 )
                                 plot_stacked_residual_norms(
                                     res_norms_list, batch_phis, fig_dir
                                 )
+
                 else:
                     raise ValueError(
-                        f"Error: Update method {method} does not exist. Must be one of the following."
+                        f"Update method {method} does not exist. Must be one of the following: zha-simon, bcg, brute-force, naive."
                     )

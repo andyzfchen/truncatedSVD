@@ -42,15 +42,18 @@ The experimental parameters are specified in a JSON file as follows:
 
 Below is a table listing parameters and their descriptions. Note that some methods may require additional parameters. Please see our `example.json` file for a complete example for all update methods.
 
-| Parameter    | Description                   | Example                        |
-| ------------ | ----------------------------- | ------------------------------ |
-| dataset_info | Name and location of dataset  | "CRAN": "../datasets/CRAN.npy" |
-| method       | Update method                 | ["CISI", "MED", "CRAN"]        |
-| m_percent    | Percent of                    | 0.1                            |
-| n_batches    | Number of update batches      | 10                             |
-| phis_to_plot | Batch numbers to plot         | [1, 5, 10]                     |
-| k_dims       | Rank of updates               | [25, 50, 100]                  |
-| make_plots   | Option to plot update results | true                           |
+| Parameter    | Description                                  | Example                        |
+| ------------ | -------------------------------------------- | ------------------------------ |
+| dataset_info | Name and location of dataset                 | "CRAN": "../datasets/CRAN.npy" |
+| method       | Update method                                | ["CISI", "MED", "CRAN"]        |
+| m_percent    | Percent of                                   | 0.1                            |
+| n_batches    | Number of update batches                     | 10                             |
+| phis_to_plot | Batch numbers to plot                        | [1, 5, 10]                     |
+| k_dims       | Rank of updates                              | [25, 50, 100]                  |
+| make_plots   | Option to plot update results                | true                           |
+| r_values     | Number of (BCG only)                         | [10, 20, 30, 40, 50]           |
+| lam_coeff    | Coefficient (BCG only)                       | 1.01                           |
+| num_runs     | Number of runs for BCG experiment (BCG only) | 1                              |
 
 To run the experiment, all you have to do is call `run_tests.py` and specify the path to the JSON file and the directory to contain the cache folder:
 
@@ -66,4 +69,8 @@ Below are plots for various error metrics based on the experiments we conducted 
 
 ## Team
 
+Andy Chen, Shion Matsumoto, Rohan Varma
+
 ## Acknowledgments
+
+We would like to acknowledge Professor Laura Balzano for introducing us to this challenge and also for advising us on this project. We would also like to thank Professor Vassilis Kalantzis for providing us with the code.
