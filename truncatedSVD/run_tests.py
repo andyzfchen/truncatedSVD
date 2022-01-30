@@ -7,7 +7,7 @@ from os.path import normpath, exists, join
 import json
 import numpy as np
 import EvolvingMatrix as EM
-from test_plotter import plot_stacked_residual_norms, plot_stacked_relative_errors
+from plotter import plot_residual_norms, plot_relative_errors
 
 
 def perform_updates(
@@ -25,10 +25,8 @@ def perform_updates(
     **kwargs,
 ):
     """Perform updates for specified number of batches using update method."""
-
-    print(f"Update method: {method}")
     for ii in range(n_batches):
-        print(f"Batch {str(ii+1)}/{str(n_batches)}.")
+        print(f"\nBatch {str(ii+1)}/{str(n_batches)}.")
 
         # Evolve matrix by appending new rows
         model.evolve()
@@ -45,7 +43,7 @@ def perform_updates(
 
             # Caluclate metrics
             if method == "frequent-directions":
-                print(f"INSIDE FREQUENT DIRECTIONS: {model.freq_dir.ell}\n")
+                # print(f"INSIDE FREQUENT DIRECTIONS: {model.freq_dir.ell}\n")
                 model.save_metrics(
                     save_dir, print_metrics=True, A_idx=model.freq_dir.ell, r_str=r_str
                 )
@@ -65,7 +63,7 @@ def perform_updates(
                 res_norms_list.append(res_norm)
                 rel_errs_list.append(rel_err)
 
-        print()
+        # print()
 
 
 def check_and_create_dir(dirname):
@@ -78,7 +76,6 @@ def check_and_create_dir(dirname):
     """
     if not exists(normpath(dirname)):
         mkdir(normpath(dirname))
-    return None
 
 
 # Check for correct number of arguments
@@ -147,10 +144,12 @@ for test in test_spec["tests"]:
             for k in test["k_dims"]:
 
                 # Print message for current experiment
+                print(50 * "*")
+                print("")
                 print(f"Update method:     {method}")
                 print(f"Dataset:           {dataset} {data.shape}")
                 print(f"Number of batches: {n_batches}")
-                print(f"Rank k of updates: {k}")
+                print(f"Rank k of updates: {k}\n")
 
                 # Create directory to save data for this batch split and k
                 save_dir = join(
@@ -161,13 +160,14 @@ for test in test_spec["tests"]:
                 )
                 check_and_create_dir(save_dir)
 
-                res_norms_list = []
+                # Initialize list of relative errors and residual norms
                 rel_errs_list = []
+                res_norms_list = []
 
+                # Update truncated SVD using specified method
                 if method == "frequent-directions":
                     model = EM.EvolvingMatrix(B, n_batches=n_batches, k_dim=k)
                     model.set_append_matrix(E)
-                    print()
                     perform_updates(
                         dataset,
                         n_batches,
@@ -185,14 +185,16 @@ for test in test_spec["tests"]:
                     if test["make_plots"]:
                         fig_dir = save_dir + "/figures"
                         check_and_create_dir(fig_dir)
-                        plot_stacked_relative_errors(rel_errs_list, batch_phis, fig_dir)
-                        plot_stacked_residual_norms(res_norms_list, batch_phis, fig_dir)
+                        plot_relative_errors(
+                            rel_errs_list, batch_phis, fig_dir, title=test["title"]
+                        )
+                        plot_residual_norms(
+                            res_norms_list, batch_phis, fig_dir, title=test["title"]
+                        )
 
                 elif method == "zha-simon":
-                    # Initialize EM object with initial matrix and matrix to be appended and set desired rank of truncated SVD
                     model = EM.EvolvingMatrix(B, n_batches=n_batches, k_dim=k)
                     model.set_append_matrix(E)
-                    print()
                     perform_updates(
                         dataset,
                         n_batches,
@@ -210,8 +212,12 @@ for test in test_spec["tests"]:
                     if test["make_plots"]:
                         fig_dir = save_dir + "/figures"
                         check_and_create_dir(fig_dir)
-                        plot_stacked_relative_errors(rel_errs_list, batch_phis, fig_dir)
-                        plot_stacked_residual_norms(res_norms_list, batch_phis, fig_dir)
+                        plot_relative_errors(
+                            rel_errs_list, batch_phis, fig_dir, title=test["title"]
+                        )
+                        plot_residual_norms(
+                            res_norms_list, batch_phis, fig_dir, title=test["title"]
+                        )
 
                 elif method == "bcg":
                     for r in test["r_values"]:
@@ -245,14 +251,25 @@ for test in test_spec["tests"]:
                             if test["make_plots"]:
                                 fig_dir = save_dir_run + "/figures"
                                 check_and_create_dir(fig_dir)
-                                plot_stacked_relative_errors(
-                                    rel_errs_list, batch_phis, fig_dir
+                                plot_relative_errors(
+                                    rel_errs_list,
+                                    batch_phis,
+                                    fig_dir,
+                                    title=test["title"],
                                 )
-                                plot_stacked_residual_norms(
-                                    res_norms_list, batch_phis, fig_dir
+                                plot_residual_norms(
+                                    res_norms_list,
+                                    batch_phis,
+                                    fig_dir,
+                                    title=test["title"],
                                 )
-
+                elif method == "brute-force":
+                    print("")
+                elif method == "naive":
+                    print("")
                 else:
                     raise ValueError(
                         f"Update method {method} does not exist. Must be one of the following: zha-simon, bcg, brute-force, naive."
                     )
+
+                print("")

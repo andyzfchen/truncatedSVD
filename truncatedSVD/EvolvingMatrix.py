@@ -115,7 +115,7 @@ class EvolvingMatrix(object):
         self.initial_matrix = initial_matrix  # ensure data is in dense format
         (self.m_dim, self.n_dim) = np.shape(self.initial_matrix)
         print(
-            f"Initial matrix of evolving matrix set to shape of ({self.m_dim}, {self.n_dim})."
+            f"Initial matrix of evolving matrix set to shape of        ({self.m_dim}, {self.n_dim})."
         )
 
         # Matrix after update (initialize to initial matrix)
@@ -149,7 +149,6 @@ class EvolvingMatrix(object):
         self.sigmak = self.sigma_true[: self.k_dim]
         self.VHk = self.VH_true[: self.k_dim, :]
 
-        print("")
         print(
             f"Initial Uk  matrix of evolving matrix set to shape of    {np.shape(self.Uk)}."
         )
@@ -157,7 +156,7 @@ class EvolvingMatrix(object):
             f"Initial Sigmak matrix of evolving matrix set to shape of {np.shape(self.sigmak)}."
         )
         print(
-            f"Initial VHk matrix of evolving matrix set to shape of    {np.shape(self.VHk)}.\n"
+            f"Initial VHk matrix of evolving matrix set to shape of    {np.shape(self.VHk)}."
         )
 
         # Calculate rank-k reconstruction using truncated SVD
@@ -204,7 +203,9 @@ class EvolvingMatrix(object):
         assert (
             n_dim == self.n_dim
         ), "Number of columns must be the same for initial matrix and matrix to be appended."
-        print(f"Appending matrix set to shape of {np.shape(self.append_matrix)}.")
+        print(
+            f"Appending matrix set to shape of                         {np.shape(self.append_matrix)}."
+        )
 
         self.U_all, self.Sigma_all, self.VH_all = np.linalg.svd(
             np.append(self.initial_matrix, self.append_matrix, axis=0),
@@ -490,11 +491,11 @@ class EvolvingMatrix(object):
         # Optionally print metrics to console
         if print_metrics:
             print(f"\nMetrics for update {str(self.phi)}")
-            print(f"---------------------------------------------------")
+            print(50 * "-")
             print(f"Singular value relative errors:\n{rel_err}\n")
             print(f"Last singular vector residual norm:\n{res_norm}\n")
             print(f"Covariance error: {cov_err}")
             # print(f"Projection error: {proj_err}")
-            print(f"Runtime:          {self.runtime}\n")
+            print(f"Runtime:          {self.runtime}")
 
         return None
