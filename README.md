@@ -21,45 +21,38 @@ The experimental parameters are specified in a JSON file as follows:
 
 ```json
 {
-    "tests": [
-        {
-            "method": "frequent-directions",
-            "datasets": [
-                "CISI",
-                "MED",
-                "CRAN"
-            ],
-            "m_percent": 0.1,
-            "n_batches": [
-                10
-            ],
-            "phis_to_plot": [
-                1,
-                5,
-                10
-            ],
-            "k_dims": [
-                50
-            ],
-            "make_plots": true
-        },
-        ...
-    ],
-    "dataset_info": {
-        "CISI": "../datasets/CISI.npy",
-        "CRAN": "../datasets/CRAN.npy",
-        "MED": "../datasets/MED.npy"
+  "tests": [
+    {
+      "method": "zha-simon",
+      "datasets": ["CISI", "MED", "CRAN"],
+      "m_percent": 0.1,
+      "n_batches": [10],
+      "phis_to_plot": [1, 5, 10],
+      "k_dims": [50],
+      "make_plots": true
     }
+  ],
+  "dataset_info": {
+    "CISI": "../datasets/CISI.npy",
+    "CRAN": "../datasets/CRAN.npy",
+    "MED": "../datasets/MED.npy"
+  }
 }
 ```
 
-Below is a table listing parameters and their descriptions. Note that some methods may require additional parameters. Please see our ```example.json``` file for a complete example for all update methods.
+Below is a table listing parameters and their descriptions. Note that some methods may require additional parameters. Please see our `example.json` file for a complete example for all update methods.
 
-| Parameter |      Key     | Description                                | Value |
-| --------- | ------------ | ------------------------------------------ | ----- |
-| Datasets  | dataset_info | Name of datasets to be used in experiments | ----  |
+| Parameter    | Description                   | Example                        |
+| ------------ | ----------------------------- | ------------------------------ |
+| dataset_info | Name and location of dataset  | "CRAN": "../datasets/CRAN.npy" |
+| method       | Update method                 | ["CISI", "MED", "CRAN"]        |
+| m_percent    | Percent of                    | 0.1                            |
+| n_batches    | Number of update batches      | 10                             |
+| phis_to_plot | Batch numbers to plot         | [1, 5, 10]                     |
+| k_dims       | Rank of updates               | [25, 50, 100]                  |
+| make_plots   | Option to plot update results | true                           |
 
-To run the experiment, all you have to do is call ```run_tests.py``` and specify the path to the JSON file and the directory to contain the cache folder:
+To run the experiment, all you have to do is call `run_tests.py` and specify the path to the JSON file and the directory to contain the cache folder:
 
 ```shell
 python run_tests.py <tests.json> <cache_directory>
