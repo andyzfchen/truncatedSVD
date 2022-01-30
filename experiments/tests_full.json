@@ -9,7 +9,9 @@
             ],
             "m_percent": 0.1,
             "n_batches": [
-                10
+                5,
+                10,
+                20
             ],
             "phis_to_plot": [
                 1,
@@ -17,7 +19,9 @@
                 10
             ],
             "k_dims": [
-                50
+                25,
+                50,
+                100
             ],
             "make_plots": true
         },
@@ -30,7 +34,9 @@
             ],
             "m_percent": 0.1,
             "n_batches": [
-                10
+                5,
+                10,
+                20
             ],
             "phis_to_plot": [
                 1,
@@ -43,7 +49,9 @@
             "lam_coeff": 1.01,
             "num_runs": 1,
             "k_dims": [
-                50
+                25, 
+                50,
+                100
             ],
             "make_plots": true
         },
@@ -56,7 +64,9 @@
             ],
             "m_percent": 0.1,
             "n_batches": [
-                10
+                5,
+                10,
+                20
             ],
             "phis_to_plot": [
                 1,
@@ -64,7 +74,9 @@
                 10
             ],
             "k_dims": [
-                50
+                25,
+                50,
+                100
             ],
             "make_plots": true
         }

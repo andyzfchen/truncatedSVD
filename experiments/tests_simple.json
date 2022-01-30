@@ -1,0 +1,102 @@
+{
+    "tests": [
+        {
+            "method": "zha-simon",
+            "title": "$Z = [U_k, 0; 0, I_s]$",
+            "datasets": [
+                "CRAN"
+            ],
+            "m_percent": 0.1,
+            "n_batches": [
+                10
+            ],
+            "phis_to_plot": [
+                1,
+                5,
+                10
+            ],
+            "k_dims": [
+                50
+            ],
+            "make_plots": true
+        },
+        {
+            "method": "bcg",
+            "title": "$Z = [U_k, X_{\\lambda,r}; 0, I_s]$",
+            "datasets": [
+                "CRAN"
+            ],
+            "m_percent": 0.1,
+            "n_batches": [
+                10
+            ],
+            "r_values": [
+                10,
+                20,
+                30,
+                40,
+                50
+            ],
+            "num_runs" : 1,
+            "lam_coeff": 1.01,
+            "phis_to_plot": [
+                1,
+                5,
+                10
+            ],
+            "k_dims": [
+                50
+            ],
+            "make_plots": true
+        },
+        {
+            "method": "brute-force",
+            "title": "Brute force",
+            "datasets": [
+                "CISI",
+                "MED",
+                "CRAN"
+            ],
+            "m_percent": 0.1,
+            "n_batches": [
+                10
+            ],
+            "phis_to_plot": [
+                1,
+                5,
+                10
+            ],
+            "k_dims": [
+                50
+            ],
+            "make_plots": true
+        },
+        {
+            "method": "naive",
+            "title": "Naïve",
+            "datasets": [
+                "CISI",
+                "MED",
+                "CRAN"
+            ],
+            "m_percent": 0.1,
+            "n_batches": [
+                10
+            ],
+            "phis_to_plot": [
+                1,
+                5,
+                10
+            ],
+            "k_dims": [
+                50
+            ],
+            "make_plots": true
+        }
+    ],
+    "dataset_info": {
+        "CISI": "./datasets/CISI/CISI_KKU.npy",
+        "CRAN": "./datasets/CRAN/CRAN_KKU.npy",
+        "MED": "./datasets/MED/MED_KKU.npy"
+    }
+}

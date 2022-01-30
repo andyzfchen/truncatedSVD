@@ -118,37 +118,17 @@ def plot_covariance_errors(
     """
     return None
 
-
-def plot_covariance_projection_errors(
-    errs_list,
-    phi_list,
-    update_methods,
-    title="Projection Error",
-    filename="proj_err.png",
+    
+def plot_projection_errors(
+    errs_list, phi_list, update_method, title="Projection Error", filename="proj_err.png"
 ):
-    """Helper function to plot projection errors."""
-    fig, ax = plt.subplots(figsize=(4, 3))
-    ax.grid(True, which="both", linewidth=1, linestyle="--", color="k", alpha=0.1)
-    ax.tick_params(
-        which="both", direction="in", bottom=True, top=True, left=True, right=True
-    )
-
-    # Plot errors vs. update for each update method
-    for method in update_methods:
-        for phi, cov_err, proj_err in zip(phi_list, cov_err_list, proj_err_list):
-            ax1.plot(phi, cov_err, label="Update(%i)" % phi)
-
-    # Figure labels
-    ax.set_title(f"{title} (Covariance Error)")
-    ax.set_xlabel("Update")
-    ax.set_xlim(min(phi_list), max(phi_list))
-    ax.set_ylabel("Covariance error")
-    ax.set_yscale("log")
-    ax.legend(loc="lower right")
-    plt.savefig(
-        f"../figures/{filename}.png", bbox_inches="tight", pad_inches=0.2, dpi=200
-    )
-    plt.close()
+    """Helper function to plot projection errors
+    
+    Parameters
+    ----------
+    errs_lis : list
+        List of projection errors    
+    """
     return None
 
 

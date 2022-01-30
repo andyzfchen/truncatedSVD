@@ -5,8 +5,8 @@ import os
 import sys
 import time
 import numpy as np
-from metrics import proj_err, cov_err, rel_err, res_norm, mse
-from svd_update import (
+from .metrics import proj_err, cov_err, rel_err, res_norm, mse
+from .svd_update import (
     zha_simon_update,
     bcg_update,
     brute_force_update,
@@ -14,7 +14,7 @@ from svd_update import (
     fd_update,
 )
 
-sys.path.append("../frequent-directions")
+sys.path.append("./frequent-directions")
 from frequentDirections import FrequentDirections
 
 
@@ -217,8 +217,6 @@ class EvolvingMatrix(object):
         for ii in range(self.m_dim):
             self.freq_dir.append(self.initial_matrix[ii, :])
 
-        return None
-
     def reconstruct(self, update=True):
         """Return rank-k approximation of A using truncated SVD
 
@@ -264,7 +262,6 @@ class EvolvingMatrix(object):
         print(
             f"Appended {self.n_appended_total}/{self.s_dim} rows from appending matrix so far."
         )
-        return None
 
     def reset(self):
         """Undo all evolutions and set current matrix to the initial matrix. Matrix to be appended is unchanged."""
@@ -277,8 +274,6 @@ class EvolvingMatrix(object):
         self.freq_dir.reset()
         for ii in range(self.m_dim):
             self.freq_dir.append(self.append_matrix[ii, :])
-
-        return None
 
     def update_svd_zha_simon(self):
         """Return truncated SVD of updated matrix using the Zha-Simon projection method."""
@@ -334,7 +329,7 @@ class EvolvingMatrix(object):
         self.runtime += time.perf_counter() - start
         return self.Uk, self.sigmak, self.VHk
 
-    def calculate_true_svd(self, update_method, dataset):
+    def calculate_true_svd(self, update_method, dataset, save_dir=None):
         """Calculate true SVD of the current A matrix.
 
         Parameters
@@ -345,41 +340,47 @@ class EvolvingMatrix(object):
         dataset : str
             Name of dataset
         """
-        print("Calculating current A matrix of size ", np.shape(self.A))
+        print(
+            "Calculating true truncated SVD for current A matrix of size ",
+            np.shape(self.A),
+        )
 
         # Folder to save U,S,V arrays
-        dirname = f"../cache/{update_method}/{dataset}/{dataset}_batch_split_{str(self.n_batches)}_k_dims_{str(self.k_dim)}"
+        dirname = f"./cache/{update_method}/{dataset}/{dataset}_batch_split_{str(self.n_batches)}_k_dims_{str(self.k_dim)}"
         if not os.path.exists(os.path.normpath(dirname)):
             os.mkdir(os.path.normpath(dirname))
 
         # Load from cache if pre-calculated
-        if os.path.exists(
-            os.path.normpath(f"{dirname}/U_true_phi_{str(self.phi)}.npy")
-        ):
-            print("Loading from cache")
-            self.U_true = np.load(
-                os.path.normpath(f"{dirname}/U_true_phi_{str(self.phi)}.npy")
-            )
-            self.sigma_true = np.load(
-                os.path.normpath(f"{dirname}/sigma_true_phi_{str(self.phi)}.npy")
-            )
-            self.VH_true = np.load(
-                os.path.normpath(f"{dirname}/VH_true_phi_{str(self.phi)}.npy")
-            )
-        else:
+        if save_dir is None:
             self.U_true, self.sigma_true, self.VH_true = np.linalg.svd(self.A)
-            np.save(
-                os.path.normpath(f"{dirname}/U_true_phi_{str(self.phi)}.npy"),
-                self.U_true,
-            )
-            np.save(
-                os.path.normpath(f"{dirname}/sigma_true_phi_{str(self.phi)}.npy"),
-                self.sigma_true,
-            )
-            np.save(
-                os.path.normpath(f"{dirname}/VH_true_phi_{str(self.phi)}.npy"),
-                self.VH_true,
-            )
+        else:
+            if os.path.exists(
+                os.path.normpath(f"{save_dir}/U_true_phi_{str(self.phi)}.npy")
+            ):
+                print("True SVD pre-calculated. Loading from cache.")
+                self.U_true = np.load(
+                    os.path.normpath(f"{save_dir}/U_true_phi_{str(self.phi)}.npy")
+                )
+                self.sigma_true = np.load(
+                    os.path.normpath(f"{save_dir}/sigma_true_phi_{str(self.phi)}.npy")
+                )
+                self.VH_true = np.load(
+                    os.path.normpath(f"{save_dir}/VH_true_phi_{str(self.phi)}.npy")
+                )
+            else:
+                self.U_true, self.sigma_true, self.VH_true = np.linalg.svd(self.A)
+                np.save(
+                    os.path.normpath(f"{save_dir}/U_true_phi_{str(self.phi)}.npy"),
+                    self.U_true,
+                )
+                np.save(
+                    os.path.normpath(f"{save_dir}/sigma_true_phi_{str(self.phi)}.npy"),
+                    self.sigma_true,
+                )
+                np.save(
+                    os.path.normpath(f"{save_dir}/VH_true_phi_{str(self.phi)}.npy"),
+                    self.VH_true,
+                )
 
     def get_relative_error(self, sv_idx=None):
         """Return relative error of n-th singular value
@@ -427,11 +428,7 @@ class EvolvingMatrix(object):
             )
         else:
             U, sigma, VH = np.linalg.svd(self.A, full_matrices=False)
-            print(f"U:  {np.shape(U)}")
-            print(f"s:  {np.shape(sigma)}")
-            print(f"VH: {np.shape(VH)}")
             A = np.dot(np.dot(U[:A_idx, :], np.diag(sigma)), VH)
-
             return res_norm(
                 A, self.Uk[:, sv_idx], self.VHk[sv_idx, :].T, self.sigmak[sv_idx]
             )
@@ -497,5 +494,3 @@ class EvolvingMatrix(object):
             print(f"Covariance error: {cov_err}")
             # print(f"Projection error: {proj_err}")
             print(f"Runtime:          {self.runtime}")
-
-        return None

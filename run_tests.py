@@ -6,8 +6,8 @@ from os import mkdir
 from os.path import normpath, exists, join
 import json
 import numpy as np
-import EvolvingMatrix as EM
-from plotter import plot_residual_norms, plot_relative_errors
+import truncatedSVD.EvolvingMatrix as EM
+from truncatedSVD.plotter import *
 
 
 def perform_updates(
@@ -39,7 +39,7 @@ def perform_updates(
         if model.phi in phi or ii == n_batches - 1:
 
             # Calculate true SVD for this batch
-            model.calculate_true_svd(method, dataset)
+            model.calculate_true_svd(method, dataset, save_dir)
 
             # Caluclate metrics
             if method == "frequent-directions":
@@ -62,8 +62,6 @@ def perform_updates(
 
                 res_norms_list.append(res_norm)
                 rel_errs_list.append(rel_err)
-
-        # print()
 
 
 def check_and_create_dir(dirname):

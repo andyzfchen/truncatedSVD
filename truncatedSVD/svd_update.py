@@ -3,8 +3,8 @@
 
 import numpy as np
 from scipy.linalg import block_diag
-from blockCG import blockCG
 from sklearn.utils.extmath import randomized_svd as rsvd
+from .blockCG import blockCG
 
 
 def zha_simon_update(A, Uk, Sk, VHk, E):
@@ -100,7 +100,7 @@ def bcg_update(B, Uk, sigmak, VHk, E, lam_coeff=None, r=10, rsvd_opt=True):
     rsvd_opt : bool, default=False
         If True, use randomized SVD to approximate X_lambda_r.
         Otherwise, use truncated SVD of random projection in calculating approximation.
-        
+
     Returns
     -------
     Uk_new : array, shape (m, k)
@@ -135,13 +135,13 @@ def bcg_update(B, Uk, sigmak, VHk, E, lam_coeff=None, r=10, rsvd_opt=True):
 
     # Calculate X_lambda_r
     print("Calculating X_lambda_r.")
-    if rsvd_opt:    # calculate using randomized SVD
+    if rsvd_opt:  # calculate using randomized SVD
         Xlr, _, _ = rsvd(BlBEH, n_components=r, n_oversamples=2 * r, n_iter=0)
-    else:           # calculate using truncated SVD of random normal projection
+    else:  # calculate using truncated SVD of random normal projection
         BlBEHR = BlBEH.dot(np.random.normal(size=(E.shape[0], 2 * r)))
         Xlr, _, _ = np.linalg.svd(BlBEHR, full_matrices=False)
         Xlr = Xlr[:, :r]
-    
+
     # Construct Z matrix
     print("Constructing Z matrix.")
     Z = block_diag(np.hstack((Uk, Xlr)), np.eye(E.shape[0]))
@@ -163,35 +163,35 @@ def bcg_update(B, Uk, sigmak, VHk, E, lam_coeff=None, r=10, rsvd_opt=True):
     Vk_new = A.T.dot(Uk_new.dot(np.diag(1 / Tk)))
 
     return Uk_new, Tk, Vk_new.T
-    
+
 
 def brute_force_update(A, k, full_matrices=False):
     """Calculate best rank-k approximation using brute force.
-    
+
     Parameters
     ----------
     A : ndarray of shape (m, n)
-    
+
     k : int
         Desired rank of approximation
-    
+
     full_matrices : bool, default=False
         Option to return full matrices
-    
-    Returns 
+
+    Returns
     -------
     Uk : ndarray of shape (m, k)
         Truncated left singular vectors
-    
+
     sk : ndarray of shape (k,)
         Truncated singular values
-    
+
     VHk : ndarray of shape (k, n)
         Truncated right singular vectors
-    
+
     References
     ----------
-    M. Ghashami, E. Liberty, J. M. Phillips, and D. P. Woodruff, 
+    M. Ghashami, E. Liberty, J. M. Phillips, and D. P. Woodruff,
         “Frequent Directions: Simple and Deterministic Matrix Sketching,”
         SIAM Journal on Computing, vol. 45, no. 5, pp. 1762-1792, 1 2016
     """
@@ -201,23 +201,23 @@ def brute_force_update(A, k, full_matrices=False):
 
 def naive_update(l, d):
     """Calculate naive update. Given the updated matrix, returns a matrix of zeros.
-    
+
     Parameters
     ----------
     A : ndarray of shape ()
         Updated matrix
-        
+
     l : int
         Number of rows appended
-    
+
     Returns
     -------
     zeros : ndarray of shape (l, d)
         Zeros of shape (l, d)
-    
+
     References
     ----------
-    M. Ghashami, E. Liberty, J. M. Phillips, and D. P. Woodruff, 
+    M. Ghashami, E. Liberty, J. M. Phillips, and D. P. Woodruff,
         “Frequent Directions: Simple and Deterministic Matrix Sketching,”
         SIAM Journal on Computing, vol. 45, no. 5, pp. 1762-1792, 1 2016
     """
@@ -226,12 +226,12 @@ def naive_update(l, d):
 
 def fd_update(fd, E):
     """Calculate truncated SVD update using Frequent Directions algorithm.
-    
+
     Parameters
     ----------
     fd : FrequentDirections object
         FrequentDirections object used for performing FD updates
-    
+
     E : array, shape (s, n)
         Appended submatrix
 
@@ -239,14 +239,14 @@ def fd_update(fd, E):
     -------
     fd : FrequentDirections object
         FrequentDirections object used for performing FD updates
-    
+
     References
     ----------
-    M. Ghashami, E. Liberty, J. M. Phillips, and D. P. Woodruff, 
+    M. Ghashami, E. Liberty, J. M. Phillips, and D. P. Woodruff,
         “Frequent Directions: Simple and Deterministic Matrix Sketching,”
         SIAM Journal on Computing, vol. 45, no. 5, pp. 1762-1792, 1 2016
-    """    
+    """
     for row in E:
-      fd.append(row)
-    
+        fd.append(row)
+
     return fd
