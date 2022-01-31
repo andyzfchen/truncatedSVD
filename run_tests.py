@@ -76,6 +76,52 @@ def check_and_create_dir(dirname):
         mkdir(normpath(dirname))
 
 
+def split_data(A, m_percent):
+    """Split data row-wise
+
+    A : ndarray of shape (m, n)
+        Data array to be split
+
+    m_percent : float
+        Proportion of rows to split data array at
+
+    Returns
+    -------
+    B : ndarray of shape (ceil(m_percent * m), n)
+        First ceil(m_percent * m) rows of A
+
+    E : ndarray of shape (floor((1 - m_percent) * m), n)
+        Remaining rows of A
+    """
+    # Calculate index of split
+    m_dim_full = np.shape(A)[0]
+    m_dim = int(np.ceil(m_dim_full * m_percent))
+
+    # Split into initial matrix and matrix to be appended
+    B = A[:m_dim, :]
+    E = A[m_dim:, :]
+
+    return B, E
+
+
+def get_batch_phis(n_batches, phis_to_plot):
+    batch_phis = [x for x in phis_to_plot if x <= n_batches]
+    if n_batches not in batch_phis:
+        batch_phis.append(n_batches)
+    return batch_phis
+
+
+def print_message(method, dataset, data_shape, n_batches, k):
+    """Print details for current experiment."""
+    print(50 * "*")
+    print("")
+    print(f"Update method:     {method}")
+    print(f"Dataset:           {dataset} {data_shape}")
+    print(f"Number of batches: {n_batches}")
+    print(f"Rank k of updates: {k}\n")
+
+
+######################################################################
 # Check for correct number of arguments
 if len(sys.argv) != 3:
     print(
@@ -100,7 +146,7 @@ f = open(sys.argv[1])
 try:
     test_spec = json.load(f)
 except ValueError as err:
-    print("Tests file is not valid json, please double check syntax")
+    print("Tests file is not a valid JSON file. Please double check syntax.")
     exit()
 
 # Create cache path to save results
@@ -124,30 +170,16 @@ for test in test_spec["tests"]:
         for n_batches in test["n_batches"]:
 
             # Get batch numbers to plot for given batch size
-            batch_phis = [x for x in test["phis_to_plot"] if x <= n_batches]
-            if n_batches not in batch_phis:
-                batch_phis.append(n_batches)  # add last batch if not already included
+            batch_phis = get_batch_phis(n_batches, test["phis_to_plot"])
 
             # Calculate data split index
-            m_percent = test["m_percent"]
-            (m_dim_full, n_dim) = np.shape(data)
-            m_dim = int(np.ceil(m_dim_full * m_percent))
-            s_dim = m_dim_full - m_dim
-
-            # Split into initial matrix and matrix to be appended
-            B = data[:m_dim, :]
-            E = data[m_dim:, :]
+            B, E = split_data(data, test["m_percent"])
 
             # Run test for each desired rank k
             for k in test["k_dims"]:
 
                 # Print message for current experiment
-                print(50 * "*")
-                print("")
-                print(f"Update method:     {method}")
-                print(f"Dataset:           {dataset} {data.shape}")
-                print(f"Number of batches: {n_batches}")
-                print(f"Rank k of updates: {k}\n")
+                print_message(method, dataset, data.shape, n_batches, k)
 
                 # Create directory to save data for this batch split and k
                 save_dir = join(
