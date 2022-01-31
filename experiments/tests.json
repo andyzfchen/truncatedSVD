@@ -24,7 +24,7 @@
         },
         {
             "method": "bcg",
-            "title": "$Z = [U_k, X_{\lambda,r}; 0, I_s]$",
+            "title": "$Z = [U_k, X_{\\lambda,r}; 0, I_s]$",
             "datasets": [
                 "CISI",
                 "MED",
@@ -40,7 +40,7 @@
                 10
             ],
             "r_values": [
-                10, 20, 30, 40, 50
+                10
             ],
             "lam_coeff": 1.01,
             "num_runs": 1,
@@ -73,8 +73,8 @@
         }
     ],
     "dataset_info": {
-        "CISI": "../datasets/CISI/CISI_KKU.npy",
-        "CRAN": "../datasets/CRAN/CRAN_KKU.npy",
-        "MED": "../datasets/MED/MED_KKU.npy"
+        "CISI": "./datasets/CISI/CISI_KKU.npy",
+        "CRAN": "./datasets/CRAN/CRAN_KKU.npy",
+        "MED": "./datasets/MED/MED_KKU.npy"
     }
 }

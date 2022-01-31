@@ -5,6 +5,8 @@ import os
 import sys
 import time
 import numpy as np
+from os import mkdir
+from os.path import exists, normpath, join
 from .metrics import proj_err, cov_err, rel_err, res_norm, mse
 from .svd_update import (
     zha_simon_update,
@@ -344,41 +346,36 @@ class EvolvingMatrix(object):
             "Calculating true truncated SVD for current A matrix of size ",
             np.shape(self.A),
         )
-
-        # Folder to save U,S,V arrays
-        dirname = f"./cache/{update_method}/{dataset}/{dataset}_batch_split_{str(self.n_batches)}_k_dims_{str(self.k_dim)}"
-        if not os.path.exists(os.path.normpath(dirname)):
-            os.mkdir(os.path.normpath(dirname))
-
         # Load from cache if pre-calculated
         if save_dir is None:
             self.U_true, self.sigma_true, self.VH_true = np.linalg.svd(self.A)
         else:
-            if os.path.exists(
-                os.path.normpath(f"{save_dir}/U_true_phi_{str(self.phi)}.npy")
-            ):
+            if exists(normpath(f"{save_dir}/U_true_phi_{str(self.phi)}.npy")):
                 print("True SVD pre-calculated. Loading from cache.")
                 self.U_true = np.load(
-                    os.path.normpath(f"{save_dir}/U_true_phi_{str(self.phi)}.npy")
+                    normpath(f"{save_dir}/U_true_phi_{str(self.phi)}.npy")
                 )
                 self.sigma_true = np.load(
-                    os.path.normpath(f"{save_dir}/sigma_true_phi_{str(self.phi)}.npy")
+                    normpath(f"{save_dir}/sigma_true_phi_{str(self.phi)}.npy")
                 )
                 self.VH_true = np.load(
-                    os.path.normpath(f"{save_dir}/VH_true_phi_{str(self.phi)}.npy")
+                    normpath(f"{save_dir}/VH_true_phi_{str(self.phi)}.npy")
                 )
             else:
+                if not exists(normpath(save_dir)):
+                    mkdir(normpath(save_dir))
+                    
                 self.U_true, self.sigma_true, self.VH_true = np.linalg.svd(self.A)
                 np.save(
-                    os.path.normpath(f"{save_dir}/U_true_phi_{str(self.phi)}.npy"),
+                    normpath(f"{save_dir}/U_true_phi_{str(self.phi)}.npy"),
                     self.U_true,
                 )
                 np.save(
-                    os.path.normpath(f"{save_dir}/sigma_true_phi_{str(self.phi)}.npy"),
+                    normpath(f"{save_dir}/sigma_true_phi_{str(self.phi)}.npy"),
                     self.sigma_true,
                 )
                 np.save(
-                    os.path.normpath(f"{save_dir}/VH_true_phi_{str(self.phi)}.npy"),
+                    normpath(f"{save_dir}/VH_true_phi_{str(self.phi)}.npy"),
                     self.VH_true,
                 )
 
@@ -448,7 +445,7 @@ class EvolvingMatrix(object):
 
     def get_mean_squared_error(self):
         """Return mean squared error."""
-        return mse(self.Ak, self.reconstruct(update=False))
+        return mse(self.A, self.reconstruct(update=False))
 
     def save_metrics(self, fdir, print_metrics=True, sv_idx=None, A_idx=None, r_str=""):
         """Calculate and save metrics and optionally print to console.
@@ -475,22 +472,29 @@ class EvolvingMatrix(object):
         # Calculate metrics
         rel_err = self.get_relative_error(sv_idx=sv_idx)
         res_norm = self.get_residual_norm(sv_idx=sv_idx, A_idx=A_idx)
-        cov_err = self.get_covariance_error()
+        # cov_err = self.get_covariance_error()
         # proj_err = self.get_projection_error()
+        # mse = self.get_mean_squared_error()
 
         # Save metrics
-        np.save(f"{fdir}/relative_errors_phi_{self.phi}{r_str}.npy", rel_err)
-        np.save(f"{fdir}/residual_norms_phi_{self.phi}{r_str}.npy", res_norm)
-        np.save(f"{fdir}/covariance_errors_phi_{self.phi}{r_str}.npy", cov_err)
-        # np.save(f"{fdir}/projection_errors_phi_{self.phi}{r_str}.npy", proj_err)
-        np.save(f"{fdir}/runtimes_phi_{self.phi}{r_str}.npy", self.runtime)
+        np.save(normpath(f"{fdir}/relative_errors_phi_{self.phi}{r_str}.npy"), rel_err)
+        np.save(normpath(f"{fdir}/residual_norms_phi_{self.phi}{r_str}.npy"), res_norm)
+        # np.save(
+        #     normpath(f"{fdir}/covariance_errors_phi_{self.phi}{r_str}.npy"), cov_err
+        # )
+        # np.save(
+        #     normpath(f"{fdir}/projection_errors_phi_{self.phi}{r_str}.npy"), proj_err
+        # )
+        # np.save(normpath(f"{fdir}/mea_squared_errors_phi_{self.phi}{r_str}.npy"), mse)
+        np.save(normpath(f"{fdir}/runtimes_phi_{self.phi}{r_str}.npy"), self.runtime)
 
-        # Optionally print metrics to console
+        # Print metrics to console
         if print_metrics:
             print(f"\nMetrics for update {str(self.phi)}")
             print(50 * "-")
             print(f"Singular value relative errors:\n{rel_err}\n")
             print(f"Last singular vector residual norm:\n{res_norm}\n")
-            print(f"Covariance error: {cov_err}")
-            # print(f"Projection error: {proj_err}")
-            print(f"Runtime:          {self.runtime}")
+            # print(f"Covariance error:   {cov_err}")
+            # print(f"Projection error:   {proj_err}")
+            # print(f"Mean squared error: {mse}")
+            print(f"Runtime:            {self.runtime}")
