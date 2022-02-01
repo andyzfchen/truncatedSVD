@@ -1,80 +1,55 @@
 {
-    "tests": [
-        {
-            "method": "frequent-directions",
-            "title": "Frequent Directions",
-            "datasets": [
-                "CISI",
-                "MED",
-                "CRAN"
-            ],
-            "m_percent": 0.1,
-            "n_batches": [
-                10
-            ],
-            "phis_to_plot": [
-                1,
-                5,
-                10
-            ],
-            "k_dims": [
-                50
-            ],
-            "make_plots": true
-        },
-        {
-            "method": "bcg",
-            "title": "$Z = [U_k, X_{\\lambda,r}; 0, I_s]$",
-            "datasets": [
-                "CISI",
-                "MED",
-                "CRAN"
-            ],
-            "m_percent": 0.1,
-            "n_batches": [
-                10
-            ],
-            "phis_to_plot": [
-                1,
-                5,
-                10
-            ],
-            "r_values": [
-                10
-            ],
-            "lam_coeff": 1.01,
-            "num_runs": 1,
-            "k_dims": [
-                50
-            ],
-            "make_plots": true
-        },
-        {
-            "method": "zha-simon",
-            "title": "$Z = [U_k, 0; 0, I_s]$",
-            "datasets": [
-                "CISI",
-                "MED",
-                "CRAN"
-            ],
-            "m_percent": 0.1,
-            "n_batches": [
-                10
-            ],
-            "phis_to_plot": [
-                1,
-                5,
-                10
-            ],
-            "k_dims": [
-                50
-            ],
-            "make_plots": true
-        }
-    ],
-    "dataset_info": {
-        "CISI": "./datasets/CISI/CISI_KKU.npy",
-        "CRAN": "./datasets/CRAN/CRAN_KKU.npy",
-        "MED": "./datasets/MED/MED_KKU.npy"
+  "tests": [
+    {
+      "dataset": "CISI",
+      "methods": ["zha-simon", "bcg"],
+      "m_percent": 0.1,
+      "n_batches": [2, 6, 10],
+      "phis_to_plot": [1, 5, 10],
+      "r_values": [10],
+      "lam_coeff": 1.01,
+      "num_runs": 1,
+      "k_dims": [25, 50, 75, 100, 125],
+      "make_plots": true
+    },
+    {
+      "dataset": "CRAN",
+      "methods": ["zha-simon", "bcg"],
+      "m_percent": 0.1,
+      "n_batches": [2, 6, 10],
+      "phis_to_plot": [1, 5, 10],
+      "r_values": [10],
+      "lam_coeff": 1.01,
+      "num_runs": 1,
+      "k_dims": [25, 50, 75, 100, 125],
+      "make_plots": true
+    },
+    {
+      "dataset": "MED",
+      "methods": ["zha-simon", "bcg"],
+      "title": "$Z = [U_k, 0; 0, I_s]$",
+      "m_percent": 0.1,
+      "n_batches": [2, 6, 10],
+      "phis_to_plot": [1, 5, 10],
+      "r_values": [10],
+      "lam_coeff": 1.01,
+      "num_runs": 1,
+      "k_dims": [25, 50, 75, 100, 125],
+      "make_plots": true
     }
+  ],
+  "dataset_info": {
+    "CISI": "./datasets/CISI/CISI_KKU.npy",
+    "CRAN": "./datasets/CRAN/CRAN_KKU.npy",
+    "MED": "./datasets/MED/MED_KKU.npy",
+    "ML1M": "./datasets/ML1M/ML1M.npy",
+    "Reuters": "./datasets/Reuters/Reuters.npy"
+  },
+  "method_label": {
+    "bcg": "$Z = [U_k, X_{\\lambda,r}; 0, I_s]$",
+    "zha-simon": "$Z = [U_k, 0; 0, I_s]$",
+    "frequent-direction": "FrequentDirections",
+    "brute-force": "Brute Force",
+    "naive": "Naïve"
+  }
 }

@@ -32,7 +32,7 @@ def blockCG(A, B, X=None, max_iter=1, tol=1e-1):
     D. P. O'Leary, “The block conjugate gradient algorithm and related methods,”
         Linear Algebra and its Applications, vol. 29, pp. 293-322, 2 1980
     """
-    # Set initial guess if none given
+    # Set initial guess if None given
     if X is None:
         X = np.zeros((A.shape[1], B.shape[1]))
 
@@ -45,7 +45,7 @@ def blockCG(A, B, X=None, max_iter=1, tol=1e-1):
     # Iteratively calculate solution matrix X
     P = R
     for ii in range(max_iter):
-        print(f"Iteration {ii + 1}...")
+        print(f"Iteration {ii + 1}/{max_iter}...")
 
         # Update X
         PtAP = P.T.dot(A.dot(P))

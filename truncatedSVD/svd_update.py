@@ -48,8 +48,6 @@ def zha_simon_update(A, Uk, Sk, VHk, E):
     H. Zha and H. D. Simon, “Timely communication on updating problems in latent semantic indexing,
         ”Society for Industrial and Applied Mathematics, vol. 21, no. 2, pp. 782-791, 1999.
     """
-    print("Updating truncated SVD using Zha-Simon projection method.")
-
     # Construct Z and ZH*A matrices
     s = E.shape[0]
     k = Uk.shape[1]
@@ -71,7 +69,7 @@ def zha_simon_update(A, Uk, Sk, VHk, E):
     return Uk_new, Tk, Vk_new.T
 
 
-def bcg_update(B, Uk, sigmak, VHk, E, lam_coeff=None, r=10, rsvd_opt=True):
+def bcg_update(B, Uk, sigmak, VHk, E, lam_coeff=None, r=10, rsvd_opt=True, random_state=None):
     """Calculate truncated SVD update using enhanced projection matrix.
 
     Parameters
@@ -101,6 +99,9 @@ def bcg_update(B, Uk, sigmak, VHk, E, lam_coeff=None, r=10, rsvd_opt=True):
         If True, use randomized SVD to approximate X_lambda_r.
         Otherwise, use truncated SVD of random projection in calculating approximation.
 
+    random_state : int, RandomState instance or None, default='warn'
+        Seed of pseudo random number generator. See sklearn.utils.extmath.randomized_svd for more details.
+
     Returns
     -------
     Uk_new : array, shape (m, k)
@@ -118,8 +119,9 @@ def bcg_update(B, Uk, sigmak, VHk, E, lam_coeff=None, r=10, rsvd_opt=True):
         “Projection techniquesto update the truncated SVD of evolving matrices with applications,”
         inProceedings of the 38th InternationalConference on Machine Learning,
         M. Meila and T. Zhang, Eds. PMLR, 7 2021, pp. 5236-5246.
+        
+    https://scikit-learn.org/stable/modules/generated/sklearn.utils.extmath.randomized_svd.html
     """
-    print("Updating truncated SVD using enhanced projection method.")
     k = len(sigmak)
 
     # Set lam_coeffbda
@@ -136,8 +138,8 @@ def bcg_update(B, Uk, sigmak, VHk, E, lam_coeff=None, r=10, rsvd_opt=True):
     # Calculate X_lambda_r
     print("Calculating X_lambda_r.")
     if rsvd_opt:  # calculate using randomized SVD
-        Xlr, _, _ = rsvd(BlBEH, n_components=r, n_oversamples=2 * r, n_iter=0)
-    else:  # calculate using truncated SVD of random normal projection
+        Xlr, _, _ = rsvd(-BlBEH, n_components=r, n_oversamples=2 * r, n_iter=0, random_state=random_state)
+    else:         # calculate using truncated SVD of random normal projection
         BlBEHR = BlBEH.dot(np.random.normal(size=(E.shape[0], 2 * r)))
         Xlr, _, _ = np.linalg.svd(BlBEHR, full_matrices=False)
         Xlr = Xlr[:, :r]

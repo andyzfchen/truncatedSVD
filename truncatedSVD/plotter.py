@@ -1,3 +1,4 @@
+from cProfile import run
 import numpy as np
 import matplotlib.pyplot as plt
 from os.path import join, normpath
@@ -40,7 +41,7 @@ def plot_residual_norms(
 
     # Label figure
     ax.set_title(title)
-    ax.set_xlabel("Update Index")
+    ax.set_xlabel("Singular Value Index")
     ax.set_xlim(idx[0], idx[-1])
     ax.set_ylabel("Scaled Residual Norm")
     ax.set_yscale("log")
@@ -91,7 +92,7 @@ def plot_relative_errors(
 
     # Label figure
     ax.set_title(title)
-    ax.set_xlabel("Update Index")
+    ax.set_xlabel("Singular Value Index")
     ax.set_xlim(idx[0], idx[-1])
     ax.set_ylabel("Relative Error")
     ax.set_yscale("log")
@@ -132,47 +133,57 @@ def plot_projection_errors(
     return None
 
 
-def plot_pr_curve(precision, recall, leg_name, filename, title=None):
+def plot_pr_curve(precision_list, recall_list, update_methods, dataset, save_dir, title="Precision-Recall Curve"):
     fig, ax = plt.subplots(figsize=(4, 3))
     ax.grid(True, which="both", linewidth=1, linestyle="--", color="k", alpha=0.1)
     ax.tick_params(
         which="both", direction="in", bottom=True, top=True, left=True, right=True
     )
 
-    for p, r, l in zip(precision, recall, leg_name):
-        ax.plot(p, r, label=l)
-
+    for p, r, method in zip(precision_list, recall_list, update_methods):
+        ax.plot(r, p, label=method)
+    
     ax.set_title(title)
     ax.set_xlabel("Recall")
     ax.set_ylabel("Precision")
-
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
 
-    ax.legend(loc="lower left")
+    ax.legend(loc="upper right")
     plt.savefig(
-        f"../figures/{filename}.png", bbox_inches="tight", pad_inches=0.2, dpi=200
+        normpath(join(save_dir, f"{dataset}_pr_curve.png")), bbox_inches="tight", pad_inches=0.2, dpi=200
     )
     plt.close()
 
 
-def plot_runtimes(runtimes, xval, filename, title="Runtime"):
-    """Helper function to plot runtimes."""
-    fig, ax = plt.subplots(figsize=(4, 3))
+def plot_runtimes(runtimes_dict, filename, title="Runtime"):
+    """Helper function to plot runtimes.
+
+    Parameters
+    ----------
+    runtimes_dict : dict
+        Dictionary of runtimes    
+    """
+    # Plot runtimes for each method
+    update_methods = np.unique([tup[0] for tup in list(runtimes_dict.keys())])
+    batch_sizes = np.unique([tup[1] for tup in list(runtimes_dict.keys())])    
+    
+    fig, ax = plt.subplots(figsize=(5, 3))
     ax.grid(True, which="both", linewidth=1, linestyle="--", color="k", alpha=0.1)
     ax.tick_params(
         which="both", direction="in", bottom=True, top=True, left=True, right=True
     )
-    for x, t in zip(xval, runtimes):
-        ax.plot(x, t, label="Update(%i)" % x)
+    for method in update_methods:
+        for n_batches in batch_sizes:
+            mkeys = [tup for tup in list(runtimes_dict.keys()) if (method in tup and n_batches in tup)]
+            rt_data = np.stack([(mk[2], runtimes_dict[mk]) for mk in mkeys])
+            ax.plot(rt_data[:, 0], rt_data[:, 1], label=f"{method}, n_batches={n_batches}")
 
     ax.set_title(title)
-    ax.set_xlabel("Update Index")
-    ax.set_xlim(xval[0], xval[-1])
+    ax.set_xlabel("$k$")
     ax.set_ylabel("Runtime (s)")
-
-    ax.legend(loc="lower right")
+    ax.legend(bbox_to_anchor=(1.04, 0.5), loc="center left", borderaxespad=0)
     plt.savefig(
-        f"../figures/{filename}.png", bbox_inches="tight", pad_inches=0.2, dpi=200
+        normpath(filename), bbox_inches="tight", pad_inches=0.2, dpi=200
     )
     plt.close()

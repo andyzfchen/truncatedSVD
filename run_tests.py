@@ -21,13 +21,12 @@ def perform_updates(
     save_dir,
     res_norms_list,
     rel_errs_list,
-    runtimes_list,
     make_plots=False,
     **kwargs,
 ):
     """Perform updates for specified number of batches using update method."""
     for ii in range(n_batches):
-        print(f"\nBatch {str(ii+1)}/{str(n_batches)}.")
+        print(f"Batch {str(ii+1)}/{str(n_batches)}.")
 
         # Evolve matrix by appending new rows
         model.evolve()
@@ -40,11 +39,10 @@ def perform_updates(
         if model.phi in phi or ii == n_batches - 1:
 
             # Calculate true SVD for this batch
-            model.calculate_true_svd(method, dataset, save_dir)
+            model.calculate_true_svd(save_dir)
 
             # Caluclate metrics
             if method == "frequent-directions":
-                # print(f"INSIDE FREQUENT DIRECTIONS: {model.freq_dir.ell}\n")
                 model.save_metrics(
                     save_dir, print_metrics=True, A_idx=model.freq_dir.ell, r_str=r_str
                 )
@@ -63,11 +61,12 @@ def perform_updates(
 
                 res_norms_list.append(res_norm)
                 rel_errs_list.append(rel_err)
+        
+        print("")
+   
+    # Print relative error and residual norm for last singular triplet after updates
+    model.print_metrics(sv_idx=model.k_dim - 1)
     
-    # Save runtime for plotting
-    if make_plots:        
-        runtimes_list.append(model.runtime)
-
                 
 def check_and_create_dir(dirname):
     """Check if directory exists. If it does not exist, create it."""
@@ -96,12 +95,12 @@ def get_batch_phis(n_batches, phis_to_plot):
     return batch_phis
 
 
-def print_message(method, dataset, data_shape, n_batches, k):
+def print_message(dataset, data_shape, method, n_batches, k):
     """Print details for current experiment."""
     print(50 * "*")
     print("")
-    print(f"Update method:     {method}")
     print(f"Dataset:           {dataset} {data_shape}")
+    print(f"Update method:     {method}")
     print(f"Number of batches: {n_batches}")
     print(f"Rank k of updates: {k}\n")
 
@@ -119,19 +118,22 @@ def run_experiments(specs_json, cache_dir):
     cache_path = join(cache_dir, "cache")
     check_and_create_dir(cache_path)
 
-    # Run tests for each method
+    # Loop through each dataset
     for test in test_spec["tests"]:
-        method = test["method"]
-        check_and_create_dir(join(cache_path, method))
+        dataset = test["dataset"]
+        check_and_create_dir(join(cache_path, dataset))
 
-        # Loop through each dataset
-        for dataset in test["datasets"]:
-            check_and_create_dir(join(cache_path, method, dataset))
-
-            # Load data
-            data = np.load(test_spec["dataset_info"][dataset])
-            if data.shape[0] < data.shape[1]:
-                data = data.T
+        # Load data
+        data = np.load(test_spec["dataset_info"][dataset])
+        # if data.shape[0] < data.shape[1]:
+            # data = data.T
+    
+        # Initialize dict for runtimes
+        runtimes_dict = dict()
+    
+        # Run tests for each update method
+        for method in test["methods"]:
+            check_and_create_dir(join(cache_path, dataset, method))
             
             # Loop through number of batches
             for n_batches in test["n_batches"]:
@@ -142,20 +144,17 @@ def run_experiments(specs_json, cache_dir):
                 # Calculate data split index
                 B, E = split_data(data, test["m_percent"])
 
-                # Initialize runtimes
-                runtimes_list = []
-
                 # Loop through desired rank k
                 for k in test["k_dims"]:
 
                     # Print message for current experiment
-                    print_message(method, dataset, data.shape, n_batches, k)
+                    print_message(dataset, data.shape, method, n_batches, k)
 
                     # Create directory to save data for this batch split and k
                     save_dir = join(
                         cache_path,
-                        method,
                         dataset,
+                        method,
                         f"{dataset}_batch_split_{str(n_batches)}_k_dims_{str(k)}",
                     )
                     check_and_create_dir(save_dir)
@@ -164,10 +163,11 @@ def run_experiments(specs_json, cache_dir):
                     rel_errs_list = []
                     res_norms_list = []
                     
-                    # Update truncated SVD using specified method
+                    # Update truncated SVD using Frequent Directions
                     if method == "frequent-directions":
                         model = EM.EvolvingMatrix(B, n_batches=n_batches, k_dim=k)
                         model.set_append_matrix(E)
+                        print()
                         perform_updates(
                             dataset,
                             n_batches,
@@ -185,17 +185,18 @@ def run_experiments(specs_json, cache_dir):
                         if test["make_plots"]:
                             fig_dir = save_dir + "/figures"
                             check_and_create_dir(fig_dir)
-
+                            title = dataset + ", " + test_spec["method_label"][method]
                             plot_relative_errors(
-                                rel_errs_list, batch_phis, fig_dir, title=test["title"]
+                                rel_errs_list, batch_phis, fig_dir, title=title
                             )
                             plot_residual_norms(
-                                res_norms_list, batch_phis, fig_dir, title=test["title"]
+                                res_norms_list, batch_phis, fig_dir, title=title
                             )
-                            
+                    # Update truncated SVD using Zha-Simon projection variation 
                     elif method == "zha-simon":
                         model = EM.EvolvingMatrix(B, n_batches=n_batches, k_dim=k)
                         model.set_append_matrix(E)
+                        print()
                         perform_updates(
                             dataset,
                             n_batches,
@@ -213,13 +214,14 @@ def run_experiments(specs_json, cache_dir):
                         if test["make_plots"]:
                             fig_dir = save_dir + "/figures"
                             check_and_create_dir(fig_dir)
+                            title = dataset + ", " + test_spec["method_label"][method]
                             plot_relative_errors(
-                                rel_errs_list, batch_phis, fig_dir, title=test["title"]
+                                rel_errs_list, batch_phis, fig_dir, title=title
                             )
                             plot_residual_norms(
-                                res_norms_list, batch_phis, fig_dir, title=test["title"]
+                                res_norms_list, batch_phis, fig_dir, title=title
                             )
-                            
+                    # Update truncated SVD using enhanced projection variation
                     elif method == "bcg":
                         for r in test["r_values"]:
                             for run_num in range(test["num_runs"]):
@@ -252,20 +254,23 @@ def run_experiments(specs_json, cache_dir):
                                 if test["make_plots"]:
                                     fig_dir = save_dir_run + "/figures"
                                     check_and_create_dir(fig_dir)
+                                    title = dataset + ", " + test_spec["method_label"][method]
                                     plot_relative_errors(
                                         rel_errs_list,
                                         batch_phis,
                                         fig_dir,
-                                        title=test["title"],
+                                        title=title,
                                     )
                                     plot_residual_norms(
                                         res_norms_list,
                                         batch_phis,
                                         fig_dir,
-                                        title=test["title"],
+                                        title=title,
                                     )
+                    # Update truncated SVD using brute force method
                     elif method == "brute-force":
                         print("")
+                    # Update truncated SVD using naïve method
                     elif method == "naive":
                         print("")
                     else:
@@ -281,10 +286,15 @@ def run_experiments(specs_json, cache_dir):
                     #     plot_covariance_errors(cov_err_list)
                     #     plot_projection_errors(proj_err_list)
 
+                    # Add entry into runtimes dict
+                    runtimes_dict[(method, n_batches, k)] = model.runtime                    
+                    
                     print("")
-                
-                # Plot runtimes
-                plot_runtimes(runtimes_list)
+                    
+        # Plot runtimes (for each dataset)
+        check_and_create_dir(join(cache_path, "figures"))
+        rt_plot_filename = join(cache_path, f"figures/{dataset}_runtime.png")
+        plot_runtimes(runtimes_dict, rt_plot_filename, f"Runtime ({dataset})")
 
 
 ######################################################################

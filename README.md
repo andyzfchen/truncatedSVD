@@ -9,8 +9,6 @@ The following sections provide instructions on the installation in order to run 
 
 ### Installation
 
-The code was written entirely in Python using standard packages.
-
 ### Datasets
 
 The datasets have been converted into a convenient format and can be accessed [here](https://drive.google.com/drive/folders/1tHrUILY_NBKDPmNYOaEpWnc9-1US9DEB). Note that a few of the datasets had to be converted from a sparse into dense format.
@@ -23,8 +21,12 @@ The experimental parameters are specified in a JSON file as follows:
 {
   "tests": [
     {
-      "method": "zha-simon",
-      "datasets": ["CISI", "MED", "CRAN"],
+      "dataset": "CRAN",
+      "method": [
+        "zha-simon",
+        "bcg",
+        "fd"
+      ],
       "m_percent": 0.1,
       "n_batches": [10],
       "phis_to_plot": [1, 5, 10],
@@ -37,10 +39,15 @@ The experimental parameters are specified in a JSON file as follows:
     "CRAN": "../datasets/CRAN.npy",
     "MED": "../datasets/MED.npy"
   }
+  "method_label": {
+    "bcg": "$Z = [U_k, X_{\\lambda,r}; 0, I_s]$",
+    "zha-simon": "$Z = [U_k, 0; 0, I_s]$",
+    "frequent-direction": "FrequentDirections",
+  }
 }
 ```
 
-Below is a table listing parameters and their descriptions. Note that some methods may require additional parameters. Please see our `example.json` file for a complete example for all update methods.
+Below is a table listing parameters and their descriptions. Note that some methods may require additional parameters. Please see our JSON files in the experiments directory for complete examples.
 
 | Parameter    | Description                                  | Example                        |
 | ------------ | -------------------------------------------- | ------------------------------ |
