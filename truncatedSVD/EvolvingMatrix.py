@@ -6,7 +6,6 @@ import time
 import numpy as np
 from os import mkdir
 from os.path import exists, normpath, join
-from scipy.sparse.linalg import svds
 from .utils import check_and_create_dir, get_truncated_svd
 from .metrics import proj_err, cov_err, rel_err, res_norm, mse
 from .svd_update import (
@@ -141,7 +140,7 @@ class EvolvingMatrix(object):
             self.k_dim = k_dim
 
         # Calculate true truncated SVD of current matrix
-        self.U_true, self.sigma_true, self.VH_true = svds(self.initial_matrix, k=self.k_dim)
+        self.U_true, self.sigma_true, self.VH_true = get_truncated_svd(self.initial_matrix, k=self.k_dim)
 
         # Get initial truncated SVD
         self.Uk = self.U_true[:, :self.k_dim]
@@ -207,7 +206,7 @@ class EvolvingMatrix(object):
             f"{'Appending matrix set to shape of ':<{msg_len}}{np.shape(self.append_matrix)}."
         )
 
-        self.U_all, self.Sigma_all, self.VH_all = svds(
+        self.U_all, self.Sigma_all, self.VH_all = get_truncated_svd(
             np.append(self.initial_matrix, self.append_matrix, axis=0),
             k=self.k_dim
         )
@@ -259,7 +258,7 @@ class EvolvingMatrix(object):
         self.m_dim = self.A.shape[0]
 
         # Recalculate true truncated SVD
-        self.U_true, self.sigma_true, self.VH_true = svds(self.A, k=self.k_dim) 
+        self.U_true, self.sigma_true, self.VH_true = get_truncated_svd(self.A, k=self.k_dim) 
 
         # Update counters for update
         self.phi += 1
@@ -295,8 +294,17 @@ class EvolvingMatrix(object):
         return self.Uk, self.sigmak, self.VHk
 
 
-    def update_svd_bcg(self, lam_coeff, r):
-        """Return truncated SVD of updated matrix using the BCG method."""
+    def update_svd_bcg(self, lam_coeff=1.01, r=10):
+        """Return truncated SVD of updated matrix using the BCG method.
+        
+        Parameters
+        ----------
+        lam_coeff : float, default=1.01
+            Lambda coefficient
+        
+        r : int, default=10
+            Number of oversamples in randomized SVD
+        """
         print("Updating truncated using enchanced projection variation.")
         # Get previous data matrix from updated matrix
         B = self.A[: -self.n_appended, :]
@@ -441,12 +449,11 @@ class EvolvingMatrix(object):
 
     def get_projection_error(self):
         """Return projection error."""
+        # Calculate best rank-k approximation of A
         u, s, vh = np.linalg.svd(self.A)
-        return proj_err(
-            self.A,
-            self.reconstruct(update=False),
-            (u[:, : self.k_dim].dot(np.diag(s[: self.k_dim])).dot(vh[: self.k_dim, :])),
-        )
+        Ak = u[:, :self.k_dim].dot(np.diag(s[:self.k_dim]).dot(vh[:self.k_dim, :]))
+        
+        return proj_err(self.A, self.reconstruct(update=False), Ak)
 
 
     def get_mean_squared_error(self):
@@ -479,16 +486,16 @@ class EvolvingMatrix(object):
         # Calculate metrics
         rel_err = self.get_relative_error(sv_idx=sv_idx)
         res_norm = self.get_residual_norm(sv_idx=sv_idx, A_idx=A_idx)
-        cov_err = self.get_covariance_error()
+        # cov_err = self.get_covariance_error()
         # proj_err = self.get_projection_error()
         # mse = self.get_mean_squared_error()
 
         # Save metrics
         np.save(normpath(f"{fdir}/relative_errors_phi_{self.phi}{r_str}.npy"), rel_err)
         np.save(normpath(f"{fdir}/residual_norms_phi_{self.phi}{r_str}.npy"), res_norm)
-        np.save(
-            normpath(f"{fdir}/covariance_errors_phi_{self.phi}{r_str}.npy"), cov_err
-        )
+        # np.save(
+        #     normpath(f"{fdir}/covariance_errors_phi_{self.phi}{r_str}.npy"), cov_err
+        # )
         # np.save(
         #     normpath(f"{fdir}/projection_errors_phi_{self.phi}{r_str}.npy"), proj_err
         # )

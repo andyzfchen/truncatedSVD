@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def blockCG(A, B, X=None, max_iter=1, tol=1e-1):
+def blockCG(A, B, X=None, max_iter=2, tol=1e-1):
     """Solve multiple linear systems AX=B using the block conjugate gradient (BCG) method described by O'Leary (1980).
 
     Parameters
@@ -16,7 +16,7 @@ def blockCG(A, B, X=None, max_iter=1, tol=1e-1):
         Initial guess
         If 'None', X is set to a matrix of zeros of shape ()
 
-    max_iter : int, default=1
+    max_iter : int, default=2
         Maximum number of iterations
 
     tol : float, default=1e-1

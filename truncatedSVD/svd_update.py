@@ -69,7 +69,7 @@ def zha_simon_update(A, Uk, Sk, VHk, E):
     return Uk_new, Tk, Vk_new.T
 
 
-def bcg_update(B, Uk, sigmak, VHk, E, lam_coeff=None, r=10, option=3, random_state=None):
+def bcg_update(B, Uk, sigmak, VHk, E, lam_coeff=None, r=10, option=0, random_state=None):
     """Calculate truncated SVD update using enhanced projection matrix.
 
     Parameters
@@ -89,8 +89,8 @@ def bcg_update(B, Uk, sigmak, VHk, E, lam_coeff=None, r=10, option=3, random_sta
     E : ndarray of shape (s, n)
         Matrix to be appended
 
-    lam_coeff : float, default=None
-        If 'None', lam_coeff is set to 1.01 * (sigmahat_1)^2
+    lam_coeff : float, default=1.01
+        Coefficient
 
     r : int, default=10
         Parameter determining number of columns in matrix R
@@ -124,29 +124,25 @@ def bcg_update(B, Uk, sigmak, VHk, E, lam_coeff=None, r=10, option=3, random_sta
     """
     k = len(sigmak)
 
-    # Set lam_coeffbda
-    if lam_coeff is None:
-        lam_coeff = 1.01 * sigmak[0] ** 2
-
     # Calculate B(lambda) B E^H
     print("Calculating B(lambda) B E^H using BCG.")
     m = B.shape[0]
-    lhs = -(B.dot(B.T) - lam_coeff * np.eye(m))
+    lhs = -(B.dot(B.T) - (lam_coeff * sigmak[0] ** 2) * np.eye(m))
     rhs = (np.eye(m) - Uk.dot(Uk.T)).dot(B.dot(E.T))
 
     # Calculate X_lambda_r
     print("Calculating X_lambda_r.")
-    if option == 1:  # calculate using randomized SVD
-        BlBEH = blockCG(lhs, rhs, max_iter=1)
+    if option == 0:  # calculate using randomized SVD
+        BlBEH = blockCG(lhs, rhs)
         Xlr, _, _ = rsvd(BlBEH, n_components=r, n_oversamples=2 * r, n_iter=0, random_state=random_state)
-    elif option == 2:         # calculate using truncated SVD of random normal projection
-        BlBEH = blockCG(lhs, rhs, max_iter=1)
+    elif option == 1:         # calculate using truncated SVD of random normal projection
+        BlBEH = blockCG(lhs, rhs)
         BlBEHR = BlBEH.dot(np.random.normal(size=(E.shape[0], 2 * r)))
         Xlr, _, _ = np.linalg.svd(BlBEHR, full_matrices=False)
         Xlr = Xlr[:, :r]
-    elif option == 3:
+    elif option == 2:
         rhs = rhs.dot(np.random.normal(size=(E.shape[0], 2 * r)))
-        BlBEHR = blockCG(lhs, rhs, max_iter=1)
+        BlBEHR = blockCG(lhs, rhs)
         Xlr, _, _ = np.linalg.svd(BlBEHR, full_matrices=False)
         Xlr = Xlr[:, :r]
     else:
