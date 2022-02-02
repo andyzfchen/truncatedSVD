@@ -7,7 +7,14 @@ We (Andy Chen, Shion Matsumoto, and Rohan Sinha Varma) present this repository a
 
 The following sections provide instructions on the installation in order to run the experiments as well as the datasets used in the study.
 
-### Installation
+### Conda Environment Setup
+
+The necessary dependencies are listed in the [`environment.yml`](environment.yml) file and can be used to set up a new [Anaconda](https://www.anaconda.com/) environment for running the experiments in this repository.
+
+```bash
+conda env create -n <env-name> -f environment.yml
+conda activate <env-name>
+```
 
 ### Datasets
 
