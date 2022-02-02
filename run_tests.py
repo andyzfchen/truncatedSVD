@@ -4,6 +4,7 @@
 from os import mkdir
 from os.path import normpath, exists, join
 import json
+from truncatedSVD.metrics import proj_err
 import numpy as np
 import truncatedSVD.EvolvingMatrix as EM
 from truncatedSVD.plotter import *
@@ -29,7 +30,7 @@ def perform_updates(
     res_norms_list = []
     rel_errs_list = []
     cov_errs_dict = OrderedDict()
-    #proj_errs_dict = OrderedDict()
+    proj_errs_dict = OrderedDict()
     """Perform updates for specified number of batches using update method."""
     for ii in range(n_batches):
         print(f"Batch {str(ii+1)}/{str(n_batches)}.")
@@ -61,7 +62,7 @@ def perform_updates(
             if make_plots:
                 rel_err = model.get_relative_error(sv_idx=None)
                 cov_err = model.get_covariance_error()
-                #proj_err = model.get_projection_error()                
+                proj_err = model.get_projection_error()                
                 if method == "frequent-directions":
                     res_norm = model.get_residual_norm(
                         sv_idx=None, A_idx=model.freq_dir.ell
@@ -72,14 +73,14 @@ def perform_updates(
                 res_norms_list.append(res_norm)
                 rel_errs_list.append(rel_err)
                 cov_errs_dict[model.phi] = cov_err
-                #proj_errs_dict[model.phi] = proj_err
+                proj_errs_dict[model.phi] = proj_err
         
         print("")
    
     # Print relative error and residual norm for last singular triplet after updates
     model.print_metrics(sv_idx=model.k_dim - 1)
 
-    return res_norms_list,rel_errs_list,cov_errs_dict#,proj_errs_dict
+    return res_norms_list,rel_errs_list,cov_errs_dict,proj_errs_dict
 
 
 def split_data(A, m_percent):
@@ -124,10 +125,13 @@ def make_plots(test,method,method_label,dataset,batch_phis,save_dir,res_norms_li
             res_norms_list, batch_phis, fig_dir, title=title
         )
 
-def save_cov_errs(save_dir,cov_errs_dict):
+def save_cov_proj_errs(save_dir,cov_errs_dict,proj_errs_dict):
     save_path = normpath(join(save_dir,"covarience_error.pkl"))
     with open(save_path,'wb') as f:
         pickle.dump(cov_errs_dict,f)
+    save_path = normpath(join(save_dir,"projection_error.pkl"))
+    with open(save_path,'wb') as f:
+        pickle.dump(proj_errs_dict,f)
 
 
 
@@ -191,7 +195,7 @@ def run_experiments(specs_json, cache_dir):
                         model = EM.EvolvingMatrix(B, n_batches=n_batches, k_dim=k)
                         model.set_append_matrix(E)
                         print()
-                        res_norms_list,rel_errs_list,cov_errs_dict = perform_updates(
+                        res_norms_list,rel_errs_list,cov_errs_dict,proj_errs_dict = perform_updates(
                             dataset,
                             n_batches,
                             batch_phis,
@@ -205,14 +209,14 @@ def run_experiments(specs_json, cache_dir):
                         )
 
                         make_plots(test,method,test_spec["method_label"][method],dataset,batch_phis,save_dir,res_norms_list,rel_errs_list)
-                        save_cov_errs(save_dir,cov_errs_dict)
+                        save_cov_proj_errs(save_dir,cov_errs_dict,proj_errs_dict)
 
                     # Update truncated SVD using Zha-Simon projection variation 
                     elif method == "zha-simon":
                         model = EM.EvolvingMatrix(B, n_batches=n_batches, k_dim=k)
                         model.set_append_matrix(E)
                         print()
-                        res_norms_list,rel_errs_list,cov_errs_dict = perform_updates(
+                        res_norms_list,rel_errs_list,cov_errs_dict,proj_errs_dict = perform_updates(
                             dataset,
                             n_batches,
                             batch_phis,
@@ -226,7 +230,7 @@ def run_experiments(specs_json, cache_dir):
                         )
 
                         make_plots(test,method,test_spec["method_label"][method],dataset,batch_phis,save_dir,res_norms_list,rel_errs_list)
-                        save_cov_errs(save_dir,cov_errs_dict)                        
+                        save_cov_proj_errs(save_dir,cov_errs_dict,proj_errs_dict)                        
                     # Update truncated SVD using enhanced projection variation
                     elif method == "bcg":
                         for r in test["r_values"]:
@@ -239,7 +243,7 @@ def run_experiments(specs_json, cache_dir):
                                 model.set_append_matrix(E)
                                 print()
                                 r_str = f"_rval_{str(r)}"
-                                res_norms_list,rel_errs_list,cov_errs_dict = perform_updates(
+                                res_norms_list,rel_errs_list,cov_errs_dict,proj_errs_dict = perform_updates(
                                     dataset,
                                     n_batches,
                                     batch_phis,
@@ -255,7 +259,7 @@ def run_experiments(specs_json, cache_dir):
                                 )
 
                                 make_plots(test,method,test_spec["method_label"][method],dataset,batch_phis,save_dir_run,res_norms_list,rel_errs_list)
-                                save_cov_errs(save_dir_run,cov_errs_dict)                                
+                                save_cov_proj_errs(save_dir_run,cov_errs_dict,proj_errs_dict)                                
 
                     else:
                         raise ValueError(

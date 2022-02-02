@@ -504,25 +504,25 @@ class EvolvingMatrix(object):
 
         # Print metrics to console
         if print_metrics:
-            self.print_metrics(sv_idx=sv_idx)
+            self.print_metrics(sv_idx=sv_idx,A_idx=A_idx)
 
 
-    def print_metrics(self, sv_idx=None):
+    def print_metrics(self, sv_idx=None,A_idx=None):
         """Print metrics for current update."""
         print(f"\nMetrics for batch {self.phi}/{self.n_batches}")
         print(50 * "-")
         
         if sv_idx is None:
             print(f"Singular values relative errors:\n{self.get_relative_error(sv_idx=sv_idx)}\n")
-            print(f"Singular triplets residual norm:\n{self.get_residual_norm(sv_idx=sv_idx)}\n")
+            print(f"Singular triplets residual norm:\n{self.get_residual_norm(sv_idx=sv_idx,A_idx=A_idx)}\n")
             print(f"Covariance error:   {self.get_covariance_error()}")
-            # print(f"Projection error:   {self.get_projection_error()}")
+            print(f"Projection error:   {self.get_projection_error()}")
             # print(f"Mean squared error: {mse}")
         else:
             print(f"Singular values relative errors (sv_idx={sv_idx}):\n{self.get_relative_error(sv_idx=sv_idx)}\n")
-            print(f"Singular triplets residual norm (sv_idx={sv_idx}):\n{self.get_residual_norm(sv_idx=sv_idx)}\n")
+            print(f"Singular triplets residual norm (sv_idx={sv_idx}):\n{self.get_residual_norm(sv_idx=sv_idx,A_idx=A_idx)}\n")
             print(f"Covariance error:   {self.get_covariance_error()}")
-            # print(f"Projection error:   {self.get_projection_error()}")
+            print(f"Projection error:   {self.get_projection_error()}")
             # print(f"Mean squared error: {mse}")
 
         print(f"Runtime: {self.runtime}")
