@@ -62,7 +62,7 @@ def perform_updates(
             if make_plots:
                 rel_err = model.get_relative_error(sv_idx=None)
                 cov_err = model.get_covariance_error()
-                proj_err = model.get_projection_error()                
+                proj_err = model.get_projection_error(A_idx=model.freq_dir.ell)                
                 if method == "frequent-directions":
                     res_norm = model.get_residual_norm(
                         sv_idx=None, A_idx=model.freq_dir.ell

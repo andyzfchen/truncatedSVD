@@ -447,7 +447,7 @@ class EvolvingMatrix(object):
         return cov_err(self.A, self.reconstruct(update=False))
 
 
-    def get_projection_error(self):
+    def get_projection_error(self,A_idx=None):
         """Return projection error."""
         # Calculate best rank-k approximation of A
         u, s, vh = np.linalg.svd(self.A)
