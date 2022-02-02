@@ -69,7 +69,7 @@ def zha_simon_update(A, Uk, Sk, VHk, E):
     return Uk_new, Tk, Vk_new.T
 
 
-def bcg_update(B, Uk, sigmak, VHk, E, lam_coeff=None, r=10, rsvd_opt=True, random_state=None):
+def bcg_update(B, Uk, sigmak, VHk, E, lam_coeff=None, r=10, option=3, random_state=None):
     """Calculate truncated SVD update using enhanced projection matrix.
 
     Parameters
@@ -133,16 +133,24 @@ def bcg_update(B, Uk, sigmak, VHk, E, lam_coeff=None, r=10, rsvd_opt=True, rando
     m = B.shape[0]
     lhs = -(B.dot(B.T) - lam_coeff * np.eye(m))
     rhs = (np.eye(m) - Uk.dot(Uk.T)).dot(B.dot(E.T))
-    BlBEH = blockCG(lhs, rhs, max_iter=1)
 
     # Calculate X_lambda_r
     print("Calculating X_lambda_r.")
-    if rsvd_opt:  # calculate using randomized SVD
-        Xlr, _, _ = rsvd(-BlBEH, n_components=r, n_oversamples=2 * r, n_iter=0, random_state=random_state)
-    else:         # calculate using truncated SVD of random normal projection
+    if option == 1:  # calculate using randomized SVD
+        BlBEH = blockCG(lhs, rhs, max_iter=1)
+        Xlr, _, _ = rsvd(BlBEH, n_components=r, n_oversamples=2 * r, n_iter=0, random_state=random_state)
+    elif option == 2:         # calculate using truncated SVD of random normal projection
+        BlBEH = blockCG(lhs, rhs, max_iter=1)
         BlBEHR = BlBEH.dot(np.random.normal(size=(E.shape[0], 2 * r)))
         Xlr, _, _ = np.linalg.svd(BlBEHR, full_matrices=False)
         Xlr = Xlr[:, :r]
+    elif option == 3:
+        rhs = rhs.dot(np.random.normal(size=(E.shape[0], 2 * r)))
+        BlBEHR = blockCG(lhs, rhs, max_iter=1)
+        Xlr, _, _ = np.linalg.svd(BlBEHR, full_matrices=False)
+        Xlr = Xlr[:, :r]
+    else:
+        raise ValueError("Invalid option. Must be 1, 2, or 3.")
 
     # Construct Z matrix
     print("Constructing Z matrix.")

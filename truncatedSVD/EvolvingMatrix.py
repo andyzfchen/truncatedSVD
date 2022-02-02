@@ -1,14 +1,13 @@
 """EvolvingMatrix class for updating the truncated singular value decomposition (SVD) of evolving matrices.
 """
 
-import os
 import sys
 import time
 import numpy as np
 from os import mkdir
 from os.path import exists, normpath, join
-from sklearn.decomposition import TruncatedSVD
 from scipy.sparse.linalg import svds
+from .utils import check_and_create_dir, get_truncated_svd
 from .metrics import proj_err, cov_err, rel_err, res_norm, mse
 from .svd_update import (
     zha_simon_update,
@@ -189,6 +188,7 @@ class EvolvingMatrix(object):
         # Initialize total runtime
         self.runtime = 0.0
 
+
     def set_append_matrix(self, append_matrix):
         """Set entire matrix to appended over the course of updates and calculates SVD for final matrix.
 
@@ -217,6 +217,7 @@ class EvolvingMatrix(object):
         for ii in range(self.m_dim):
             self.freq_dir.append(self.initial_matrix[ii, :])
 
+
     def reconstruct(self, update=True):
         """Return rank-k approximation of A using truncated SVD.
 
@@ -236,6 +237,7 @@ class EvolvingMatrix(object):
             return self.Ak
         else:
             return self.Uk.dot(np.diag(self.sigmak).dot(self.VHk))
+
 
     def evolve(self):
         """Evolve matrix by one update."""
@@ -267,6 +269,7 @@ class EvolvingMatrix(object):
             + f"Matrix now of shape {self.A.shape}."
         )
 
+
     def reset(self):
         """Undo all evolutions and set current matrix to the initial matrix. Matrix to be appended is unchanged."""
         print(f"Undoing all evolutions.\nSetting current matrix to initial matrix.")
@@ -280,6 +283,7 @@ class EvolvingMatrix(object):
         for ii in range(self.m_dim):
             self.freq_dir.append(self.append_matrix[ii, :])
 
+
     def update_svd_zha_simon(self):
         """Return truncated SVD of updated matrix using the Zha-Simon projection method."""
         print("Updating truncated SVD using Zha-Simon projection variation.")
@@ -289,6 +293,7 @@ class EvolvingMatrix(object):
         )
         self.runtime += time.perf_counter() - start
         return self.Uk, self.sigmak, self.VHk
+
 
     def update_svd_bcg(self, lam_coeff, r):
         """Return truncated SVD of updated matrix using the BCG method."""
@@ -310,6 +315,7 @@ class EvolvingMatrix(object):
         self.runtime += time.perf_counter() - start
         return self.Uk, self.sigmak, self.VHk
 
+
     def update_svd_brute_force(self):
         """Return optimal rank-k approximation of updated matrix using brute force method."""
         print("Updating truncated SVD using brute force method.")
@@ -317,6 +323,7 @@ class EvolvingMatrix(object):
         self.Uk, self.sigmak, self.VHk = brute_force_update(self.A, len(self.sigmak))
         self.runtime += time.perf_counter() - start
         return self.Uk, self.sigmak, self.VHk
+
 
     def update_svd_naive(self):
         """Return truncated SVD of updated matrix using the naïve update method."""
@@ -327,6 +334,7 @@ class EvolvingMatrix(object):
         )
         self.runtime += time.perf_counter() - start
         return self.Uk, self.sigmak, self.VHk
+
 
     def update_svd_fd(self):
         """Return truncated SVD of updated matrix using the Frequent Directions method."""
@@ -339,41 +347,39 @@ class EvolvingMatrix(object):
         self.runtime += time.perf_counter() - start
         return self.Uk, self.sigmak, self.VHk
 
+
     def calculate_true_svd(self, save_dir=None):
         """Calculate true SVD of the current A matrix.
 
         Parameters
         ----------
-        update_method : str, {"zha-simon", "bcg", "brute-force", "naive"}
-            Update method used
-
-        dataset : str
-            Name of dataset
+        save_dir : str, default=None
+            Location to save truncated SVD calculated. Recommended to save as calculation can take a long time.
         """
-        print("Calculating true truncated SVD for current A matrix. This may take a while.")
-        
-        # Load from cache if pre-calculated
         if save_dir is None:
-            self.U_true, self.sigma_true, self.VH_true = np.linalg.svds(self.A, k=self.k_dim)
+            print("Calculating true truncated SVD for current A matrix. This may take a while.")
+            self.U_true, self.sigma_true, self.VH_true = get_truncated_svd(self.A, self.k_dim)
         else:
-            if exists(normpath(f"{save_dir}/U_true_phi_{str(self.phi)}.npy")):
+            # Create new directory if it does not exist
+            check_and_create_dir(save_dir)
+            
+            # Check if file exists (if not calculate)
+            USV_true_file = join(save_dir, f"USV_true_nbatches_{self.n_batches}_phi_{str(self.phi)}_kdims_{self.k_dim}.npz")
+            if exists(normpath(USV_true_file)):
                 print("True SVD pre-calculated. Loading from cache.")
-                USV_true = np.load(
-                    normpath(f"{save_dir}/USV_true_phi_{str(self.phi)}.npz"))
-                
+                USV_true = np.load(normpath(USV_true_file))
                 self.U_true = USV_true["U_true"]
                 self.sigma_true = USV_true["sigma_true"]
                 self.VH_true = USV_true["VH_true"]
             else:
-                if not exists(normpath(save_dir)):
-                    mkdir(normpath(save_dir))
-                    
-                self.U_true, self.sigma_true, self.VH_true = np.linalg.svd(self.A)
+                print("Calculating true truncated SVD for current A matrix. This may take a while.")
+                self.U_true, self.sigma_true, self.VH_true = get_truncated_svd(self.A, self.k_dim)
                 np.savez_compressed(
-                    normpath(f"{save_dir}/USV_true_phi_{str(self.phi)}.npz"),
-                             U_true=self.U_true, 
-                             sigma_true=self.sigma_true, 
-                             VH_true=self.VH_true)
+                    normpath(USV_true_file), 
+                    U_true=self.U_true, 
+                    sigma_true=self.sigma_true, 
+                    VH_true=self.VH_true)
+
 
     def get_relative_error(self, sv_idx=None):
         """Return relative error of n-th singular value.
@@ -393,6 +399,7 @@ class EvolvingMatrix(object):
             sv_idx = np.arange(self.k_dim)
 
         return rel_err(self.sigma_true[sv_idx], self.sigmak[sv_idx])
+
 
     def get_residual_norm(self, sv_idx=None, A_idx=None):
         """Return residual norm of n-th singular triplet.
@@ -426,9 +433,11 @@ class EvolvingMatrix(object):
                 A, self.Uk[:, sv_idx], self.VHk[sv_idx, :].T, self.sigmak[sv_idx]
             )
 
+
     def get_covariance_error(self):
         """Return covariance error."""
         return cov_err(self.A, self.reconstruct(update=False))
+
 
     def get_projection_error(self):
         """Return projection error."""
@@ -439,9 +448,11 @@ class EvolvingMatrix(object):
             (u[:, : self.k_dim].dot(np.diag(s[: self.k_dim])).dot(vh[: self.k_dim, :])),
         )
 
+
     def get_mean_squared_error(self):
         """Return mean squared error."""
         return mse(self.A, self.reconstruct(update=False))
+
 
     def save_metrics(self, fdir, print_metrics=True, sv_idx=None, A_idx=None, r_str=""):
         """Calculate and save metrics.
@@ -468,16 +479,16 @@ class EvolvingMatrix(object):
         # Calculate metrics
         rel_err = self.get_relative_error(sv_idx=sv_idx)
         res_norm = self.get_residual_norm(sv_idx=sv_idx, A_idx=A_idx)
-        # cov_err = self.get_covariance_error()
+        cov_err = self.get_covariance_error()
         # proj_err = self.get_projection_error()
         # mse = self.get_mean_squared_error()
 
         # Save metrics
         np.save(normpath(f"{fdir}/relative_errors_phi_{self.phi}{r_str}.npy"), rel_err)
         np.save(normpath(f"{fdir}/residual_norms_phi_{self.phi}{r_str}.npy"), res_norm)
-        # np.save(
-        #     normpath(f"{fdir}/covariance_errors_phi_{self.phi}{r_str}.npy"), cov_err
-        # )
+        np.save(
+            normpath(f"{fdir}/covariance_errors_phi_{self.phi}{r_str}.npy"), cov_err
+        )
         # np.save(
         #     normpath(f"{fdir}/projection_errors_phi_{self.phi}{r_str}.npy"), proj_err
         # )
@@ -488,6 +499,7 @@ class EvolvingMatrix(object):
         if print_metrics:
             self.print_metrics(sv_idx=sv_idx)
 
+
     def print_metrics(self, sv_idx=None):
         """Print metrics for current update."""
         print(f"\nMetrics for batch {self.phi}/{self.n_batches}")
@@ -496,13 +508,13 @@ class EvolvingMatrix(object):
         if sv_idx is None:
             print(f"Singular values relative errors:\n{self.get_relative_error(sv_idx=sv_idx)}\n")
             print(f"Singular triplets residual norm:\n{self.get_residual_norm(sv_idx=sv_idx)}\n")
-            # print(f"Covariance error:   {cov_err}")
+            print(f"Covariance error:   {cov_err}")
             # print(f"Projection error:   {proj_err}")
             # print(f"Mean squared error: {mse}")
         else:
             print(f"Singular values relative errors (sv_idx={sv_idx}):\n{self.get_relative_error(sv_idx=sv_idx)}\n")
             print(f"Singular triplets residual norm (sv_idx={sv_idx}):\n{self.get_residual_norm(sv_idx=sv_idx)}\n")
-            # print(f"Covariance error:   {cov_err}")
+            print(f"Covariance error:   {cov_err}")
             # print(f"Projection error:   {proj_err}")
             # print(f"Mean squared error: {mse}")
 
