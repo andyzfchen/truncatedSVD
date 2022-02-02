@@ -27,7 +27,6 @@
     {
       "dataset": "MED",
       "methods": ["zha-simon", "bcg"],
-      "title": "$Z = [U_k, 0; 0, I_s]$",
       "m_percent": 0.1,
       "n_batches": [2, 6, 10],
       "phis_to_plot": [1, 5, 10],

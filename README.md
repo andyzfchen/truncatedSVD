@@ -54,19 +54,27 @@ The experimental parameters are specified in a JSON file as follows:
 }
 ```
 
-Below is a table listing parameters and their descriptions. Note that some methods may require additional parameters. Please see our JSON files in the experiments directory for complete examples.
+Below are tables listing parameters and their descriptions. Please see our JSON files in the experiments directory for complete examples.
 
 | Parameter    | Description                                  | Example                        |
 | ------------ | -------------------------------------------- | ------------------------------ |
-| dataset_info | Name and location of dataset                 | "CRAN": "../datasets/CRAN.npy" |
-| method       | Update method                                | ["CISI", "MED", "CRAN"]        |
-| m_percent    | Percent of                                   | 0.1                            |
+| tests        | List of json objects describing tests        | See table below                |
+| dataset_info | Name and location of datasets used in tests  | "CRAN": "../datasets/CRAN.npy" |
+| method label | Labels used in plots for each method         | "zha-simon": "Zha Simon"       |
+
+The ```tests``` parameter provides a list of json objects specifying all the tests to be run. Below we detail what these JSON objects must contain. Note if BCG is being run on any dataset, the BCG only parameters must be included
+
+| Parameter    | Description                                  | Example                        |
+| ------------ | -------------------------------------------- | ------------------------------ |
+| dataset      | Name of dataset to run on                    | "CRAN"                         |
+| method       | List of update methods to run                | ["zha-simon", "bcg", "fd"]     |
+| m_percent    | Percent of data used as initial matrix       | 0.1                            |
 | n_batches    | Number of update batches                     | 10                             |
 | phis_to_plot | Batch numbers to plot                        | [1, 5, 10]                     |
 | k_dims       | Rank of updates                              | [25, 50, 100]                  |
 | make_plots   | Option to plot update results                | true                           |
-| r_values     | Number of (BCG only)                         | [10, 20, 30, 40, 50]           |
-| lam_coeff    | Coefficient (BCG only)                       | 1.01                           |
+| r_values     | Number of oversamples(BCG only)              | [10, 20, 30, 40, 50]           |
+| lam_coeff    | Lambda Coefficient (BCG only)                | 1.01                           |
 | num_runs     | Number of runs for BCG experiment (BCG only) | 1                              |
 
 To run the experiment, all you have to do is call `run_tests.py` and specify the path to the JSON file and the directory to contain the cache folder:
