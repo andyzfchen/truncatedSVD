@@ -8,8 +8,8 @@ def plot_residual_norms(
     errs_list,
     phi_list,
     save_dir,
-    title="Residual norms for singular triplets",
     filename="res_norm.png",
+    title="Residual norms for singular triplets",   
 ):
     """Helper function to plot scaled residual norms for singular triplets for each update
 
@@ -59,8 +59,8 @@ def plot_relative_errors(
     errs_list,
     phi_list,
     save_dir,
-    title="Relative errors for singular values",
     filename="rel_err.png",
+    title="Relative errors for singular values"
 ):
     """Helper function to plot relative errors for singular values for each update
 
