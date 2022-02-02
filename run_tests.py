@@ -8,7 +8,8 @@ import json
 import numpy as np
 import truncatedSVD.EvolvingMatrix as EM
 from truncatedSVD.plotter import *
-
+from collections import OrderedDict
+import pickle
 
 def perform_updates(
     dataset,
@@ -19,11 +20,13 @@ def perform_updates(
     update_method,
     r_str,
     save_dir,
-    res_norms_list,
-    rel_errs_list,
     make_plots=False,
     **kwargs,
 ):
+
+    res_norms_list = []
+    rel_errs_list = []
+    cov_errs_dict = OrderedDict()
     """Perform updates for specified number of batches using update method."""
     for ii in range(n_batches):
         print(f"Batch {str(ii+1)}/{str(n_batches)}.")
@@ -52,6 +55,7 @@ def perform_updates(
             # Save error metrics for plotting
             if make_plots:
                 rel_err = model.get_relative_error(sv_idx=None)
+                cov_err = model.get_covariance_error()                
                 if method == "frequent-directions":
                     res_norm = model.get_residual_norm(
                         sv_idx=None, A_idx=model.freq_dir.ell
@@ -61,11 +65,14 @@ def perform_updates(
 
                 res_norms_list.append(res_norm)
                 rel_errs_list.append(rel_err)
+                cov_errs_dict[model.phi] = cov_err
         
         print("")
    
     # Print relative error and residual norm for last singular triplet after updates
     model.print_metrics(sv_idx=model.k_dim - 1)
+
+    return res_norms_list,rel_errs_list,cov_errs_dict
     
                 
 def check_and_create_dir(dirname):
@@ -104,6 +111,24 @@ def print_message(dataset, data_shape, method, n_batches, k):
     print(f"Number of batches: {n_batches}")
     print(f"Rank k of updates: {k}\n")
 
+def make_plots(test,method,method_label,dataset,batch_phis,save_dir,res_norms_list,rel_errs_list):
+    if test["make_plots"]:
+        fig_dir = save_dir + "/figures"
+        check_and_create_dir(fig_dir)
+        title = dataset + ", " + method_label
+        plot_relative_errors(
+            rel_errs_list, batch_phis, fig_dir, title=title
+        )
+        plot_residual_norms(
+            res_norms_list, batch_phis, fig_dir, title=title
+        )
+
+def save_cov_errs(save_dir,cov_errs_dict):
+    save_path = normpath(join(save_dir,"covarience_error.pkl"))
+    with open(save_path,'wb') as f:
+        pickle.dump(cov_errs_dict,f)
+
+
 
 def run_experiments(specs_json, cache_dir):
     # Open JSON file for experiment specification
@@ -113,6 +138,7 @@ def run_experiments(specs_json, cache_dir):
     except ValueError as err:
         print("Tests file is not a valid JSON file. Please double check syntax.")
         exit()
+    f.close()
 
     # Create cache path to save results
     cache_path = join(cache_dir, "cache")
@@ -158,17 +184,13 @@ def run_experiments(specs_json, cache_dir):
                         f"{dataset}_batch_split_{str(n_batches)}_k_dims_{str(k)}",
                     )
                     check_and_create_dir(save_dir)
-
-                    # Initialize list of metrics
-                    rel_errs_list = []
-                    res_norms_list = []
                     
                     # Update truncated SVD using Frequent Directions
                     if method == "frequent-directions":
                         model = EM.EvolvingMatrix(B, n_batches=n_batches, k_dim=k)
                         model.set_append_matrix(E)
                         print()
-                        perform_updates(
+                        res_norms_list,rel_errs_list,cov_errs_dict = perform_updates(
                             dataset,
                             n_batches,
                             batch_phis,
@@ -177,27 +199,18 @@ def run_experiments(specs_json, cache_dir):
                             model.update_svd_fd,
                             "",
                             save_dir,
-                            res_norms_list,
-                            rel_errs_list,
                             make_plots=test["make_plots"],
                         )
 
-                        if test["make_plots"]:
-                            fig_dir = save_dir + "/figures"
-                            check_and_create_dir(fig_dir)
-                            title = dataset + ", " + test_spec["method_label"][method]
-                            plot_relative_errors(
-                                rel_errs_list, batch_phis, fig_dir, title=title
-                            )
-                            plot_residual_norms(
-                                res_norms_list, batch_phis, fig_dir, title=title
-                            )
+                        make_plots(test,method,test_spec["method_label"][method],dataset,batch_phis,save_dir,res_norms_list,rel_errs_list)
+                        save_cov_errs(save_dir,cov_errs_dict)
+
                     # Update truncated SVD using Zha-Simon projection variation 
                     elif method == "zha-simon":
                         model = EM.EvolvingMatrix(B, n_batches=n_batches, k_dim=k)
                         model.set_append_matrix(E)
                         print()
-                        perform_updates(
+                        res_norms_list,rel_errs_list,cov_errs_dict = perform_updates(
                             dataset,
                             n_batches,
                             batch_phis,
@@ -206,27 +219,15 @@ def run_experiments(specs_json, cache_dir):
                             model.update_svd_zha_simon,
                             "",
                             save_dir,
-                            res_norms_list,
-                            rel_errs_list,
                             make_plots=test["make_plots"],
                         )
 
-                        if test["make_plots"]:
-                            fig_dir = save_dir + "/figures"
-                            check_and_create_dir(fig_dir)
-                            title = dataset + ", " + test_spec["method_label"][method]
-                            plot_relative_errors(
-                                rel_errs_list, batch_phis, fig_dir, title=title
-                            )
-                            plot_residual_norms(
-                                res_norms_list, batch_phis, fig_dir, title=title
-                            )
+                        make_plots(test,method,test_spec["method_label"][method],dataset,batch_phis,save_dir,res_norms_list,rel_errs_list)
+                        save_cov_errs(save_dir,cov_errs_dict)                        
                     # Update truncated SVD using enhanced projection variation
                     elif method == "bcg":
                         for r in test["r_values"]:
                             for run_num in range(test["num_runs"]):
-                                res_norms_list = []
-                                rel_errs_list = []
                                 save_dir_run = normpath(
                                     join(save_dir, f"run_{str(run_num)}")
                                 )
@@ -235,7 +236,7 @@ def run_experiments(specs_json, cache_dir):
                                 model.set_append_matrix(E)
                                 print()
                                 r_str = f"_rval_{str(r)}"
-                                perform_updates(
+                                res_norms_list,rel_errs_list,cov_errs_dict = perform_updates(
                                     dataset,
                                     n_batches,
                                     batch_phis,
@@ -244,29 +245,13 @@ def run_experiments(specs_json, cache_dir):
                                     model.update_svd_bcg,
                                     r_str,
                                     save_dir_run,
-                                    res_norms_list,
-                                    rel_errs_list,
                                     make_plots=test["make_plots"],
                                     lam_coeff=test["lam_coeff"],
                                     r=r,
                                 )
 
-                                if test["make_plots"]:
-                                    fig_dir = save_dir_run + "/figures"
-                                    check_and_create_dir(fig_dir)
-                                    title = dataset + ", " + test_spec["method_label"][method]
-                                    plot_relative_errors(
-                                        rel_errs_list,
-                                        batch_phis,
-                                        fig_dir,
-                                        title=title,
-                                    )
-                                    plot_residual_norms(
-                                        res_norms_list,
-                                        batch_phis,
-                                        fig_dir,
-                                        title=title,
-                                    )
+                                make_plots(test,method,test_spec["method_label"][method],dataset,batch_phis,save_dir,res_norms_list,rel_errs_list)
+                                save_cov_errs(save_dir,cov_errs_dict)                                
                     # Update truncated SVD using brute force method
                     elif method == "brute-force":
                         print("")

@@ -107,7 +107,7 @@ def plot_relative_errors(
 
 
 def plot_covariance_errors(
-    errs_list, phi_list, update_method, title="Covariance Error", filename="cov_err.png"
+    errs_list, phi_list,save_dir, title="Covariance Error", filename="cov_err.png"
 ):
     """Helper function to plot covariance errors.
 
@@ -117,6 +117,32 @@ def plot_covariance_errors(
         List of covariance errors
 
     """
+    # Initialize figure
+    fig, ax = plt.subplots(figsize=(4, 3))
+    ax.grid(True, which="both", linewidth=1, linestyle="--", color="k", alpha=0.1)
+    ax.tick_params(
+        which="both", direction="in", bottom=True, top=True, left=True, right=True
+    )
+
+    # Plot relative errors for each update
+    ax.plot(phi_list, errs_list)
+
+    # Label figure
+    ax.set_title(title)
+    ax.set_xlabel("Update Number")
+    ax.set_xlim(0, max(phi_list))
+    ax.set_ylabel("Relative Error")
+    ax.set_yscale("log")
+    ax.legend(loc="lower right")
+    plt.savefig(
+        normpath(join(save_dir, filename)),
+        bbox_inches="tight",
+        pad_inches=0.2,
+        dpi=200,
+    )
+    plt.close()
+
+
     return None
 
     
