@@ -12,7 +12,8 @@ def make_plots(specs_json,cache_dir):
         for num_updates in spec['num_updates']:
             for method in listdir(normpath(join(cache_dir,dataset))):
                 for dir in listdir(normpath(join(cache_dir,dataset,method))):
-                    
+                    pass
+
 
 
 

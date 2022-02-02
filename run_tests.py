@@ -29,6 +29,7 @@ def perform_updates(
     res_norms_list = []
     rel_errs_list = []
     cov_errs_dict = OrderedDict()
+    #proj_errs_dict = OrderedDict()
     """Perform updates for specified number of batches using update method."""
     for ii in range(n_batches):
         print(f"Batch {str(ii+1)}/{str(n_batches)}.")
@@ -59,7 +60,8 @@ def perform_updates(
             # Save error metrics for plotting
             if make_plots:
                 rel_err = model.get_relative_error(sv_idx=None)
-                cov_err = model.get_covariance_error()                
+                cov_err = model.get_covariance_error()
+                #proj_err = model.get_projection_error()                
                 if method == "frequent-directions":
                     res_norm = model.get_residual_norm(
                         sv_idx=None, A_idx=model.freq_dir.ell
@@ -70,13 +72,14 @@ def perform_updates(
                 res_norms_list.append(res_norm)
                 rel_errs_list.append(rel_err)
                 cov_errs_dict[model.phi] = cov_err
+                #proj_errs_dict[model.phi] = proj_err
         
         print("")
    
     # Print relative error and residual norm for last singular triplet after updates
     model.print_metrics(sv_idx=model.k_dim - 1)
 
-    return res_norms_list,rel_errs_list,cov_errs_dict
+    return res_norms_list,rel_errs_list,cov_errs_dict#,proj_errs_dict
 
 
 def split_data(A, m_percent):
@@ -229,7 +232,7 @@ def run_experiments(specs_json, cache_dir):
                         for r in test["r_values"]:
                             for run_num in range(test["num_runs"]):
                                 save_dir_run = normpath(
-                                    join(save_dir, f"run_{str(run_num)}")
+                                    join(save_dir, f"run_{str(run_num+1)}")
                                 )
                                 check_and_create_dir(save_dir_run)
                                 model = EM.EvolvingMatrix(B, n_batches=n_batches, k_dim=k)
@@ -251,21 +254,13 @@ def run_experiments(specs_json, cache_dir):
                                     r=r,
                                 )
 
-                                make_plots(test,method,test_spec["method_label"][method],dataset,batch_phis,save_dir,res_norms_list,rel_errs_list)
-                                save_cov_errs(save_dir,cov_errs_dict)                                
+                                make_plots(test,method,test_spec["method_label"][method],dataset,batch_phis,save_dir_run,res_norms_list,rel_errs_list)
+                                save_cov_errs(save_dir_run,cov_errs_dict)                                
 
                     else:
                         raise ValueError(
                             f"Update method {method} does not exist. Must be one of the following: zha-simon, bcg, brute-force, naive."
                         )
-
-                    # # Make covariance and projection errors plots
-                    # if test["make_plots"]:
-                    #     fig_dir = join(cache_path, "figures")
-                    #     check_and_create_dir(fig_dir)
-
-                    #     plot_covariance_errors(cov_err_list)
-                    #     plot_projection_errors(proj_err_list)
 
                     # Add entry into runtimes dict
                     runtimes_dict[(method, n_batches, k)] = model.runtime                    

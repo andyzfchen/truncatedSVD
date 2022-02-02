@@ -479,16 +479,16 @@ class EvolvingMatrix(object):
         # Calculate metrics
         rel_err = self.get_relative_error(sv_idx=sv_idx)
         res_norm = self.get_residual_norm(sv_idx=sv_idx, A_idx=A_idx)
-        cov_err = self.get_covariance_error()
+        #cov_err = self.get_covariance_error()
         # proj_err = self.get_projection_error()
         # mse = self.get_mean_squared_error()
 
         # Save metrics
         np.save(normpath(f"{fdir}/relative_errors_phi_{self.phi}{r_str}.npy"), rel_err)
         np.save(normpath(f"{fdir}/residual_norms_phi_{self.phi}{r_str}.npy"), res_norm)
-        np.save(
-            normpath(f"{fdir}/covariance_errors_phi_{self.phi}{r_str}.npy"), cov_err
-        )
+        #np.save(
+        #    normpath(f"{fdir}/covariance_errors_phi_{self.phi}{r_str}.npy"), cov_err
+        #)
         # np.save(
         #     normpath(f"{fdir}/projection_errors_phi_{self.phi}{r_str}.npy"), proj_err
         # )
@@ -508,14 +508,14 @@ class EvolvingMatrix(object):
         if sv_idx is None:
             print(f"Singular values relative errors:\n{self.get_relative_error(sv_idx=sv_idx)}\n")
             print(f"Singular triplets residual norm:\n{self.get_residual_norm(sv_idx=sv_idx)}\n")
-            print(f"Covariance error:   {cov_err}")
-            # print(f"Projection error:   {proj_err}")
+            print(f"Covariance error:   {self.get_covariance_error()}")
+            # print(f"Projection error:   {self.get_projection_error()}")
             # print(f"Mean squared error: {mse}")
         else:
             print(f"Singular values relative errors (sv_idx={sv_idx}):\n{self.get_relative_error(sv_idx=sv_idx)}\n")
             print(f"Singular triplets residual norm (sv_idx={sv_idx}):\n{self.get_residual_norm(sv_idx=sv_idx)}\n")
-            print(f"Covariance error:   {cov_err}")
-            # print(f"Projection error:   {proj_err}")
+            print(f"Covariance error:   {self.get_covariance_error()}")
+            # print(f"Projection error:   {self.get_projection_error()}")
             # print(f"Mean squared error: {mse}")
 
         print(f"Runtime: {self.runtime}")
