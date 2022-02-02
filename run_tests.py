@@ -1,7 +1,6 @@
 """Script to run experiments for updating the truncated SVD of evolving matrices.
 """
 
-import sys
 from os import mkdir
 from os.path import normpath, exists, join
 import json
@@ -10,6 +9,8 @@ import truncatedSVD.EvolvingMatrix as EM
 from truncatedSVD.plotter import *
 from collections import OrderedDict
 import pickle
+from truncatedSVD.utils import check_and_create_dir
+
 
 def perform_updates(
     dataset,
@@ -20,8 +21,9 @@ def perform_updates(
     update_method,
     r_str,
     save_dir,
+    cache_dir,
     make_plots=False,
-    **kwargs,
+    **kwargs
 ):
 
     res_norms_list = []
@@ -33,16 +35,18 @@ def perform_updates(
 
         # Evolve matrix by appending new rows
         model.evolve()
+
+        # Calculate truncated SVD of updated matrix
         if not kwargs:
             update_method()
         else:
             update_method(**kwargs)
 
-        # Save results if batch number specified
+        # Calculate metrics if batch specified
         if model.phi in phi or ii == n_batches - 1:
 
-            # Calculate true SVD for this batch
-            model.calculate_true_svd(save_dir)
+            # Calculate true SVD for this batch (load from cache if pre-calculated)
+            model.calculate_true_svd(normpath(join(cache_dir, dataset, "svd_true")))
 
             # Caluclate metrics
             if method == "frequent-directions":
@@ -73,12 +77,6 @@ def perform_updates(
     model.print_metrics(sv_idx=model.k_dim - 1)
 
     return res_norms_list,rel_errs_list,cov_errs_dict
-    
-                
-def check_and_create_dir(dirname):
-    """Check if directory exists. If it does not exist, create it."""
-    if not exists(normpath(dirname)):
-        mkdir(normpath(dirname))
 
 
 def split_data(A, m_percent):
@@ -199,6 +197,7 @@ def run_experiments(specs_json, cache_dir):
                             model.update_svd_fd,
                             "",
                             save_dir,
+                            cache_path,
                             make_plots=test["make_plots"],
                         )
 
@@ -219,6 +218,7 @@ def run_experiments(specs_json, cache_dir):
                             model.update_svd_zha_simon,
                             "",
                             save_dir,
+                            cache_path,
                             make_plots=test["make_plots"],
                         )
 
@@ -245,6 +245,7 @@ def run_experiments(specs_json, cache_dir):
                                     model.update_svd_bcg,
                                     r_str,
                                     save_dir_run,
+                                    cache_path,
                                     make_plots=test["make_plots"],
                                     lam_coeff=test["lam_coeff"],
                                     r=r,
@@ -252,12 +253,7 @@ def run_experiments(specs_json, cache_dir):
 
                                 make_plots(test,method,test_spec["method_label"][method],dataset,batch_phis,save_dir,res_norms_list,rel_errs_list)
                                 save_cov_errs(save_dir,cov_errs_dict)                                
-                    # Update truncated SVD using brute force method
-                    elif method == "brute-force":
-                        print("")
-                    # Update truncated SVD using naïve method
-                    elif method == "naive":
-                        print("")
+
                     else:
                         raise ValueError(
                             f"Update method {method} does not exist. Must be one of the following: zha-simon, bcg, brute-force, naive."
