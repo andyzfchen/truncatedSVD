@@ -62,13 +62,12 @@ def perform_updates(
             if make_plots:
                 rel_err = model.get_relative_error(sv_idx=None)
                 cov_err = model.get_covariance_error()
-                proj_err = model.get_projection_error(A_idx=model.freq_dir.ell)                
                 if method == "frequent-directions":
-                    res_norm = model.get_residual_norm(
-                        sv_idx=None, A_idx=model.freq_dir.ell
-                    )
+                    res_norm = model.get_residual_norm(sv_idx=None, A_idx=model.freq_dir.ell)
+                    proj_err = model.get_projection_error(A_idx=model.freq_dir.ell)                
                 else:
                     res_norm = model.get_residual_norm(sv_idx=None)
+                    proj_err = model.get_projection_error()                
 
                 res_norms_list.append(res_norm)
                 rel_errs_list.append(rel_err)
@@ -78,7 +77,7 @@ def perform_updates(
         print("")
    
     # Print relative error and residual norm for last singular triplet after updates
-    model.print_metrics(sv_idx=model.k_dim - 1)
+    model.print_metrics(sv_idx=model.k_dim - 1, A_idx=model.freq_dir.ell)
 
     return res_norms_list,rel_errs_list,cov_errs_dict,proj_errs_dict
 
