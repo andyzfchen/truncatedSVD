@@ -447,13 +447,22 @@ class EvolvingMatrix(object):
         return cov_err(self.A, self.reconstruct(update=False))
 
 
-    def get_projection_error(self):
+    def get_projection_error(self,A_idx=None):
         """Return projection error."""
         # Calculate best rank-k approximation of A
-        u, s, vh = np.linalg.svd(self.A)
-        Ak = u[:, :self.k_dim].dot(np.diag(s[:self.k_dim]).dot(vh[:self.k_dim, :]))
-        
-        return proj_err(self.A, self.reconstruct(update=False), Ak)
+        if A_idx is None:
+            u, s, vh = np.linalg.svd(self.A)
+            Ak = u[:, :self.k_dim].dot(np.diag(s[:self.k_dim]).dot(vh[:self.k_dim, :]))
+            
+            return proj_err(self.A, self.reconstruct(update=False), Ak)
+        else:
+            u, s, vh = np.linalg.svd(self.A, full_matrices=False)
+            Ak = u[:A_idx, :self.k_dim].dot(np.diag(s[:self.k_dim]).dot(vh[:self.k_dim, :]))
+            
+            U, sigma, VH = np.linalg.svd(self.A, full_matrices=False)
+            A = np.dot(np.dot(U[:A_idx, :], np.diag(sigma)), VH)
+
+            return proj_err(A, self.reconstruct(update=False), Ak)
 
 
     def get_mean_squared_error(self):
@@ -504,25 +513,25 @@ class EvolvingMatrix(object):
 
         # Print metrics to console
         if print_metrics:
-            self.print_metrics(sv_idx=sv_idx)
+            self.print_metrics(sv_idx=sv_idx,A_idx=A_idx)
 
 
-    def print_metrics(self, sv_idx=None):
+    def print_metrics(self, sv_idx=None,A_idx=None):
         """Print metrics for current update."""
         print(f"\nMetrics for batch {self.phi}/{self.n_batches}")
         print(50 * "-")
         
         if sv_idx is None:
             print(f"Singular values relative errors:\n{self.get_relative_error(sv_idx=sv_idx)}\n")
-            print(f"Singular triplets residual norm:\n{self.get_residual_norm(sv_idx=sv_idx)}\n")
-            print(f"Covariance error:   {cov_err}")
-            # print(f"Projection error:   {proj_err}")
+            print(f"Singular triplets residual norm:\n{self.get_residual_norm(sv_idx=sv_idx,A_idx=A_idx)}\n")
+            print(f"Covariance error:   {self.get_covariance_error()}")
+            print(f"Projection error:   {self.get_projection_error(A_idx=A_idx)}")
             # print(f"Mean squared error: {mse}")
         else:
             print(f"Singular values relative errors (sv_idx={sv_idx}):\n{self.get_relative_error(sv_idx=sv_idx)}\n")
-            print(f"Singular triplets residual norm (sv_idx={sv_idx}):\n{self.get_residual_norm(sv_idx=sv_idx)}\n")
-            print(f"Covariance error:   {cov_err}")
-            # print(f"Projection error:   {proj_err}")
+            print(f"Singular triplets residual norm (sv_idx={sv_idx}):\n{self.get_residual_norm(sv_idx=sv_idx,A_idx=A_idx)}\n")
+            print(f"Covariance error:   {self.get_covariance_error()}")
+            print(f"Projection error:   {self.get_projection_error(A_idx=A_idx)}")
             # print(f"Mean squared error: {mse}")
 
         print(f"Runtime: {self.runtime}")

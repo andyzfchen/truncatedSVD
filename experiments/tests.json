@@ -47,7 +47,7 @@
   "method_label": {
     "bcg": "$Z = [U_k, X_{\\lambda,r}; 0, I_s]$",
     "zha-simon": "$Z = [U_k, 0; 0, I_s]$",
-    "frequent-direction": "FrequentDirections",
+    "frequent-directions": "FrequentDirections",
     "brute-force": "Brute Force",
     "naive": "Naïve"
   }
