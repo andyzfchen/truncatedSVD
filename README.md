@@ -1,7 +1,6 @@
 # ML Reproducibility Challenge 2021
 
-This repository hosts documents and code for reproducing the algorithm for updating the truncated singular value decomposition (SVD) of evolving matrices outlined by Vassilis Kalantzis, Georgios Kollias, Shashanka Ubaru, Athanasios N. Nikolakopoulos, Lior Horesh, and Kenneth L. Clarkson in their paper [Projection techniques to update the truncated SVD of evolving matrices](http://proceedings.mlr.press/v139/kalantzis21a/kalantzis21a.pdf) published in the 38th International Conference on Machine Learning 2021.
-We (Andy Chen, Shion Matsumoto, and Rohan Sinha Varma) present this repository as part of a submission to the [ML Reproducibility Challenge 2021](https://paperswithcode.com/rc2021) along with our [report]().
+This repository hosts documents and code for reproducing the algorithm for updating the truncated singular value decomposition (SVD) of evolving matrices outlined by Vassilis Kalantzis, Georgios Kollias, Shashanka Ubaru, Athanasios N. Nikolakopoulos, Lior Horesh, and Kenneth L. Clarkson in their paper [Projection techniques to update the truncated SVD of evolving matrices](http://proceedings.mlr.press/v139/kalantzis21a/kalantzis21a.pdf) published in the 38th International Conference on Machine Learning 2021. We (Andy Chen, Shion Matsumoto, and Rohan Sinha Varma) present this repository as part of a submission to the [ML Reproducibility Challenge 2021](https://paperswithcode.com/rc2021) along with our [report]().
 
 ## Introduction
 
@@ -10,6 +9,8 @@ We (Andy Chen, Shion Matsumoto, and Rohan Sinha Varma) present this repository a
 In applications where the matrix is subject to the periodic addition of rows (and/or columns), re-calculating the SVD with each update can quickly become prohibitively expensive, particularly if the updates are frequent. For this reason, algorithms that exploit previously available information on the SVD of the matrix before the update to calculate the SVD of the update matrix are crucial. This can be in the context of both the full SVD and the rank-$k$ SVD, the latter of which is the focus of our study.
 
 The basic problem of updating the rank-$k$ truncated SVD of an updated matrix is as follows. Let $B\in\mathbb{C}^{m\times n}$ be a matrix for which a rank-$k$ SVD
+![](<https://latex.codecogs.com/svg.image?B_k&space;=&space;U_k&space;\Sigma_k&space;V_k^T&space;=&space;\sum_{j=1}^k&space;\sigma_j&space;u^{(j)}&space;(v^{(j)})^H>)
+
 $
 B_k = U_k \Sigma_k V_k^T = \sum_{j=1}^k \sigma_j u^{(j)} (v^{(j)})^H
 $
@@ -72,9 +73,18 @@ The experimental parameters are specified in a JSON file as follows:
       "dataset": "CRAN",
       "method": ["zha-simon", "bcg", "fd"],
       "m_percent": 0.1,
-      "n_batches": [10],
+      "n_batches": [2, 6, 10],
       "phis_to_plot": [1, 5, 10],
-      "k_dims": [50],
+      "k_dims": [25, 50, 75, 100, 125],
+      "make_plots": true
+    },
+    {
+      "dataset": "CISI",
+      "method": ["zha-simon", "bcg", "fd"],
+      "m_percent": 0.1,
+      "n_batches": [2, 6, 10],
+      "phis_to_plot": [1, 5, 10],
+      "k_dims": [25, 50, 75, 100, 125],
       "make_plots": true
     }
   ],
@@ -108,51 +118,54 @@ The `tests` parameter provides a list of json objects specifying all the tests t
 | `dataset`      | Name of dataset to run on                    | `"CRAN"`                     |
 | `method`       | List of update methods to run                | `["zha-simon", "bcg", "fd"]` |
 | `m_percent`    | Percent of data used as initial matrix       | `0.1`                        |
-| `n_batches`    | Number of update batches                     | `10`                         |
+| `n_batches`    | Number of update batches                     | `[2, 6, 10]`                 |
 | `phis_to_plot` | Batch numbers to plot                        | `[1, 5, 10]`                 |
-| `k_dims`       | Rank of updates                              | `[25, 50, 100]`              |
+| `k_dims`       | Rank of updates                              | `[25, 50, 75, 100]`          |
 | `make_plots`   | Option to plot update results                | `true`                       |
 | `r_values`     | Number of oversamples(BCG only)              | `[10, 20, 30, 40, 50]`       |
 | `lam_coeff`    | Lambda Coefficient (BCG only)                | `1.01`                       |
 | `num_runs`     | Number of runs for BCG experiment (BCG only) | `1`                          |
 
-To run the experiment, all you have to do is call `run_tests.py` and specify the path to the JSON file and the directory to contain the cache folder:
+To run the experiment, all you have to do is call `run_tests.py` and specify the path to the JSON file and the directory to contain the cache folder.
+Additional plots can be created by specifying parameters in the `plt_spec.json` file running `make_fd_error_plots.py`.
 
 ```shell
-python run_tests.py <tests.json> <cache_directory>
+# Navigate to truncatedSVD root directory
+cd [...]/truncatedSVD
+
+# If cache directory not specified, defaults to current directory
+python run_tests.py -e <tests.json>
+
+# Option to explicitly set cache directory
+python run_tests.py -e <tests.json> -c <cache_directory>
+
+# Make FD error plots
+python make_fd_error_plots.py plot_spec.json
 ```
 
-**Note:** The cache folder becomes very large (>10 GB), so please check that your system has sufficient space before running the experiments.
+**Note:** Depending on the number of experiments, the cache can become large (~1 GB), so please ensure that your system has sufficient space before running the experiments.
 
 ## Results
 
 In our of our experiments, we evaluated the Zha-Simon and enhanced projection variations of the proposed algorithm and FrequentDirections on the CRAN dataset. Shown below are plots of the relative singular value errors and scaled residual norms of the first 50 singular triplets for the first, fifth, and tenth updates.
 
 <figure>
-  <img src = "./figures/CRAN_zha-simon_batch_split_10_k_dims_50_rel_err.png" width="320" height="240">
+  <img src = "./images/CRAN_zha-simon_n_batches_10_k_dims_50_rel_err.png" width="320" height="240">
   <figcaption> CRAN relative error </figcaption>
 </figure>
 
 <figure>
-  <img src="./figures/CRAN_zha-simon_batch_split_10_k_dims_50_res_norm.png" width="320" height="240">
+  <img src="./images/CRAN_zha-simon_n_batches_10_k_dims_50_res_norm.png" width="320" height="240">
   <figcaption> CRAN residual norm </figcaption>
 </figure>
 
 <figure>
-  <img src="./figures/CRAN_bcg_batch_split_10_k_dims_50_r_10_rel_err.png" width="320" height="240">
+  <img src="./images/CRAN_bcg_n_batches_10_k_dims_50_rval_50_rel_err.png" width="320" height="240">
   <figcaption> CRAN </figcaption>
 </figure>
 
 <figure>
-  <img src="./figures/CRAN_bcg_batch_split_10_k_dims_50_r_10_res_norm.png" width="320" height="240">
-</figure>
-
-<figure>
-  <img src="./figures/FD_zha-simon_batch_split_10_k_dims_50_rel_err.png" width="320" height="240">
-</figure>
-
-<figure>
-  <img src="./figures/FD_zha-simon_batch_split_10_k_dims_50_res_norm.png" width="320" height="240">
+  <img src="./images/CRAN_bcg_n_batches_10_k_dims_50_rval_50_res_norm.png" width="320" height="240">
 </figure>
 
 For our complete set of results, please refer to our [report]() and [supplementary materials]().
@@ -163,4 +176,4 @@ Andy Chen, Shion Matsumoto, Rohan Varma
 
 ## Acknowledgments
 
-We would like to acknowledge Professor Laura Balzano for introducing us to this challenge and also for advising us on this project. We would also like to thank Professor Vassilis Kalantzis for providing us with the code.
+We would like to acknowledge Professor Laura Balzano for introducing us to this challenge and also for advising us on this project. We would also like to thank Professor Vassilis Kalantzis for providing us with the code used in producing their results.
