@@ -217,7 +217,7 @@ class EvolvingMatrix(object):
             self.freq_dir.append(self.initial_matrix[ii, :])
 
 
-    def reconstruct(self, update=True):
+    def reconstruct(self, update=True, method=None):
         """Return rank-k approximation of A using truncated SVD.
 
         Parameters
@@ -235,7 +235,16 @@ class EvolvingMatrix(object):
             self.Ak = self.Uk.dot(np.diag(self.sigmak).dot(self.VHk))
             return self.Ak
         else:
-            return self.Uk.dot(np.diag(self.sigmak).dot(self.VHk))
+            if method == "frequent-directions":
+                B = self.Uk.dot(np.diag(self.sigmak).dot(self.VHk))
+                B_proj = np.dot(B.T, np.dot(np.linalg.inv(np.dot(B, B.T)), B))
+
+                u, s, vh = np.linalg.svd(np.dot(self.A, B_proj))
+                Ahat = u[:, :self.k_dim].dot(np.diag(s[:self.k_dim]).dot(vh[:self.k_dim, :]))
+
+                return Ahat
+            else:
+                return self.Uk.dot(np.diag(self.sigmak).dot(self.VHk))
 
 
     def evolve(self):
@@ -450,19 +459,13 @@ class EvolvingMatrix(object):
     def get_projection_error(self,A_idx=None):
         """Return projection error."""
         # Calculate best rank-k approximation of A
+        u, s, vh = np.linalg.svd(self.A)
+        Ak = u[:, :self.k_dim].dot(np.diag(s[:self.k_dim]).dot(vh[:self.k_dim, :]))
+        
         if A_idx is None:
-            u, s, vh = np.linalg.svd(self.A)
-            Ak = u[:, :self.k_dim].dot(np.diag(s[:self.k_dim]).dot(vh[:self.k_dim, :]))
-            
             return proj_err(self.A, self.reconstruct(update=False), Ak)
         else:
-            u, s, vh = np.linalg.svd(self.A, full_matrices=False)
-            Ak = u[:A_idx, :self.k_dim].dot(np.diag(s[:self.k_dim]).dot(vh[:self.k_dim, :]))
-            
-            U, sigma, VH = np.linalg.svd(self.A, full_matrices=False)
-            A = np.dot(np.dot(U[:A_idx, :], np.diag(sigma)), VH)
-
-            return proj_err(A, self.reconstruct(update=False), Ak)
+            return proj_err(self.A, self.reconstruct(update=False, method="frequent-directions"), Ak)
 
 
     def get_mean_squared_error(self):
