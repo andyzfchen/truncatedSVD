@@ -77,7 +77,7 @@ def perform_updates(
         print("")
    
     # Print relative error and residual norm for last singular triplet after updates
-    model.print_metrics(sv_idx=model.k_dim - 1, A_idx=model.freq_dir.ell)
+    #model.print_metrics(sv_idx=model.k_dim - 1, A_idx=model.freq_dir.ell)
 
     return res_norms_list,rel_errs_list,cov_errs_dict,proj_errs_dict
 
