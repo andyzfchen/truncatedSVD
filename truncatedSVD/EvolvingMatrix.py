@@ -450,24 +450,17 @@ class EvolvingMatrix(object):
     def get_projection_error(self,A_idx=None):
         """Return projection error."""
         # Calculate best rank-k approximation of A
-        """
-        u, s, vh = np.linalg.svd(self.A)
-        Ak = u[:, :self.k_dim].dot(np.diag(s[:self.k_dim]).dot(vh[:self.k_dim, :]))
-        
-        return proj_err(self.A, self.reconstruct(update=False), Ak)
-
-        """
         if A_idx is None:
             u, s, vh = np.linalg.svd(self.A)
             Ak = u[:, :self.k_dim].dot(np.diag(s[:self.k_dim]).dot(vh[:self.k_dim, :]))
             
             return proj_err(self.A, self.reconstruct(update=False), Ak)
         else:
-            u, s, vh = np.linalg.svd(self.A)
+            u, s, vh = np.linalg.svd(self.A, full_matrices=False)
             Ak = u[:A_idx, :self.k_dim].dot(np.diag(s[:self.k_dim]).dot(vh[:self.k_dim, :]))
             
             U, sigma, VH = np.linalg.svd(self.A, full_matrices=False)
-            A = np.dot(np.dot(U[:A_idx, :self.k_dim], np.diag(sigma[:self.k_dim])), VH[:self.k_dim, :])
+            A = np.dot(np.dot(U[:A_idx, :], np.diag(sigma)), VH)
 
             return proj_err(A, self.reconstruct(update=False), Ak)
 
