@@ -239,7 +239,10 @@ class EvolvingMatrix(object):
                 B = self.Uk.dot(np.diag(self.sigmak).dot(self.VHk))
                 B_proj = np.dot(B.T, np.dot(np.linalg.inv(np.dot(B, B.T)), B))
 
-                return np.dot(self.A, B_proj)
+                u, s, vh = np.linalg.svd(np.dot(self.A, B_proj))
+                Ahat = u[:, :self.k_dim].dot(np.diag(s[:self.k_dim]).dot(vh[:self.k_dim, :]))
+
+                return Ahat
             else:
                 return self.Uk.dot(np.diag(self.sigmak).dot(self.VHk))
 
