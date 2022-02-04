@@ -32,8 +32,9 @@ def make_plots(specs_json,cache_dir):
 
         if dataset == "figures":
             continue
-
         print(f'Generating for dataset: {dataset}')
+
+################## Generate plots showing runtimes for different methods across diferent ranks but same number of updates ###################        
         for num_updates in spec['num_updates']:
             print(f'\tGenerating for batch split: {num_updates}')
             fig,ax = create_figure(f'Runtimes For {num_updates} Updates','Rank','Runtime (ms)')
@@ -98,6 +99,78 @@ def make_plots(specs_json,cache_dir):
                 dpi=200,
             )
             plt.close()        
+
+
+################## Generate plots showing runtimes for different methods across diferent number of updates but same rank ###################        
+        for ranks in spec['ranks']:
+            print(f'\tGenerating for Rank: {ranks}')
+            fig,ax = create_figure(f'Runtimes For {ranks} Rank','Number of Updates','Runtime (ms)')
+            for method in listdir(normpath(join(cache_dir,dataset))):
+                #pdb.set_trace()
+                if method not in spec['method_label'].keys():
+                    continue
+                print(f'\t\tGenerating for method: {spec["method_label"][method]}')
+                runtime_dict = {}
+
+                for dir in listdir(normpath(join(cache_dir,dataset,method))):
+
+                    if f'k_dims_{ranks}' in dir:
+                        batch_split = int(dir.split("_")[3])
+
+                        if method != "bcg":
+                            max_seen_runtime_phi = 0        
+                            max_file = ""                    
+                            for file in listdir(normpath(join(cache_dir,dataset,method,dir))):
+                                if "runtime" in file:
+                                    phi_num = int(file.split("_")[2].split('.')[0])
+                                    if phi_num > max_seen_runtime_phi:
+                                        max_seen_runtime_phi = phi_num
+                                        max_file = file
+
+                            with open(normpath(join(cache_dir,dataset,method,dir,max_file)),'rb') as f:
+                                runtime = float(np.load(f)) 
+
+                            runtime_dict[batch_split] = runtime
+                        else:
+                            runtime_sum = 0
+                            num_runs = 0
+                            for run_dir in listdir(normpath(join(cache_dir,dataset,method,dir))):
+                                max_seen_runtime_phi = 0        
+                                max_file = ""                    
+                                for file in listdir(normpath(join(cache_dir,dataset,method,dir,run_dir))):
+                                    if "runtime" in file:
+                                        phi_num = int(file.split("_")[2].split('.')[0])
+                                        if phi_num > max_seen_runtime_phi:
+                                            max_seen_runtime_phi = phi_num
+                                            max_file = file
+
+                                with open(normpath(join(cache_dir,dataset,method,dir,run_dir,max_file)),'rb') as f:
+                                    runtime_sum += float(np.load(f)) 
+                                num_runs += 1
+
+                            runtime_dict[batch_split] = runtime_sum/num_runs                            
+
+                sorted_runtimes = sorted(runtime_dict.items())
+                runtime_batch_split = [x[0] for x in sorted_runtimes]
+                runtime_vals = [x[1] for x in sorted_runtimes]
+                ax.plot(runtime_batch_split,runtime_vals,label=spec['method_label'][method],marker='o')
+
+
+            ax.legend(loc="upper right")
+
+            plt.figure(fig.number)
+            plt.savefig(
+                normpath(join(cache_dir, dataset,f"runtimes_k_dim_{ranks}")),
+                bbox_inches="tight",
+                pad_inches=0.2,
+                dpi=200,
+            )
+            plt.close()        
+
+
+
+
+
 
 
 

@@ -1,5 +1,6 @@
 {
     "num_updates":[2,6],
+    "ranks": [25,50],
     "method_label": {
         "bcg": "$Z = [U_k, X_{\\lambda,r}; 0, I_s]$",
         "zha-simon": "$Z = [U_k, 0; 0, I_s]$",
