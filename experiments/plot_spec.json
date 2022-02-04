@@ -1,0 +1,12 @@
+{
+    "num_updates":[2,6,10],
+    "ranks": [25,50,75,100,125],
+    "method_label": {
+        "bcg": "$Z = [U_k, X_{\\lambda,r}; 0, I_s]$",
+        "zha-simon": "$Z = [U_k, 0; 0, I_s]$",
+        "frequent-directions": "FrequentDirections",
+        "brute-force": "Brute Force",
+        "naive": "Naïve"
+    },
+    "datasets":["CISI","CRAN","MED","ML1M","Reuters"]
+}
