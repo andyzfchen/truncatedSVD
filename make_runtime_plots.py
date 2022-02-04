@@ -1,21 +1,5 @@
 import pdb
-
-def create_figure(title,xlabel,ylabel):
-        # Initialize figure
-        fig, ax = plt.subplots(figsize=(4, 3))
-        ax.grid(True, which="both", linewidth=1, linestyle="--", color="k", alpha=0.1)
-        ax.tick_params(
-            which="both", direction="in", bottom=True, top=True, left=True, right=True
-        )
-
-        # Label figure
-        ax.set_title(title)
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel)
-        ax.set_yscale("log")
-
-        return fig,ax
-
+from truncatedSVD.utils import init_figure
 
 
 def make_plots(specs_json,cache_dir):
@@ -32,14 +16,17 @@ def make_plots(specs_json,cache_dir):
 
         valid_datasets = spec['datasets']
         if dataset not in valid_datasets:
+            print(f"{dataset} is not valid. Skipping this dataset.")
             continue
-        print(f'Generating for dataset: {dataset}')
+        
+        print(f'Generating plot for dataset: {dataset}')
 
 ################## Generate plots showing runtimes for different methods across diferent ranks but same number of updates ###################        
-        for num_updates in spec['num_updates']:
-            print(f'\tGenerating for batch split: {num_updates}')
-            fig,ax = create_figure(f'Runtimes For {num_updates} Updates','Rank','Runtime (ms)')
-            for method in listdir(normpath(join(cache_dir,dataset))):
+        for n_batches in spec['n_batches']:
+            print(f'\tGenerating for batch split: {n_batches}')
+            fig, ax = init_figure(f'Runtimes for {n_batches} Updates','Rank','Runtime (ms)')
+            
+            for method in listdir(normpath(join(cache_dir, dataset))):
                 #pdb.set_trace()
                 if method not in spec['method_label'].keys():
                     continue
@@ -47,8 +34,7 @@ def make_plots(specs_json,cache_dir):
                 runtime_dict = {}
 
                 for dir in listdir(normpath(join(cache_dir,dataset,method))):
-
-                    if f'batch_split_{num_updates}' in dir:
+                    if f'batch_split_{n_batches}' in dir:
                         k_dim = int(dir.split("_")[-1])
 
                         if method != "bcg":
@@ -94,7 +80,7 @@ def make_plots(specs_json,cache_dir):
 
             plt.figure(fig.number)
             plt.savefig(
-                normpath(join(cache_dir, dataset,f"runtimes_batch_split_{num_updates}")),
+                normpath(join(cache_dir, dataset,f"runtimes_batch_split_{n_batches}")),
                 bbox_inches="tight",
                 pad_inches=0.2,
                 dpi=200,
@@ -105,7 +91,7 @@ def make_plots(specs_json,cache_dir):
 ################## Generate plots showing runtimes for different methods across diferent number of updates but same rank ###################        
         for ranks in spec['ranks']:
             print(f'\tGenerating for Rank: {ranks}')
-            fig,ax = create_figure(f'Runtimes For {ranks} Rank','Number of Updates','Runtime (ms)')
+            fig,ax = init_figure(f'Runtimes For {ranks} Rank','Number of Updates','Runtime (ms)')
             for method in listdir(normpath(join(cache_dir,dataset))):
                 #pdb.set_trace()
                 if method not in spec['method_label'].keys():
@@ -167,17 +153,6 @@ def make_plots(specs_json,cache_dir):
                 dpi=200,
             )
             plt.close()        
-
-
-
-
-
-
-
-
-
-
-
 
 
 if __name__ == "__main__":
