@@ -2,6 +2,7 @@ from cProfile import run
 import numpy as np
 import matplotlib.pyplot as plt
 from os.path import join, normpath
+from .utils import init_figure
 
 
 def plot_residual_norms(
@@ -28,11 +29,7 @@ def plot_residual_norms(
         Figure title
     """
     # Initialize figure
-    fig, ax = plt.subplots(figsize=(4, 3))
-    ax.grid(True, which="both", linewidth=1, linestyle="--", color="k", alpha=0.1)
-    ax.tick_params(
-        which="both", direction="in", bottom=True, top=True, left=True, right=True
-    )
+    fig, ax = init_figure(title, "Singular Value Index", "Scaled Residual Norm")
 
     # Plot residual norms for each update
     idx = np.arange(1, errs_list[0].shape[0] + 1)
@@ -40,11 +37,7 @@ def plot_residual_norms(
         ax.plot(idx, errs, label="Update(%i)" % phi)
 
     # Label figure
-    ax.set_title(title)
-    ax.set_xlabel("Singular Value Index")
     ax.set_xlim(idx[0], idx[-1])
-    ax.set_ylabel("Scaled Residual Norm")
-    ax.set_yscale("log")
     ax.legend(loc="lower right")
     plt.savefig(
         normpath(join(save_dir, filename)),
@@ -79,11 +72,7 @@ def plot_relative_errors(
         Figure title
     """
     # Initialize figure
-    fig, ax = plt.subplots(figsize=(4, 3))
-    ax.grid(True, which="both", linewidth=1, linestyle="--", color="k", alpha=0.1)
-    ax.tick_params(
-        which="both", direction="in", bottom=True, top=True, left=True, right=True
-    )
+    fig, ax = init_figure(title, "Singular Value Index", "Relative Error")
 
     # Plot relative errors for each update
     idx = np.arange(1, errs_list[0].shape[0] + 1)
@@ -91,11 +80,7 @@ def plot_relative_errors(
         ax.plot(idx, errs, label="Update(%i)" % phi)
 
     # Label figure
-    ax.set_title(title)
-    ax.set_xlabel("Singular Value Index")
     ax.set_xlim(idx[0], idx[-1])
-    ax.set_ylabel("Relative Error")
-    ax.set_yscale("log")
     ax.legend(loc="lower right")
     plt.savefig(
         normpath(join(save_dir, filename)),
@@ -107,7 +92,7 @@ def plot_relative_errors(
 
 
 def plot_covariance_errors(
-    errs_list, phi_list,save_dir, title="Covariance Error", filename="cov_err.png"
+    errs_list, phi_list, save_dir, title="Covariance Error", filename="cov_err.png"
 ):
     """Helper function to plot covariance errors.
 
@@ -115,24 +100,15 @@ def plot_covariance_errors(
     ----------
     errs_list : list
         List of covariance errors
-
     """
     # Initialize figure
-    fig, ax = plt.subplots(figsize=(4, 3))
-    ax.grid(True, which="both", linewidth=1, linestyle="--", color="k", alpha=0.1)
-    ax.tick_params(
-        which="both", direction="in", bottom=True, top=True, left=True, right=True
-    )
+    fig, ax = init_figure(title, "Update Number", "Covariance Error")
 
     # Plot relative errors for each update
     ax.plot(phi_list, errs_list)
-
-    # Label figure
-    ax.set_title(title)
-    ax.set_xlabel("Update Number")
     ax.set_xlim(0, max(phi_list))
-    ax.set_ylabel("Relative Error")
-    ax.set_yscale("log")
+    
+    # Label figure    
     ax.legend(loc="lower right")
     plt.savefig(
         normpath(join(save_dir, filename)),
@@ -142,12 +118,9 @@ def plot_covariance_errors(
     )
     plt.close()
 
-
-    return None
-
     
 def plot_projection_errors(
-    errs_list, phi_list, update_method, title="Projection Error", filename="proj_err.png"
+    errs_list, phi_list, save_dir, title="Projection Error", filename="proj_err.png"
 ):
     """Helper function to plot projection errors
     
@@ -156,28 +129,20 @@ def plot_projection_errors(
     errs_lis : list
         List of projection errors    
     """
-    return None
+        # Initialize figure
+    fig, ax = init_figure(title, "Update Number", "Projection Error")
 
-
-def plot_pr_curve(precision_list, recall_list, update_methods, dataset, save_dir, title="Precision-Recall Curve"):
-    fig, ax = plt.subplots(figsize=(4, 3))
-    ax.grid(True, which="both", linewidth=1, linestyle="--", color="k", alpha=0.1)
-    ax.tick_params(
-        which="both", direction="in", bottom=True, top=True, left=True, right=True
-    )
-
-    for p, r, method in zip(precision_list, recall_list, update_methods):
-        ax.plot(r, p, label=method)
+    # Plot relative errors for each update
+    ax.plot(phi_list, errs_list)
+    ax.set_xlim(0, max(phi_list))
     
-    ax.set_title(title)
-    ax.set_xlabel("Recall")
-    ax.set_ylabel("Precision")
-    ax.set_xlim(0, 1)
-    ax.set_ylim(0, 1)
-
-    ax.legend(loc="upper right")
+    # Label figure    
+    ax.legend(loc="lower right")
     plt.savefig(
-        normpath(join(save_dir, f"{dataset}_pr_curve.png")), bbox_inches="tight", pad_inches=0.2, dpi=200
+        normpath(join(save_dir, filename)),
+        bbox_inches="tight",
+        pad_inches=0.2,
+        dpi=200,
     )
     plt.close()
 
