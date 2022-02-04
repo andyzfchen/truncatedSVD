@@ -30,7 +30,8 @@ def make_plots(specs_json,cache_dir):
 
     for dataset in datasets:
 
-        if dataset == "figures":
+        valid_datasets = spec['datasets']
+        if dataset not in valid_datasets:
             continue
         print(f'Generating for dataset: {dataset}')
 
