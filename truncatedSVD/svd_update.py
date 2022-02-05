@@ -230,7 +230,7 @@ def naive_update(l, d):
     return np.zeros((l, d))
 
 
-def fd_update(fd, E):
+def fd_update(fd, E, k):
     """Calculate truncated SVD update using Frequent Directions algorithm.
 
     Parameters
@@ -240,6 +240,9 @@ def fd_update(fd, E):
 
     E : array, shape (s, n)
         Appended submatrix
+
+    k : int
+        Desired rank of approximation
 
     Returns
     -------
@@ -255,4 +258,9 @@ def fd_update(fd, E):
     for row in E:
         fd.append(row)
 
-    return fd
+    u, s, vh = np.linalg.svd(
+        fd.get(), full_matrices=False
+    )
+
+    return u[:, :k], s[:k], vh[:k, :]
+    #return fd

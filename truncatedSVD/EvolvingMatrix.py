@@ -357,10 +357,10 @@ class EvolvingMatrix(object):
         """Return truncated SVD of updated matrix using the Frequent Directions method."""
         print("Updating truncated SVD using FrequentDirections.")
         start = time.perf_counter()
-        fd_update(self.freq_dir, self.update_matrix)
-        self.Uk, self.sigmak, self.VHk = np.linalg.svd(
-            self.freq_dir.get(), full_matrices=False
-        )
+        self.Uk, self.sigmak, self.VHk = fd_update(self.freq_dir, self.update_matrix, len(self.sigmak))
+        #self.Uk, self.sigmak, self.VHk = np.linalg.svd(
+        #    self.freq_dir.get(), full_matrices=False
+        #)
         self.runtime += time.perf_counter() - start
         return self.Uk, self.sigmak, self.VHk
 
