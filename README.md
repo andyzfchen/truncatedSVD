@@ -8,6 +8,7 @@ This repository hosts documents and code for reproducing the algorithm for updat
 
 In applications where the matrix is subject to the periodic addition of rows (and/or columns), re-calculating the SVD with each update can quickly become prohibitively expensive, particularly if the updates are frequent. For this reason, algorithms that exploit previously available information on the SVD of the matrix before the update to calculate the SVD of the update matrix are crucial. This can be in the context of both the full SVD and the rank-$k$ SVD, the latter of which is the focus of our study.
 
+{::comment}
 The basic problem of updating the rank-$k$ truncated SVD of an updated matrix is as follows. Let $B\in\mathbb{C}^{m\times n}$ be a matrix for which a rank-$k$ SVD
 $
 B_k = U_k \Sigma_k V_k^T = \sum_{j=1}^k \sigma_j u^{(j)} (v^{(j)})^H
@@ -18,6 +19,7 @@ A = \begin{pmatrix} B \\ E \end{pmatrix},
 $
 the goal is to approximate the rank-$k$ SVD
 $A_k=\widehat{U}_k \widehat{\Sigma}_k \widehat{V}_k^H = \sum_{j=1}^k \widehat{\sigma}_j \widehat{u}^{(j)} (\widehat{v}^{(j)})^H$.
+{:/comment}
 
 ### Algorithms
 
@@ -38,7 +40,7 @@ Though we will not discuss the specifics of each of the algorithms we used, each
 The performance of each algorithm is evaluated using three metrics:
 
 1. Relative singular value error
-2. Scaled singular triplet resdual norm
+2. Scaled singular triplet residual norm
 3. Runtime
 
 ## How to Run Experiments
