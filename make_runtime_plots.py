@@ -26,51 +26,49 @@ def make_plots(specs_json,cache_dir):
 ################## Generate plots showing runtimes for different methods across diferent ranks but same number of updates ###################        
         for n_batches in spec['n_batches']:
             empty = True
-            #pdb.set_trace()
             print(f'\tGenerating for batch split: {n_batches}')
-            fig, ax = init_figure(f'Runtimes for {n_batches} Updates','Rank','Runtime (ms)')
+            fig, ax = init_figure(f"{dataset} Runtimes (No. of Batches={n_batches})", "Rank ($k$)", "Runtime (s)")
             
             for method in listdir(normpath(join(cache_dir, dataset))):
-                #pdb.set_trace()
                 if method not in spec['method_label'].keys():
                     continue
                 print(f'\t\tGenerating for method: {spec["method_label"][method]}')
                 runtime_dict = {}
 
-                for dir in listdir(normpath(join(cache_dir,dataset,method))):
-                    if f'n_batches_{n_batches}' in dir:
-                        k_dim = int(dir.split("_")[-1])
+                for dirname in listdir(normpath(join(cache_dir,dataset,method))):
+                    if f'n_batches_{n_batches}' in dirname:
+                        k_dim = int(dirname.split("_")[-1])
 
                         if method != "bcg":
                             max_seen_runtime_phi = 0        
                             max_file = ""                    
-                            for file in listdir(normpath(join(cache_dir,dataset,method,dir))):
+                            for file in listdir(normpath(join(cache_dir,dataset,method,dirname))):
                                 if "runtime" in file:
                                     phi_num = int(file.split("_")[2].split('.')[0])
                                     if phi_num > max_seen_runtime_phi:
                                         max_seen_runtime_phi = phi_num
                                         max_file = file
 
-                            with open(normpath(join(cache_dir,dataset,method,dir,max_file)),'rb') as f:
+                            with open(normpath(join(cache_dir,dataset,method,dirname,max_file)),'rb') as f:
                                 runtime = float(np.load(f)) 
 
                             runtime_dict[k_dim] = runtime
                         else:
                             runtime_sum = 0
                             num_runs = 0
-                            for run_dir in listdir(normpath(join(cache_dir,dataset,method,dir))):
+                            for run_dir in listdir(normpath(join(cache_dir,dataset,method,dirname))):
                                 if "run" not in  run_dir:
                                     continue                                
                                 max_seen_runtime_phi = 0        
                                 max_file = ""                    
-                                for file in listdir(normpath(join(cache_dir,dataset,method,dir,run_dir))):
+                                for file in listdir(normpath(join(cache_dir,dataset,method,dirname,run_dir))):
                                     if "runtime" in file:
                                         phi_num = int(file.split("_")[2].split('.')[0])
                                         if phi_num > max_seen_runtime_phi:
                                             max_seen_runtime_phi = phi_num
                                             max_file = file
 
-                                with open(normpath(join(cache_dir,dataset,method,dir,run_dir,max_file)),'rb') as f:
+                                with open(normpath(join(cache_dir,dataset,method,dirname,run_dir,max_file)),'rb') as f:
                                     runtime_sum += float(np.load(f)) 
                                 num_runs += 1
 
@@ -84,7 +82,8 @@ def make_plots(specs_json,cache_dir):
                 ax.plot(runtime_ranks,runtime_vals,label=spec['method_label'][method],marker='o')
 
 
-            ax.legend(loc="upper right")
+            ax.legend(bbox_to_anchor=(1.04,1), loc="upper left")
+            # ax.legend(loc="upper right")
 
             plt.figure(fig.number)
             if not empty:
@@ -105,9 +104,8 @@ def make_plots(specs_json,cache_dir):
         for ranks in spec['ranks']:
             empty = True
             print(f'\tGenerating for Rank: {ranks}')
-            fig,ax = init_figure(f'Runtimes For {ranks} Rank','Number of Updates','Runtime (ms)')
+            fig, ax = init_figure(f'{dataset} Runtimes ($k$={ranks})','Number of Batches', 'Runtime (s)')
             for method in listdir(normpath(join(cache_dir,dataset))):
-                #pdb.set_trace()
                 if method not in spec['method_label'].keys():
                     continue
                 print(f'\t\tGenerating for method: {spec["method_label"][method]}')
@@ -160,8 +158,8 @@ def make_plots(specs_json,cache_dir):
                 runtime_vals = [x[1] for x in sorted_runtimes]
                 ax.plot(runtime_batch_split,runtime_vals,label=spec['method_label'][method],marker='o')
 
-
-            ax.legend(loc="upper right")
+            ax.legend(bbox_to_anchor=(1.04,1), loc="upper left")
+            # ax.legend(loc="upper right")
 
             plt.figure(fig.number)
             if not empty:
