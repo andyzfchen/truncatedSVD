@@ -7,7 +7,7 @@ import numpy as np
 from os import mkdir
 from os.path import exists, normpath, join
 from .utils import check_and_create_dir, get_truncated_svd
-from .metrics import proj_err, cov_err, rel_err, res_norm, mse
+from .metrics import rel_err, res_norm
 from .svd_update import (
     zha_simon_update,
     bcg_update,
@@ -456,29 +456,6 @@ class EvolvingMatrix(object):
                 A, self.Uk[:, sv_idx], self.VHk[sv_idx, :].T, self.sigmak[sv_idx]
             )
 
-
-    def get_covariance_error(self):
-        """Return covariance error."""
-        return cov_err(self.A, self.reconstruct(update=False))
-
-
-    def get_projection_error(self,A_idx=None):
-        """Return projection error."""
-        # Calculate best rank-k approximation of A
-        u, s, vh = np.linalg.svd(self.A)
-        Ak = u[:, :self.k_dim].dot(np.diag(s[:self.k_dim]).dot(vh[:self.k_dim, :]))
-        
-        if A_idx is None:
-            return proj_err(self.A, self.reconstruct(update=False), Ak)
-        else:
-            return proj_err(self.A, self.reconstruct(update=False, method="frequent-directions"), Ak)
-
-
-    def get_mean_squared_error(self):
-        """Return mean squared error."""
-        return mse(self.A, self.reconstruct(update=False))
-
-
     def save_metrics(self, fdir, print_metrics=True, sv_idx=None, A_idx=None, r_str=""):
         """Calculate and save metrics.
 
@@ -504,20 +481,11 @@ class EvolvingMatrix(object):
         # Calculate metrics
         rel_err = self.get_relative_error(sv_idx=sv_idx)
         res_norm = self.get_residual_norm(sv_idx=sv_idx, A_idx=A_idx)
-        # cov_err = self.get_covariance_error()
-        # proj_err = self.get_projection_error()
-        # mse = self.get_mean_squared_error()
+
 
         # Save metrics
         np.save(normpath(f"{fdir}/relative_errors_phi_{self.phi}{r_str}.npy"), rel_err)
         np.save(normpath(f"{fdir}/residual_norms_phi_{self.phi}{r_str}.npy"), res_norm)
-        # np.save(
-        #     normpath(f"{fdir}/covariance_errors_phi_{self.phi}{r_str}.npy"), cov_err
-        # )
-        # np.save(
-        #     normpath(f"{fdir}/projection_errors_phi_{self.phi}{r_str}.npy"), proj_err
-        # )
-        # np.save(normpath(f"{fdir}/mea_squared_errors_phi_{self.phi}{r_str}.npy"), mse)
         np.save(normpath(f"{fdir}/runtimes_phi_{self.phi}{r_str}.npy"), self.runtime)
 
         # Print metrics to console
@@ -533,14 +501,9 @@ class EvolvingMatrix(object):
         if sv_idx is None:
             print(f"Singular values relative errors:\n{self.get_relative_error(sv_idx=sv_idx)}\n")
             print(f"Singular triplets residual norm:\n{self.get_residual_norm(sv_idx=sv_idx,A_idx=A_idx)}\n")
-            print(f"Covariance error:   {self.get_covariance_error()}")
-            print(f"Projection error:   {self.get_projection_error(A_idx=A_idx)}")
-            # print(f"Mean squared error: {mse}")
+
         else:
             print(f"Singular values relative errors (sv_idx={sv_idx}):\n{self.get_relative_error(sv_idx=sv_idx)}\n")
             print(f"Singular triplets residual norm (sv_idx={sv_idx}):\n{self.get_residual_norm(sv_idx=sv_idx,A_idx=A_idx)}\n")
-            print(f"Covariance error:   {self.get_covariance_error()}")
-            print(f"Projection error:   {self.get_projection_error(A_idx=A_idx)}")
-            # print(f"Mean squared error: {mse}")
 
         print(f"Runtime: {self.runtime}")

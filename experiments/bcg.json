@@ -1,0 +1,88 @@
+{
+  "tests": [
+    {
+      "dataset": "CRAN",
+      "methods": ["bcg"],
+      "m_percent": 0.1,
+      "n_batches": [10],
+      "phis_to_plot": [1, 5, 10],
+      "r_values": [10, 20, 30, 40, 50],
+      "lam_coeff": 1.01,
+      "num_runs": 1,
+      "k_dims": [50],
+      "make_plots": true
+    },
+    {
+      "dataset": "CISI",
+      "methods": ["bcg"],
+      "m_percent": 0.1,
+      "n_batches": [10],
+      "phis_to_plot": [1, 5, 10],
+      "r_values": [10, 20, 30, 40, 50],
+      "lam_coeff": 1.01,
+      "num_runs": 1,
+      "k_dims": [50],
+      "make_plots": true
+    },
+    {
+      "dataset": "MED",
+      "methods": ["bcg"],
+      "m_percent": 0.1,
+      "n_batches": [10],
+      "phis_to_plot": [1, 5, 10],
+      "r_values": [10, 20, 30, 40, 50],
+      "lam_coeff": 1.01,
+      "num_runs": 1,
+      "k_dims": [50],
+      "make_plots": true
+    },
+    {
+      "dataset": "CRAN",
+      "methods": ["bcg"],
+      "m_percent": 0.1,
+      "n_batches": [10],
+      "phis_to_plot": [1, 5, 10],
+      "r_values": [10, 20, 30, 40, 50],
+      "lam_coeff": 1.01,
+      "num_runs": 1,
+      "k_dims": [50],
+      "make_plots": true
+    },
+    {
+      "dataset": "CISI",
+      "methods": ["bcg"],
+      "m_percent": 0.1,
+      "n_batches": [10],
+      "phis_to_plot": [1, 5, 10],
+      "r_values": [10, 20, 30, 40, 50],
+      "lam_coeff": 1.01,
+      "num_runs": 1,
+      "k_dims": [50],
+      "make_plots": true
+    },
+    {
+      "dataset": "MED",
+      "methods": ["bcg"],
+      "m_percent": 0.1,
+      "n_batches": [10],
+      "phis_to_plot": [1, 5, 10],
+      "r_values": [10, 20, 30, 40, 50],
+      "lam_coeff": 1.01,
+      "num_runs": 1,
+      "k_dims": [50],
+      "make_plots": true
+    }
+  ],
+  "dataset_info": {
+    "CISI": "./datasets/CISI/CISI_KKU.npy",
+    "CRAN": "./datasets/CRAN/CRAN_KKU.npy",
+    "MED": "./datasets/MED/MED_KKU.npy",
+    "ML1M": "./datasets/ML1M/ML1M.npy",
+    "Reuters": "./datasets/Reuters/Reuters.npy"
+  },
+  "method_label": {
+    "bcg": "$Z = [U_k, X_{\\lambda,r}; 0, I_s]$",
+    "zha-simon": "$Z = [U_k, 0; 0, I_s]$",
+    "frequent-directions": "FrequentDirections"
+  }
+}
