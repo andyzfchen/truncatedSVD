@@ -1,6 +1,6 @@
 import pdb
 from truncatedSVD.utils import init_figure
-
+from truncatedSVD.utils import check_and_create_dir
 
 def make_plots(specs_json, cache_dir):
     f = open(specs_json)
@@ -86,8 +86,9 @@ def make_plots(specs_json, cache_dir):
 
             plt.figure(cov_fig.number)
             if not cov_empty:
+                check_and_create_dir(join(cache_dir,dataset,'covariance_error_figures'))
                 plt.savefig(
-                    normpath(join(cache_dir, dataset,f"{dataset}_covariance_errors_batch_split_{num_updates}")),
+                    normpath(join(cache_dir, dataset,'covariance_error_figures',f"{dataset}_covariance_errors_batch_split_{num_updates}")),
                     bbox_inches="tight",
                     pad_inches=0.2,
                     dpi=200,
@@ -98,8 +99,9 @@ def make_plots(specs_json, cache_dir):
 
             plt.figure(proj_fig.number)
             if not proj_empty:
+                check_and_create_dir(join(cache_dir,dataset,'projection_error_figures'))
                 plt.savefig(
-                    normpath(join(cache_dir, dataset,f"{dataset}_projection_errors_batch_split_{num_updates}")),
+                    normpath(join(cache_dir, dataset,'projection_error_figures',f"{dataset}_projection_errors_batch_split_{num_updates}")),
                     bbox_inches="tight",
                     pad_inches=0.2,
                     dpi=200,

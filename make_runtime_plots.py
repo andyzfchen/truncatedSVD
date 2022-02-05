@@ -1,5 +1,7 @@
 import pdb
+from tabnanny import check
 from truncatedSVD.utils import init_figure
+from truncatedSVD.utils import check_and_create_dir
 
 
 def make_plots(specs_json,cache_dir):
@@ -86,8 +88,10 @@ def make_plots(specs_json,cache_dir):
 
             plt.figure(fig.number)
             if not empty:
+                check_and_create_dir(join(cache_dir,dataset,'runtime_figures'))
+                check_and_create_dir(join(cache_dir,dataset,'runtime_figures','runtime_vs_rank'))                
                 plt.savefig(
-                    normpath(join(cache_dir, dataset,f"{dataset}_runtimes_batch_split_{n_batches}")),
+                    normpath(join(cache_dir, dataset,'runtime_figures','runtime_vs_rank',f"{dataset}_runtimes_batch_split_{n_batches}")),
                     bbox_inches="tight",
                     pad_inches=0.2,
                     dpi=200,
@@ -161,8 +165,10 @@ def make_plots(specs_json,cache_dir):
 
             plt.figure(fig.number)
             if not empty:
+                check_and_create_dir(join(cache_dir,dataset,'runtime_figures'))
+                check_and_create_dir(join(cache_dir,dataset,'runtime_figures','runtime_vs_num_updates'))
                 plt.savefig(
-                    normpath(join(cache_dir, dataset,f"{dataset}_runtimes_k_dim_{ranks}")),
+                    normpath(join(cache_dir, dataset,'runtime_figures','runtime_vs_num_updates',f"{dataset}_runtimes_k_dim_{ranks}")),
                     bbox_inches="tight",
                     pad_inches=0.2,
                     dpi=200,
