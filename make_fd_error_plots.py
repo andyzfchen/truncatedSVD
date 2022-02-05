@@ -20,7 +20,8 @@ def make_plots(specs_json, cache_dir):
             continue
 
         print(f'Generating for dataset: {dataset}')
-        for num_updates in spec['num_updates']:
+        for num_updates in spec['n_batches']:
+            cov_empty = proj_empty = True
             print(f'\tGenerating for batch split: {num_updates}')
             cov_fig,cov_ax = init_figure(f'Covariance Error For {num_updates} Updates','Rank','Covariance Error')
             proj_fig,proj_ax = init_figure(f'Projection Error For {num_updates} Updates','Rank','Projection Error')
@@ -34,7 +35,7 @@ def make_plots(specs_json, cache_dir):
 
                 for dir in listdir(normpath(join(cache_dir,dataset,method))):
 
-                    if f'batch_split_{num_updates}' in dir:
+                    if f'n_batches_{num_updates}' in dir:
                         k_dim = int(dir.split("_")[-1])
 
                         if method != "bcg":
@@ -51,6 +52,8 @@ def make_plots(specs_json, cache_dir):
                             proj_err_sum = 0
                             num_runs = 0
                             for run_dir in listdir(normpath(join(cache_dir,dataset,method,dir))):
+                                if "run" not in  run_dir:
+                                    continue
                                 with open(normpath(join(cache_dir,dataset,method,dir,run_dir,"covarience_error.pkl")),'rb') as f:
                                     covariance_errs = pickle.load(f) 
 
@@ -65,11 +68,15 @@ def make_plots(specs_json, cache_dir):
                             proj_errs_dict[k_dim] = proj_err_sum/num_runs                              
 
                 sorted_cov = sorted(cov_errs_dict.items())
+                if len(sorted_cov) != 0:
+                    cov_empty = False
                 cov_ranks = [x[0] for x in sorted_cov]
                 cov_vals = [x[1] for x in sorted_cov]
                 cov_ax.plot(cov_ranks,cov_vals,label=spec['method_label'][method],marker='o')
 
                 sorted_proj = sorted(proj_errs_dict.items())
+                if len(sorted_proj) != 0:
+                    proj_empty = False
                 proj_ranks = [x[0] for x in sorted_proj]
                 proj_vals = [x[1] for x in sorted_proj]
                 proj_ax.plot(proj_ranks,proj_vals,label=spec['method_label'][method],marker='o')
@@ -78,21 +85,25 @@ def make_plots(specs_json, cache_dir):
             proj_ax.legend(loc="upper right")
 
             plt.figure(cov_fig.number)
-            plt.savefig(
-                normpath(join(cache_dir, dataset,f"covariance_errors_batch_split_{num_updates}")),
-                bbox_inches="tight",
-                pad_inches=0.2,
-                dpi=200,
-            )
+            if not cov_empty:
+                plt.savefig(
+                    normpath(join(cache_dir, dataset,f"{dataset}_covariance_errors_batch_split_{num_updates}")),
+                    bbox_inches="tight",
+                    pad_inches=0.2,
+                    dpi=200,
+                )
+            else:
+                print("No results for this set of experiments exists, skipping")
             plt.close()
 
             plt.figure(proj_fig.number)
-            plt.savefig(
-                normpath(join(cache_dir, dataset,f"projection_errors_batch_split_{num_updates}")),
-                bbox_inches="tight",
-                pad_inches=0.2,
-                dpi=200,
-            )
+            if not proj_empty:
+                plt.savefig(
+                    normpath(join(cache_dir, dataset,f"{dataset}_projection_errors_batch_split_{num_updates}")),
+                    bbox_inches="tight",
+                    pad_inches=0.2,
+                    dpi=200,
+                )
             plt.close()            
 
 

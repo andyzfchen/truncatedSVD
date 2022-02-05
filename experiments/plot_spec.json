@@ -1,5 +1,5 @@
 {
-    "num_updates":[2,6,10],
+    "n_batches":[2,4,6,8,10],
     "ranks": [25,50,75,100,125],
     "method_label": {
         "bcg": "$Z = [U_k, X_{\\lambda,r}; 0, I_s]$",

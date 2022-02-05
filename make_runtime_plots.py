@@ -23,6 +23,8 @@ def make_plots(specs_json,cache_dir):
 
 ################## Generate plots showing runtimes for different methods across diferent ranks but same number of updates ###################        
         for n_batches in spec['n_batches']:
+            empty = True
+            #pdb.set_trace()
             print(f'\tGenerating for batch split: {n_batches}')
             fig, ax = init_figure(f'Runtimes for {n_batches} Updates','Rank','Runtime (ms)')
             
@@ -34,7 +36,7 @@ def make_plots(specs_json,cache_dir):
                 runtime_dict = {}
 
                 for dir in listdir(normpath(join(cache_dir,dataset,method))):
-                    if f'batch_split_{n_batches}' in dir:
+                    if f'n_batches_{n_batches}' in dir:
                         k_dim = int(dir.split("_")[-1])
 
                         if method != "bcg":
@@ -55,6 +57,8 @@ def make_plots(specs_json,cache_dir):
                             runtime_sum = 0
                             num_runs = 0
                             for run_dir in listdir(normpath(join(cache_dir,dataset,method,dir))):
+                                if "run" not in  run_dir:
+                                    continue                                
                                 max_seen_runtime_phi = 0        
                                 max_file = ""                    
                                 for file in listdir(normpath(join(cache_dir,dataset,method,dir,run_dir))):
@@ -71,6 +75,8 @@ def make_plots(specs_json,cache_dir):
                             runtime_dict[k_dim] = runtime_sum/num_runs                            
 
                 sorted_runtimes = sorted(runtime_dict.items())
+                if len(sorted_runtimes) != 0:
+                    empty = False
                 runtime_ranks = [x[0] for x in sorted_runtimes]
                 runtime_vals = [x[1] for x in sorted_runtimes]
                 ax.plot(runtime_ranks,runtime_vals,label=spec['method_label'][method],marker='o')
@@ -79,17 +85,21 @@ def make_plots(specs_json,cache_dir):
             ax.legend(loc="upper right")
 
             plt.figure(fig.number)
-            plt.savefig(
-                normpath(join(cache_dir, dataset,f"runtimes_batch_split_{n_batches}")),
-                bbox_inches="tight",
-                pad_inches=0.2,
-                dpi=200,
-            )
+            if not empty:
+                plt.savefig(
+                    normpath(join(cache_dir, dataset,f"{dataset}_runtimes_batch_split_{n_batches}")),
+                    bbox_inches="tight",
+                    pad_inches=0.2,
+                    dpi=200,
+                )
+            else:
+                print("No results for this set of experiments exist for this dataset, skipping")
             plt.close()        
 
 
 ################## Generate plots showing runtimes for different methods across diferent number of updates but same rank ###################        
         for ranks in spec['ranks']:
+            empty = True
             print(f'\tGenerating for Rank: {ranks}')
             fig,ax = init_figure(f'Runtimes For {ranks} Rank','Number of Updates','Runtime (ms)')
             for method in listdir(normpath(join(cache_dir,dataset))):
@@ -122,6 +132,8 @@ def make_plots(specs_json,cache_dir):
                             runtime_sum = 0
                             num_runs = 0
                             for run_dir in listdir(normpath(join(cache_dir,dataset,method,dir))):
+                                if "run" not in  run_dir:
+                                    continue                                
                                 max_seen_runtime_phi = 0        
                                 max_file = ""                    
                                 for file in listdir(normpath(join(cache_dir,dataset,method,dir,run_dir))):
@@ -138,6 +150,8 @@ def make_plots(specs_json,cache_dir):
                             runtime_dict[batch_split] = runtime_sum/num_runs                            
 
                 sorted_runtimes = sorted(runtime_dict.items())
+                if len(sorted_runtimes) != 0:
+                    empty = False                
                 runtime_batch_split = [x[0] for x in sorted_runtimes]
                 runtime_vals = [x[1] for x in sorted_runtimes]
                 ax.plot(runtime_batch_split,runtime_vals,label=spec['method_label'][method],marker='o')
@@ -146,12 +160,15 @@ def make_plots(specs_json,cache_dir):
             ax.legend(loc="upper right")
 
             plt.figure(fig.number)
-            plt.savefig(
-                normpath(join(cache_dir, dataset,f"runtimes_k_dim_{ranks}")),
-                bbox_inches="tight",
-                pad_inches=0.2,
-                dpi=200,
-            )
+            if not empty:
+                plt.savefig(
+                    normpath(join(cache_dir, dataset,f"{dataset}_runtimes_k_dim_{ranks}")),
+                    bbox_inches="tight",
+                    pad_inches=0.2,
+                    dpi=200,
+                )
+            else:
+                print("No results for this set of experiments exist for this dataset, skipping")
             plt.close()        
 
 
