@@ -24,12 +24,10 @@ def make_plots(specs_json,cache_dir):
 ################## Generate plots showing runtimes for different methods across diferent ranks but same number of updates ###################        
         for n_batches in spec['n_batches']:
             empty = True
-            #pdb.set_trace()
             print(f'\tGenerating for batch split: {n_batches}')
-            fig, ax = init_figure(f'Runtimes for {n_batches} Updates','Rank','Runtime (ms)')
+            fig, ax = init_figure(f"{dataset} Runtimes (No. of Batches={n_batches})", "Rank ($k$)", "Runtime (s)")
             
             for method in listdir(normpath(join(cache_dir, dataset))):
-                #pdb.set_trace()
                 if method not in spec['method_label'].keys():
                     continue
                 print(f'\t\tGenerating for method: {spec["method_label"][method]}')
@@ -82,7 +80,8 @@ def make_plots(specs_json,cache_dir):
                 ax.plot(runtime_ranks,runtime_vals,label=spec['method_label'][method],marker='o')
 
 
-            ax.legend(loc="upper right")
+            ax.legend(bbox_to_anchor=(1.04,1), loc="upper left")
+            # ax.legend(loc="upper right")
 
             plt.figure(fig.number)
             if not empty:
@@ -103,9 +102,8 @@ def make_plots(specs_json,cache_dir):
         for ranks in spec['ranks']:
             empty = True
             print(f'\tGenerating for Rank: {ranks}')
-            fig,ax = init_figure(f'Runtimes For {ranks} Rank','Number of Updates','Runtime (ms)')
+            fig, ax = init_figure(f'{dataset} Runtimes ($k$={ranks})','Number of Batches', 'Runtime (s)')
             for method in listdir(normpath(join(cache_dir,dataset))):
-                #pdb.set_trace()
                 if method not in spec['method_label'].keys():
                     continue
                 print(f'\t\tGenerating for method: {spec["method_label"][method]}')
@@ -158,8 +156,8 @@ def make_plots(specs_json,cache_dir):
                 runtime_vals = [x[1] for x in sorted_runtimes]
                 ax.plot(runtime_batch_split,runtime_vals,label=spec['method_label'][method],marker='o')
 
-
-            ax.legend(loc="upper right")
+            ax.legend(bbox_to_anchor=(1.04,1), loc="upper left")
+            # ax.legend(loc="upper right")
 
             plt.figure(fig.number)
             if not empty:
