@@ -35,13 +35,11 @@ Though we will not discuss the specifics of each of the algorithms we used, each
 
 ### Evaluation
 
-The performance of each algorithm is evaluated using five metrics:
+The performance of each algorithm is evaluated using three metrics:
 
 1. Relative singular value error
 2. Scaled singular triplet resdual norm
-3. Covariance error
-4. Projection error
-5. Runtime
+3. Runtime
 
 ## How to Run Experiments
 
@@ -103,11 +101,11 @@ The experimental parameters are specified in a JSON file as follows:
 
 Below are tables listing parameters and their descriptions. Please see our JSON files in the experiments directory for complete examples.
 
-| Parameter      | Description                                 | Example                                 |
-| -------------- | ------------------------------------------- | --------------------------------------- |
-| `tests`        | List of json objects describing tests       | See table below                         |
-| `dataset_info` | Name and location of datasets used in tests | `"CRAN": "./datasets/CRAN.npy"`         |
-| `method_label` | Labels used in plots for each method        | `"zha-simon": "$Z = [U_k, 0; 0, I_s]$"` |
+| Parameter      | Description                                                        | Example                                 |
+| -------------- | -------------------------------------------------------------------| --------------------------------------- |
+| `tests`        | List of json objects describing tests                              | See table below                         |
+| `dataset_info` | Name and location of datasets used in tests                        | `"CRAN": "./datasets/CRAN.npy"`         |
+| `method_label` | JSON object containing labels used in plots for each method        | `"zha-simon": "$Z = [U_k, 0; 0, I_s]$"` |
 
 The `tests` parameter provides a list of json objects specifying all the tests to be run. Below we detail what these JSON objects must contain. Note if BCG is being run on any dataset, the BCG only parameters must be included
 
@@ -124,8 +122,18 @@ The `tests` parameter provides a list of json objects specifying all the tests t
 | `lam_coeff`    | Lambda Coefficient (BCG only)                | `1.01`                       |
 | `num_runs`     | Number of runs for BCG experiment (BCG only) | `1`                          |
 
-To run the experiment, all you have to do is call `run_tests.py` and specify the path to the JSON file and the directory to contain the cache folder.
-Additional plots can be created by specifying parameters in the `plt_spec.json` file running `make_fd_error_plots.py`.
+To run the experiment, all you have to do is call `run_tests.py` and specify the path to the JSON file and the directory to contain the cache folder where results and figures will be stored.
+Additional plots can be created by using `make_runtime_plots.py` and specifying a JSON file specifying plot parameters and the cache location.
+
+The parameters for the JSON file for the runtime plotting script are listed below. An example can be found in [`experiments/plot_spec.json`](experiments/plot_spec.json)
+
+| Parameter      | Description                                                                                                                                      | Example                                |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------- |
+| `n_batches`    | Set of 'number of update batches' values to generate runtime graphs over, plots will have runtime on y-axis and rank on x-axis                   | `[2,6,10]`                             |
+| `ranks`        | Set of rank values to generate runtime graphs over, plots will have runtime on y-axis and rank on x-axis                                         | `[25,50,75,100]`                       |
+| `method_label` | JSON object containing labels used in plots for each method                                                                                      | `"zha-simon": "$Z = [U_k, 0; 0, I_s]$"`|
+| `datasets`     | List of strings containing names of datasets to generate plots for                                                                               | `["CISI","CRAN","MED"]`                |
+
 
 ```shell
 # Navigate to truncatedSVD root directory
@@ -137,8 +145,8 @@ python run_tests.py -e <tests.json>
 # Option to explicitly set cache directory
 python run_tests.py -e <tests.json> -c <cache_directory>
 
-# Make FD error plots
-python make_fd_error_plots.py plot_spec.json
+# Make Runtime plots comparing methods for each specified dataset
+python make_runtime_plots.py -c <cache_directory> -s <plot_params.json>
 ```
 
 **Note:** Depending on the number of experiments, the cache can become large (~1 GB), so please ensure that your system has sufficient space before running the experiments.
