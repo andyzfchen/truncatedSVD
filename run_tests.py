@@ -4,7 +4,6 @@
 from os import mkdir
 from os.path import normpath, exists, join
 import json
-from truncatedSVD.metrics import proj_err
 import numpy as np
 import truncatedSVD.EvolvingMatrix as EM
 from truncatedSVD.plotter import *
@@ -12,6 +11,7 @@ from collections import OrderedDict
 import pickle
 from truncatedSVD.utils import check_and_create_dir
 from string import Template
+from assert_tests import validate_experiment
 
 # Create string template for image filenames
 rel_err_fig_name_fmt = Template(
@@ -36,8 +36,6 @@ def perform_updates(
     # Initialize arrays for storing metrics
     rel_errs_list = []
     res_norms_list = []
-    cov_errs_dict = OrderedDict()
-    proj_errs_dict = OrderedDict()
 
     """Perform updates for specified number of batches using update method."""
     for ii in range(n_batches):
@@ -70,22 +68,17 @@ def perform_updates(
             # Save error metrics for plotting
             if make_plots:
                 rel_err = model.get_relative_error(sv_idx=None)
-                cov_err = model.get_covariance_error()
                 if method == "frequent-directions":
-                    res_norm = model.get_residual_norm(sv_idx=None, A_idx=model.freq_dir.ell)
-                    proj_err = model.get_projection_error(A_idx=model.freq_dir.ell)                
+                    res_norm = model.get_residual_norm(sv_idx=None, A_idx=model.freq_dir.ell)              
                 else:
-                    res_norm = model.get_residual_norm(sv_idx=None)
-                    proj_err = model.get_projection_error()                
+                    res_norm = model.get_residual_norm(sv_idx=None)             
 
                 rel_errs_list.append(rel_err)
                 res_norms_list.append(res_norm)
-                cov_errs_dict[model.phi] = cov_err
-                proj_errs_dict[model.phi] = proj_err
         
         print("")
 
-    return rel_errs_list, res_norms_list, cov_errs_dict, proj_errs_dict
+    return rel_errs_list, res_norms_list
 
 
 def split_data(A, m_percent):
@@ -161,25 +154,8 @@ def make_plots(rel_errs_list, res_norms_list, batch_phis, dataset, method, metho
         )
     )
 
-
-def save_cov_proj_errs(save_dir,cov_errs_dict,proj_errs_dict):
-    save_path = normpath(join(save_dir,"covarience_error.pkl"))
-    with open(save_path,'wb') as f:
-        pickle.dump(cov_errs_dict,f)
-    save_path = normpath(join(save_dir,"projection_error.pkl"))
-    with open(save_path,'wb') as f:
-        pickle.dump(proj_errs_dict,f)
-
-
 def run_experiments(specs_json, cache_path):
-    # Open JSON file for experiment specification
-    f = open(specs_json)
-    try:
-        test_spec = json.load(f)
-    except ValueError as err:
-        print("Tests file is not a valid JSON file. Please double check syntax.")
-        exit()
-    f.close()
+    test_spec = validate_experiment(specs_json)
 
     # Create cache path to save results
     cache_dir = join(cache_path, "cache")
@@ -196,9 +172,6 @@ def run_experiments(specs_json, cache_path):
 
         # Load data
         data = np.load(test_spec["dataset_info"][dataset])
-
-        # Initialize dict for runtimes
-        runtimes_dict = dict()
 
         # Run tests for each update method
         for method in test["methods"]:
@@ -232,7 +205,7 @@ def run_experiments(specs_json, cache_path):
                         model.set_append_matrix(E)
                         print()
                         
-                        rel_errs_list, res_norms_list, cov_errs_dict, proj_errs_dict = perform_updates(
+                        rel_errs_list, res_norms_list = perform_updates(
                             dataset,
                             n_batches,
                             batch_phis,
@@ -244,7 +217,6 @@ def run_experiments(specs_json, cache_path):
                             cache_dir,
                             make_plots=test["make_plots"],
                         )
-                        save_cov_proj_errs(results_dir, cov_errs_dict, proj_errs_dict)
 
                         if test["make_plots"]:
                             make_plots(
@@ -267,7 +239,7 @@ def run_experiments(specs_json, cache_path):
                             B, n_batches=n_batches, k_dim=k)
                         model.set_append_matrix(E)
                         print()
-                        rel_errs_list, res_norms_list, cov_errs_dict, proj_errs_dict = perform_updates(
+                        rel_errs_list, res_norms_list= perform_updates(
                             dataset,
                             n_batches,
                             batch_phis,
@@ -279,8 +251,7 @@ def run_experiments(specs_json, cache_path):
                             cache_dir,
                             make_plots=test["make_plots"],
                         )
-
-                        save_cov_proj_errs(results_dir,cov_errs_dict,proj_errs_dict)     
+   
                         
                         if test["make_plots"]:
                             make_plots(
@@ -309,7 +280,7 @@ def run_experiments(specs_json, cache_path):
                                 model.set_append_matrix(E)
                                 print()
                                 r_str = f"_rval_{str(r)}"
-                                rel_errs_list, res_norms_list, cov_errs_dict, proj_errs_dict = perform_updates(
+                                rel_errs_list, res_norms_list = perform_updates(
                                     dataset,
                                     n_batches,
                                     batch_phis,
@@ -324,7 +295,7 @@ def run_experiments(specs_json, cache_path):
                                     r=r,
                                 )
 
-                                save_cov_proj_errs(results_dir_run,cov_errs_dict,proj_errs_dict)                                
+                            
                                 if test["make_plots"]:
                                     make_plots(
                                         rel_errs_list, 
@@ -345,15 +316,7 @@ def run_experiments(specs_json, cache_path):
                             f"Must be one of the following: zha-simon, bcg, or frequent-directions."
                         )
 
-                    # Add entry into runtimes dict
-                    runtimes_dict[(method, n_batches, k)] = model.runtime
-
                     print("")
-
-        # Plot runtimes (for each dataset)
-        check_and_create_dir(join(cache_dir, "figures"))
-        rt_plot_filename = join(cache_dir, f"figures/{dataset}_runtime.png")
-        plot_runtimes(runtimes_dict, rt_plot_filename, f"Runtime ({dataset})")
 
 
 ######################################################################

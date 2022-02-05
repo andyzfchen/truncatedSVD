@@ -1,5 +1,3 @@
-import pdb
-from tabnanny import check
 from truncatedSVD.utils import init_figure
 from truncatedSVD.utils import check_and_create_dir
 
@@ -37,40 +35,40 @@ def make_plots(specs_json,cache_dir):
                 print(f'\t\tGenerating for method: {spec["method_label"][method]}')
                 runtime_dict = {}
 
-                for dir in listdir(normpath(join(cache_dir,dataset,method))):
-                    if f'n_batches_{n_batches}' in dir:
-                        k_dim = int(dir.split("_")[-1])
+                for experiment_dir in listdir(normpath(join(cache_dir,dataset,method))):
+                    if f'n_batches_{n_batches}' in experiment_dir:
+                        k_dim = int(experiment_dir.split("_")[-1])
 
                         if method != "bcg":
                             max_seen_runtime_phi = 0        
                             max_file = ""                    
-                            for file in listdir(normpath(join(cache_dir,dataset,method,dir))):
+                            for file in listdir(normpath(join(cache_dir,dataset,method,experiment_dir))):
                                 if "runtime" in file:
                                     phi_num = int(file.split("_")[2].split('.')[0])
                                     if phi_num > max_seen_runtime_phi:
                                         max_seen_runtime_phi = phi_num
                                         max_file = file
 
-                            with open(normpath(join(cache_dir,dataset,method,dir,max_file)),'rb') as f:
+                            with open(normpath(join(cache_dir,dataset,method,experiment_dir,max_file)),'rb') as f:
                                 runtime = float(np.load(f)) 
 
                             runtime_dict[k_dim] = runtime
                         else:
                             runtime_sum = 0
                             num_runs = 0
-                            for run_dir in listdir(normpath(join(cache_dir,dataset,method,dir))):
+                            for run_dir in listdir(normpath(join(cache_dir,dataset,method,experiment_dir))):
                                 if "run" not in  run_dir:
                                     continue                                
                                 max_seen_runtime_phi = 0        
                                 max_file = ""                    
-                                for file in listdir(normpath(join(cache_dir,dataset,method,dir,run_dir))):
+                                for file in listdir(normpath(join(cache_dir,dataset,method,experiment_dir,run_dir))):
                                     if "runtime" in file:
                                         phi_num = int(file.split("_")[2].split('.')[0])
                                         if phi_num > max_seen_runtime_phi:
                                             max_seen_runtime_phi = phi_num
                                             max_file = file
 
-                                with open(normpath(join(cache_dir,dataset,method,dir,run_dir,max_file)),'rb') as f:
+                                with open(normpath(join(cache_dir,dataset,method,experiment_dir,run_dir,max_file)),'rb') as f:
                                     runtime_sum += float(np.load(f)) 
                                 num_runs += 1
 
@@ -113,41 +111,41 @@ def make_plots(specs_json,cache_dir):
                 print(f'\t\tGenerating for method: {spec["method_label"][method]}')
                 runtime_dict = {}
 
-                for dir in listdir(normpath(join(cache_dir,dataset,method))):
+                for experiment_dir in listdir(normpath(join(cache_dir,dataset,method))):
 
-                    if f'k_dims_{ranks}' in dir:
-                        batch_split = int(dir.split("_")[3])
+                    if f'k_dims_{ranks}' in experiment_dir:
+                        batch_split = int(experiment_dir.split("_")[3])
 
                         if method != "bcg":
                             max_seen_runtime_phi = 0        
                             max_file = ""                    
-                            for file in listdir(normpath(join(cache_dir,dataset,method,dir))):
+                            for file in listdir(normpath(join(cache_dir,dataset,method,experiment_dir))):
                                 if "runtime" in file:
                                     phi_num = int(file.split("_")[2].split('.')[0])
                                     if phi_num > max_seen_runtime_phi:
                                         max_seen_runtime_phi = phi_num
                                         max_file = file
 
-                            with open(normpath(join(cache_dir,dataset,method,dir,max_file)),'rb') as f:
+                            with open(normpath(join(cache_dir,dataset,method,experiment_dir,max_file)),'rb') as f:
                                 runtime = float(np.load(f)) 
 
                             runtime_dict[batch_split] = runtime
                         else:
                             runtime_sum = 0
                             num_runs = 0
-                            for run_dir in listdir(normpath(join(cache_dir,dataset,method,dir))):
+                            for run_dir in listdir(normpath(join(cache_dir,dataset,method,experiment_dir))):
                                 if "run" not in  run_dir:
                                     continue                                
                                 max_seen_runtime_phi = 0        
                                 max_file = ""                    
-                                for file in listdir(normpath(join(cache_dir,dataset,method,dir,run_dir))):
+                                for file in listdir(normpath(join(cache_dir,dataset,method,experiment_dir,run_dir))):
                                     if "runtime" in file:
                                         phi_num = int(file.split("_")[2].split('.')[0])
                                         if phi_num > max_seen_runtime_phi:
                                             max_seen_runtime_phi = phi_num
                                             max_file = file
 
-                                with open(normpath(join(cache_dir,dataset,method,dir,run_dir,max_file)),'rb') as f:
+                                with open(normpath(join(cache_dir,dataset,method,experiment_dir,run_dir,max_file)),'rb') as f:
                                     runtime_sum += float(np.load(f)) 
                                 num_runs += 1
 

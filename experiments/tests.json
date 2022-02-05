@@ -2,7 +2,7 @@
   "tests": [
     {
       "dataset": "CISI",
-      "methods": ["zha-simon", "bcg"],
+      "methods": ["frequent-directions","zha-simon", "bcg"],
       "m_percent": 0.1,
       "n_batches": [2, 6, 10],
       "phis_to_plot": [1, 5, 10],
