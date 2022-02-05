@@ -232,15 +232,21 @@ class EvolvingMatrix(object):
             Rank-k approximation of A using truncated SVD
         """
         if update:
-            self.Ak = self.Uk.dot(np.diag(self.sigmak).dot(self.VHk))
-            return self.Ak
+            if method == "frequent-directions":
+                B_proj = np.dot(self.VHk.T, self.VHk)
+                Aprime = np.dot(self.A, B_proj)
+
+                self.Ak = Aprime
+
+                return self.Ak
+            else:
+                self.Ak = self.Uk.dot(np.diag(self.sigmak).dot(self.VHk))
+                return self.Ak
         else:
             if method == "frequent-directions":
-                B = self.Uk.dot(np.diag(self.sigmak).dot(self.VHk))
-                B_proj = np.dot(B.T, np.dot(np.linalg.inv(np.dot(B, B.T)), B))
+                B_proj = np.dot(self.VHk.T, self.VHk)
 
-                u, s, vh = np.linalg.svd(np.dot(self.A, B_proj))
-                Ahat = u[:, :self.k_dim].dot(np.diag(s[:self.k_dim]).dot(vh[:self.k_dim, :]))
+                Ahat = np.dot(self.A, B_proj)
 
                 return Ahat
             else:
