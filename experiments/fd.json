@@ -35,30 +35,6 @@
       "num_runs": 1,
       "k_dims": [50],
       "make_plots": true
-    },
-    {
-      "dataset": "ML1M",
-      "methods": ["frequent-directions"],
-      "m_percent": 0.1,
-      "n_batches": [10],
-      "phis_to_plot": [1, 5, 10],
-      "r_values": [10],
-      "lam_coeff": 1.01,
-      "num_runs": 1,
-      "k_dims": [50],
-      "make_plots": true
-    },
-    {
-      "dataset": "Reuters",
-      "methods": ["frequent-directions"],
-      "m_percent": 0.1,
-      "n_batches": [10],
-      "phis_to_plot": [1, 5, 10],
-      "r_values": [10],
-      "lam_coeff": 1.01,
-      "num_runs": 1,
-      "k_dims": [50],
-      "make_plots": true
     }
   ],
   "dataset_info": {

@@ -1,6 +1,6 @@
 # ML Reproducibility Challenge 2021
 
-This repository hosts documents and code for reproducing the algorithm for updating the truncated singular value decomposition (SVD) of evolving matrices outlined by Vassilis Kalantzis, Georgios Kollias, Shashanka Ubaru, Athanasios N. Nikolakopoulos, Lior Horesh, and Kenneth L. Clarkson in their paper [Projection techniques to update the truncated SVD of evolving matrices](http://proceedings.mlr.press/v139/kalantzis21a/kalantzis21a.pdf) published in the 38th International Conference on Machine Learning 2021. We (Andy Chen, Shion Matsumoto, and Rohan Sinha Varma) present this repository as part of a submission to the [ML Reproducibility Challenge 2021](https://paperswithcode.com/rc2021) along with our [report]().
+This repository hosts documents and code for reproducing the algorithm for updating the truncated singular value decomposition (SVD) of evolving matrices outlined by Vassilis Kalantzis, Georgios Kollias, Shashanka Ubaru, Athanasios N. Nikolakopoulos, Lior Horesh, and Kenneth L. Clarkson in their paper [Projection techniques to update the truncated SVD of evolving matrices](http://proceedings.mlr.press/v139/kalantzis21a/kalantzis21a.pdf) published in the 38th International Conference on Machine Learning 2021. We (Andy Chen, Shion Matsumoto, and Rohan Sinha Varma) present this repository as part of a submission to the [ML Reproducibility Challenge 2021](https://paperswithcode.com/rc2021) along with our [report](report/ML_Reproducibility_Challenge_2021_Report.pdf).
 
 ## Introduction
 
@@ -9,8 +9,6 @@ This repository hosts documents and code for reproducing the algorithm for updat
 In applications where the matrix is subject to the periodic addition of rows (and/or columns), re-calculating the SVD with each update can quickly become prohibitively expensive, particularly if the updates are frequent. For this reason, algorithms that exploit previously available information on the SVD of the matrix before the update to calculate the SVD of the update matrix are crucial. This can be in the context of both the full SVD and the rank-$k$ SVD, the latter of which is the focus of our study.
 
 The basic problem of updating the rank-$k$ truncated SVD of an updated matrix is as follows. Let $B\in\mathbb{C}^{m\times n}$ be a matrix for which a rank-$k$ SVD
-![](<https://latex.codecogs.com/svg.image?B_k&space;=&space;U_k&space;\Sigma_k&space;V_k^T&space;=&space;\sum_{j=1}^k&space;\sigma_j&space;u^{(j)}&space;(v^{(j)})^H>)
-
 $
 B_k = U_k \Sigma_k V_k^T = \sum_{j=1}^k \sigma_j u^{(j)} (v^{(j)})^H
 $
@@ -168,7 +166,7 @@ In our of our experiments, we evaluated the Zha-Simon and enhanced projection va
   <img src="./images/CRAN_bcg_n_batches_10_k_dims_50_rval_50_res_norm.png" width="320" height="240">
 </figure>
 
-For our complete set of results, please refer to our [report]() and [supplementary materials]().
+For our complete set of results, please refer to our [report](report/ML_Reproducibility_Challenge_2021_Report.pdf) and [supplementary materials](report/ML_Reproducibility_Challenge_2021_Supplementary.pdf).
 
 ## Team
 
