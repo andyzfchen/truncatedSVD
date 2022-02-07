@@ -154,39 +154,20 @@ python make_runtime_plots.py -c <cache_directory> -s <plot_params.json>
 
 ## Results
 
-In our of our experiments, we evaluated the Zha-Simon and enhanced projection variations of the proposed algorithm and FrequentDirections on the CRAN dataset. Shown below are plots of the relative singular value errors and scaled residual norms of the first 50 singular triplets for the first, fifth, and tenth updates.
+In one of our experiments, we evaluated the Zha-Simon and enhanced projection variations of the proposed algorithm and FrequentDirections on the CRAN dataset with `n_batches=10`, `k_dims=50`, and `r=10`. Shown below are plots of the relative singular value errors and scaled residual norms of the first 50 singular triplets for the first, fifth, and tenth updates using the Zha-Simon projection-based update method (first line), enhanced projection-based update method (second line), and FrequentDirections (third line).
 
-<p float="center">
-  <img src = "./images/CRAN_zha-simon_n_batches_10_k_dims_50_rel_err.png" width="320" />
-  <img src = "./images/CRAN_zha-simon_n_batches_10_k_dims_50_res_norm.png" width="320" />
-  <figcaption> Zha-Simon projection-based update </figcaption>
+<p align = "center">
+  <img src = "./images/CRAN_zha-simon_n_batches_10_k_dims_50_rel_err.png" height = "240" />
+  <img src = "./images/CRAN_zha-simon_n_batches_10_k_dims_50_res_norm.png" height = "240" />
 </p>
 
-<p float="center">
-  <img src="./images/CRAN_bcg_n_batches_10_k_dims_50_rval_50_rel_err.png" width="320">
-  <img src="./images/CRAN_bcg_n_batches_10_k_dims_50_rval_50_res_norm.png" width="320">
-  <figcaption> Enhanced projection matrix based update </figcaption>
-</p>
+<p align = "center">
+  <img src = "./images/CRAN_bcg_n_batches_10_k_dims_50_rval_50_rel_err.png" height = "240">
+  <img src = "./images/CRAN_bcg_n_batches_10_k_dims_50_rval_50_res_norm.png" height = "240">
 
-<!-- <figure>
-  <img src = "./images/CRAN_zha-simon_n_batches_10_k_dims_50_rel_err.png" width="320" height="240">
-  <figcaption> </figcaption>
-</figure>
-
-<figure>
-  <img src="./images/CRAN_zha-simon_n_batches_10_k_dims_50_res_norm.png" width="320" height="240">
-  <figcaption></figcaption>
-</figure>
-
-<figure>
-  <img src="./images/CRAN_bcg_n_batches_10_k_dims_50_rval_50_rel_err.png" width="320" height="240">
-  <figcaption></figcaption>
-</figure>
-
-<figure>
-  <img src="./images/CRAN_bcg_n_batches_10_k_dims_50_rval_50_res_norm.png" width="320" height="240">
-  <figcaption></figcaption>
-</figure> -->
+<p align = "center">
+  <img src = "./images/CRAN_frequent-directions_n_batches_10_k_dims_50_rel_err.png" height = "240">
+  <img src = "./images/CRAN_frequent-directions_n_batches_10_k_dims_50_res_norm.png" height = "240">
 
 For our complete set of results, please refer to our [report](report/ML_Reproducibility_Challenge_2021_Report.pdf) and [supplementary materials](report/ML_Reproducibility_Challenge_2021_Supplementary.pdf).
 
