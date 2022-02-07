@@ -35,7 +35,6 @@
       "num_runs": 1,
       "k_dims": [50],
       "make_plots": true
-<<<<<<< HEAD
     },
     {
       "dataset": "ML1M",
@@ -60,8 +59,6 @@
       "num_runs": 1,
       "k_dims": [50],
       "make_plots": true
-=======
->>>>>>> shion
     }
   ],
   "dataset_info": {

@@ -69,7 +69,7 @@ The experimental parameters are specified in a JSON file as follows:
   "tests": [
     {
       "dataset": "CRAN",
-      "method": ["zha-simon", "bcg", "fd"],
+      "method": ["zha-simon", "bcg", "frequent-directions"],
       "m_percent": 0.1,
       "n_batches": [2, 6, 10],
       "phis_to_plot": [1, 5, 10],
@@ -78,7 +78,7 @@ The experimental parameters are specified in a JSON file as follows:
     },
     {
       "dataset": "CISI",
-      "method": ["zha-simon", "bcg", "fd"],
+      "method": ["zha-simon", "bcg", "frequent-directions"],
       "m_percent": 0.1,
       "n_batches": [2, 6, 10],
       "phis_to_plot": [1, 5, 10],
@@ -111,18 +111,18 @@ Below are tables listing parameters and their descriptions. Please see our JSON 
 
 The `tests` parameter provides a list of json objects specifying all the tests to be run. Below we detail what these JSON objects must contain. Note if BCG is being run on any dataset, the BCG only parameters must be included
 
-| Parameter      | Description                                  | Example                      |
-| -------------- | -------------------------------------------- | ---------------------------- |
-| `dataset`      | Name of dataset to run on                    | `"CRAN"`                     |
-| `method`       | List of update methods to run                | `["zha-simon", "bcg", "fd"]` |
-| `m_percent`    | Percent of data used as initial matrix       | `0.1`                        |
-| `n_batches`    | Number of update batches                     | `[2, 6, 10]`                 |
-| `phis_to_plot` | Batch numbers to plot                        | `[1, 5, 10]`                 |
-| `k_dims`       | Rank of updates                              | `[25, 50, 75, 100]`          |
-| `make_plots`   | Option to plot update results                | `true`                       |
-| `r_values`     | Number of oversamples(BCG only)              | `[10, 20, 30, 40, 50]`       |
-| `lam_coeff`    | Lambda Coefficient (BCG only)                | `1.01`                       |
-| `num_runs`     | Number of runs for BCG experiment (BCG only) | `1`                          |
+| Parameter      | Description                                  | Example                                       |
+| -------------- | -------------------------------------------- | --------------------------------------------- |
+| `dataset`      | Name of dataset to run on                    | `"CRAN"`                                      |
+| `method`       | List of update methods to run                | `["zha-simon", "bcg", "frequent-directions"]` |
+| `m_percent`    | Percent of data used as initial matrix       | `0.1`                                         |
+| `n_batches`    | Number of update batches                     | `[2, 6, 10]`                                  |
+| `phis_to_plot` | Batch numbers to plot                        | `[1, 5, 10]`                                  |
+| `k_dims`       | Rank of updates                              | `[25, 50, 75, 100]`                           |
+| `make_plots`   | Option to plot update results                | `true`                                        |
+| `r_values`     | Number of oversamples(BCG only)              | `[10, 20, 30, 40, 50]`                        |
+| `lam_coeff`    | Lambda Coefficient (BCG only)                | `1.01`                                        |
+| `num_runs`     | Number of runs for BCG experiment (BCG only) | `1`                                           |
 
 To run the experiment, all you have to do is call `run_tests.py` and specify the path to the JSON file and the directory to contain the cache folder where results and figures will be stored.
 Additional plots can be created by using `make_runtime_plots.py` and specifying a JSON file specifying plot parameters and the cache location.
