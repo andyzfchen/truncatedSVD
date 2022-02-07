@@ -25,22 +25,22 @@ $A_k=\widehat{U}_k \widehat{\Sigma}_k \widehat{V}_k^H = \sum_{j=1}^k \widehat{\s
 
 In our study, we use three algorithms to calculate the truncated SVD of evolving matrices:
 
-1. Zha-Simon projection based update algorithm (Algorithm 2.1)
-2. Enhanced projection based update algorithm (Algorithm 2.2)
-3. FrequentDirections
+1. Zha-Simon projection-based update algorithm (Algorithm 2.1)
+2. Enhanced projection-based update algorithm (Algorithm 2.2)
+3. [FrequentDirections](https://epubs.siam.org/doi/abs/10.1137/15M1009718?mobileUi=0)
 
-Though we will not discuss the specifics of each of the algorithms we used, each experiment followed a similar structure:
+Though we will not discuss the specifics of each of the algorithms we used, each experiment followed a similar structure. The basic structure is listed below
 
-1. Evolve matrix
-2. Calculate truncated SVD of updated matrix
-3. Calculate metrics
+1. Evolve matrix by appending rowsaccording to the specified updating scheme
+2. Calculate truncated SVD of updated matrix using desired update method
+3. Calculate metrics for updated truncated SVD
 
 ### Evaluation
 
 The performance of each algorithm is evaluated using three metrics:
 
 1. Relative singular value error
-2. Scaled singular triplet residual norm
+2. Scaled residual norm singular triplet
 3. Runtime
 
 ## How to Run Experiments
@@ -103,11 +103,11 @@ The experimental parameters are specified in a JSON file as follows:
 
 Below are tables listing parameters and their descriptions. Please see our JSON files in the experiments directory for complete examples.
 
-| Parameter      | Description                                                        | Example                                 |
-| -------------- | -------------------------------------------------------------------| --------------------------------------- |
-| `tests`        | List of json objects describing tests                              | See table below                         |
-| `dataset_info` | Name and location of datasets used in tests                        | `"CRAN": "./datasets/CRAN.npy"`         |
-| `method_label` | JSON object containing labels used in plots for each method        | `"zha-simon": "$Z = [U_k, 0; 0, I_s]$"` |
+| Parameter      | Description                                                 | Example                                 |
+| -------------- | ----------------------------------------------------------- | --------------------------------------- |
+| `tests`        | List of json objects describing tests                       | See table below                         |
+| `dataset_info` | Name and location of datasets used in tests                 | `"CRAN": "./datasets/CRAN.npy"`         |
+| `method_label` | JSON object containing labels used in plots for each method | `"zha-simon": "$Z = [U_k, 0; 0, I_s]$"` |
 
 The `tests` parameter provides a list of json objects specifying all the tests to be run. Below we detail what these JSON objects must contain. Note if BCG is being run on any dataset, the BCG only parameters must be included
 
@@ -129,13 +129,12 @@ Additional plots can be created by using `make_runtime_plots.py` and specifying 
 
 The parameters for the JSON file for the runtime plotting script are listed below. An example can be found in [`experiments/plot_spec.json`](experiments/plot_spec.json)
 
-| Parameter      | Description                                                                                                                                      | Example                                |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------- |
-| `n_batches`    | Set of 'number of update batches' values to generate runtime graphs over, plots will have runtime on y-axis and rank on x-axis                   | `[2,6,10]`                             |
-| `ranks`        | Set of rank values to generate runtime graphs over, plots will have runtime on y-axis and rank on x-axis                                         | `[25,50,75,100]`                       |
-| `method_label` | JSON object containing labels used in plots for each method                                                                                      | `"zha-simon": "$Z = [U_k, 0; 0, I_s]$"`|
-| `datasets`     | List of strings containing names of datasets to generate plots for                                                                               | `["CISI","CRAN","MED"]`                |
-
+| Parameter      | Description                                                                                                                    | Example                                 |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------- |
+| `n_batches`    | Set of 'number of update batches' values to generate runtime graphs over, plots will have runtime on y-axis and rank on x-axis | `[2,6,10]`                              |
+| `ranks`        | Set of rank values to generate runtime graphs over, plots will have runtime on y-axis and rank on x-axis                       | `[25,50,75,100]`                        |
+| `method_label` | JSON object containing labels used in plots for each method                                                                    | `"zha-simon": "$Z = [U_k, 0; 0, I_s]$"` |
+| `datasets`     | List of strings containing names of datasets to generate plots for                                                             | `["CISI","CRAN","MED"]`                 |
 
 ```shell
 # Navigate to truncatedSVD root directory
@@ -157,30 +156,43 @@ python make_runtime_plots.py -c <cache_directory> -s <plot_params.json>
 
 In our of our experiments, we evaluated the Zha-Simon and enhanced projection variations of the proposed algorithm and FrequentDirections on the CRAN dataset. Shown below are plots of the relative singular value errors and scaled residual norms of the first 50 singular triplets for the first, fifth, and tenth updates.
 
-<figure>
+<p float="center">
+  <img src = "./images/CRAN_zha-simon_n_batches_10_k_dims_50_rel_err.png" width="320" />
+  <img src = "./images/CRAN_zha-simon_n_batches_10_k_dims_50_res_norm.png" width="320" />
+  <figcaption> Zha-Simon projection-based update </figcaption>
+</p>
+
+<p float="center">
+  <img src="./images/CRAN_bcg_n_batches_10_k_dims_50_rval_50_rel_err.png" width="320">
+  <img src="./images/CRAN_bcg_n_batches_10_k_dims_50_rval_50_res_norm.png" width="320">
+  <figcaption> Enhanced projection matrix based update </figcaption>
+</p>
+
+<!-- <figure>
   <img src = "./images/CRAN_zha-simon_n_batches_10_k_dims_50_rel_err.png" width="320" height="240">
-  <figcaption> CRAN relative error </figcaption>
+  <figcaption> </figcaption>
 </figure>
 
 <figure>
   <img src="./images/CRAN_zha-simon_n_batches_10_k_dims_50_res_norm.png" width="320" height="240">
-  <figcaption> CRAN residual norm </figcaption>
+  <figcaption></figcaption>
 </figure>
 
 <figure>
   <img src="./images/CRAN_bcg_n_batches_10_k_dims_50_rval_50_rel_err.png" width="320" height="240">
-  <figcaption> CRAN </figcaption>
+  <figcaption></figcaption>
 </figure>
 
 <figure>
   <img src="./images/CRAN_bcg_n_batches_10_k_dims_50_rval_50_res_norm.png" width="320" height="240">
-</figure>
+  <figcaption></figcaption>
+</figure> -->
 
 For our complete set of results, please refer to our [report](report/ML_Reproducibility_Challenge_2021_Report.pdf) and [supplementary materials](report/ML_Reproducibility_Challenge_2021_Supplementary.pdf).
 
 ## Team
 
-Andy Chen, Shion Matsumoto, Rohan Varma
+Andy Chen, Shion Matsumoto, and Rohan Sinha Varma
 
 ## Acknowledgments
 
