@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from os import mkdir
 from os.path import normpath, exists, join
 from scipy.linalg import svdvals
+from truncatedSVD.utils import init_figure, check_and_create_dir
 
 # Script parameters
 n_sv = 100
@@ -17,8 +18,7 @@ datasets = {
 
 # Create cache folder
 stats_dir = "./cache/dataset_stats"
-if not exists(normpath(stats_dir)):
-    mkdir(normpath(stats_dir))
+check_and_create_dir(stats_dir)
 
 sigma_array_list = []
 
@@ -42,21 +42,17 @@ for dataset in datasets.values():
 
 # Plot singular value profile for each dataset
 print("Plotting singular value profiles.")
-fig, ax = plt.subplots(figsize=(4, 3))
-ax.grid(True, which="both", linewidth=1, linestyle="--", color="k", alpha=0.1)
-ax.tick_params(
-    which="both", direction="in", bottom=True, top=True, left=True, right=True
-)
+fig, ax = init_figure(
+    title=f"Leading {n_sv} Singular Values", 
+    xlabel="$i$", 
+    ylabel="$\hat{\sigma}_i$", 
+    fontsize="x-large")
 
 sv_idx = np.arange(1, n_sv + 1)
 for name, ss in zip(datasets.keys(), sigma_array_list):
     ax.plot(sv_idx, ss, label=name)
 
-ax.set_title(f"Leading {n_sv} Singular Values")
-ax.set_xlabel("$i$")
 ax.set_xlim(sv_idx[0], sv_idx[-1])
-ax.set_ylabel("$\hat{\sigma}_i$")
-ax.set_yscale("log")
 ax.legend(loc="upper right")
 plt.savefig(
     normpath(join(stats_dir, f"sv_{n_sv}_profile.png")),

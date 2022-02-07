@@ -31,7 +31,7 @@ def get_truncated_svd(A, k):
     return u[:, :k], s[:k], vh[:k, :]
 
     
-def init_figure(title, xlabel, ylabel, yscale="log", figsize=(4, 3)):
+def init_figure(title, xlabel, ylabel, yscale="log", figsize=(4, 3), fontsize="medium"):
     """Initialize matplotlib figure
     
     Parameters
@@ -59,6 +59,7 @@ def init_figure(title, xlabel, ylabel, yscale="log", figsize=(4, 3)):
     ax : axes
         Matplotlib Axes object
     """
+    # Initialize figure
     fig, ax = plt.subplots(figsize=figsize)
     ax.grid(True, which="both", linewidth=1, linestyle="--", color="k", alpha=0.1)
     ax.tick_params(
@@ -66,9 +67,10 @@ def init_figure(title, xlabel, ylabel, yscale="log", figsize=(4, 3)):
     )
 
     # Label figure
-    ax.set_title(title)
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
+    ax.set_title(title, fontsize=fontsize)
+    ax.set_xlabel(xlabel, fontsize=fontsize)
+    ax.set_ylabel(ylabel, fontsize=fontsize)
     ax.set_yscale(yscale)
+    ax.tick_params(axis='both', which='major', labelsize=fontsize)
 
     return fig, ax

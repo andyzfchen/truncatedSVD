@@ -2,6 +2,7 @@ from cProfile import run
 import numpy as np
 import matplotlib.pyplot as plt
 from os.path import join, normpath
+from .utils import init_figure
 
 
 def plot_residual_norms(
@@ -28,11 +29,7 @@ def plot_residual_norms(
         Figure title
     """
     # Initialize figure
-    fig, ax = plt.subplots(figsize=(4, 3))
-    ax.grid(True, which="both", linewidth=1, linestyle="--", color="k", alpha=0.1)
-    ax.tick_params(
-        which="both", direction="in", bottom=True, top=True, left=True, right=True
-    )
+    fig, ax = init_figure(title, "Singular Value Index", "Scaled Residual Norm")
 
     # Plot residual norms for each update
     idx = np.arange(1, errs_list[0].shape[0] + 1)
@@ -40,11 +37,7 @@ def plot_residual_norms(
         ax.plot(idx, errs, label="Update(%i)" % phi)
 
     # Label figure
-    ax.set_title(title)
-    ax.set_xlabel("Singular Value Index")
     ax.set_xlim(idx[0], idx[-1])
-    ax.set_ylabel("Scaled Residual Norm")
-    ax.set_yscale("log")
     ax.legend(loc="lower right")
     plt.savefig(
         normpath(join(save_dir, filename)),
@@ -79,11 +72,7 @@ def plot_relative_errors(
         Figure title
     """
     # Initialize figure
-    fig, ax = plt.subplots(figsize=(4, 3))
-    ax.grid(True, which="both", linewidth=1, linestyle="--", color="k", alpha=0.1)
-    ax.tick_params(
-        which="both", direction="in", bottom=True, top=True, left=True, right=True
-    )
+    fig, ax = init_figure(title, "Singular Value Index", "Relative Error")
 
     # Plot relative errors for each update
     idx = np.arange(1, errs_list[0].shape[0] + 1)
@@ -91,11 +80,7 @@ def plot_relative_errors(
         ax.plot(idx, errs, label="Update(%i)" % phi)
 
     # Label figure
-    ax.set_title(title)
-    ax.set_xlabel("Singular Value Index")
     ax.set_xlim(idx[0], idx[-1])
-    ax.set_ylabel("Relative Error")
-    ax.set_yscale("log")
     ax.legend(loc="lower right")
     plt.savefig(
         normpath(join(save_dir, filename)),
