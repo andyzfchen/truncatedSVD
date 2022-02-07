@@ -162,8 +162,8 @@ In one of our experiments, we evaluated the Zha-Simon and enhanced projection va
 </p>
 
 <p align = "center">
-  <img src = "./images/CRAN_bcg_n_batches_10_k_dims_50_rval_50_rel_err.png" height = "240">
-  <img src = "./images/CRAN_bcg_n_batches_10_k_dims_50_rval_50_res_norm.png" height = "240">
+  <img src = "./images/CRAN_bcg_n_batches_10_k_dims_50_rval_10_rel_err.png" height = "240">
+  <img src = "./images/CRAN_bcg_n_batches_10_k_dims_50_rval_10_res_norm.png" height = "240">
 
 <p align = "center">
   <img src = "./images/CRAN_frequent-directions_n_batches_10_k_dims_50_rel_err.png" height = "240">
